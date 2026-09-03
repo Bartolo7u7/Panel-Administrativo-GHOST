@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V33.0 (Discord Role Sync)</title>
+    <title>GHOST | Panel Administrativo V34.0 (Discord IC Sync)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- FIREBASE SDKs (Firestore + Auth) -->
+    <!-- FIREBASE SDKs (Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <style>
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -43,74 +42,29 @@
 </head>
 <body class="bg-black text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
 
-    <!-- MODAL DE INICIO DE SESIÓN DUAL -->
+    <!-- MODAL DE INICIO DE SESIÓN SIMPLIFICADO (SOLO DISCORD E INVITADO) -->
     <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
-        <div class="bg-zinc-900 p-6 md:p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal max-h-[95vh] overflow-y-auto">
-            <div onclick="openImageModal()" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-3 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
+        <div class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal">
+            <div onclick="openImageModal()" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
                 <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
             </div>
             <h2 class="text-2xl font-black text-white tracking-widest uppercase mb-1">GHOST CLOUD</h2>
-            <p class="text-xs text-zinc-400 mb-5 font-semibold">Sincronización Automática con Discord</p>
+            <p class="text-xs text-zinc-400 mb-6 font-semibold">Panel Administrativo y de Control</p>
             
-            <div class="space-y-4 text-left">
-                <!-- 1. ACCESO GENERAL POR DISCORD (DETECTA RANGOS AUTOMÁTICAMENTE) -->
-                <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-center shadow-inner">
-                    <p class="text-[11px] text-zinc-400 mb-2 font-semibold">Inicia sesión con tu cuenta de Discord:</p>
-                    <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3 px-4 rounded-lg interactive-btn flex items-center justify-center gap-2 shadow-lg uppercase tracking-wider text-xs">
-                        <i class="fa-brands fa-discord text-base"></i> Autenticar con Discord
-                    </button>
-                </div>
-
-                <div class="relative flex py-1 items-center">
+            <div class="space-y-4">
+                <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3.5 px-4 rounded-lg interactive-btn flex items-center justify-center gap-3 shadow-lg uppercase tracking-wider text-xs">
+                    <i class="fa-brands fa-discord text-lg"></i> Iniciar Sesión con Discord
+                </button>
+                
+                <div class="relative flex py-2 items-center">
                     <div class="flex-grow border-t border-zinc-800"></div>
-                    <span class="flex-shrink mx-4 text-zinc-500 text-[10px] uppercase font-bold">O ACCESO ALTERNATIVO</span>
+                    <span class="flex-shrink mx-4 text-zinc-500 text-xs uppercase font-bold">O</span>
                     <div class="flex-grow border-t border-zinc-800"></div>
                 </div>
 
-                <!-- 2. ACCESO ALTERNATIVO DIRECTIVO (FIREBASE) -->
-                <form id="login-form" onsubmit="handleAuth(event)" class="space-y-3">
-                    <div>
-                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Rango Directivo</label>
-                        <select id="login-role" onchange="onRoleChange()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-xs text-white interactive-input">
-                            <option value="La Mesa Blanca">La Mesa Blanca</option>
-                            <option value="Cúpula Administrativa">Cúpula Administrativa</option>
-                            <option value="JEFES">JEFES</option>
-                        </select>
-                    </div>
-
-                    <div id="subrole-container" class="transition-all duration-300">
-                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Seleccionar Miembro</label>
-                        <select id="login-subrole" onchange="checkClaimStatus()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-xs text-white interactive-input">
-                            <!-- Opciones insertadas por JS -->
-                        </select>
-                    </div>
-
-                    <div id="email-container" class="transition-all duration-300">
-                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Correo Asignado</label>
-                        <input type="email" id="login-email" placeholder="ejemplo@ghost.com" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-xs text-white interactive-input disabled:opacity-50">
-                    </div>
-                    
-                    <div id="password-container" class="transition-all duration-300">
-                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Contraseña</label>
-                        <div class="relative">
-                            <input type="password" id="login-pass" placeholder="••••••••" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 pr-8 text-xs text-white interactive-input">
-                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2.5 top-2.5 text-zinc-500 hover:text-white transition-colors">
-                                <i id="pass-eye-icon" class="fa-solid fa-eye text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <p id="login-error" class="text-red-500 text-[10px] font-bold hidden text-center animate-pulse">Error.</p>
-                    <button type="submit" id="btn-auth" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2.5 rounded-lg interactive-btn text-xs uppercase tracking-wider border border-zinc-700 shadow mt-1">
-                        Iniciar Sesión Alternativa
-                    </button>
-                </form>
-
-                <div class="pt-2 border-t border-zinc-800 text-center">
-                    <button onclick="loginAsGuest()" class="text-zinc-400 hover:text-white text-[11px] font-semibold underline transition-colors">
-                        Continuar como Invitado (Modo Lectura)
-                    </button>
-                </div>
+                <button onclick="loginAsGuest()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold py-3 rounded-lg interactive-btn text-xs uppercase tracking-wider border border-zinc-700">
+                    Continuar como Invitado (Modo Lectura)
+                </button>
             </div>
         </div>
     </div>
@@ -364,7 +318,7 @@
         </div>
     </div>
 
-    <!-- LOGICA DE AUTENTICACIÓN Y SINCRONIZACIÓN DE ROLES DE DISCORD -->
+    <!-- LOGICA DE AUTENTICACIÓN Y SINCRONIZACIÓN DE DISCORD CON NOMBRES IC -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo",
@@ -376,13 +330,12 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const auth = firebase.auth();
 
         // ⚠️ CONFIGURACIÓN DE DISCORD
         const DISCORD_CLIENT_ID = "1544988442050560050";
         const DISCORD_GUILD_ID = "1541892950571749396";
 
-        // IDs de tus roles en Discord (Usando arrays para múltiples roles)
+        // IDs de tus roles en Discord
         const ROLE_IDS_JEFES = ["1542005912544350260"];
         const ROLE_IDS_CUPULA = ["1542007539447763055", "1542006640876978257"];
         const ROLE_IDS_MESABLANCA = ["1542008676577972365", "1542008472978329712"];
@@ -391,133 +344,25 @@
         let members = []; let logs = []; let dbUnsubscribe = null;
         let sortCol = 'name'; let sortAsc = true;
 
-        let accountsMapping = {}; 
-        let authMode = 'login'; 
-        let currentRoleKey = '';
-
-        const roleData = {
-            "JEFES": ["Daniel", "Mario", "Facundo", "Bartolo"],
-            "Cúpula Administrativa": ["(Subjefe) Daniel Olvera", "(Subjefe) LoudzeL Casillas", "(Subjefe) Juanpe Moser", "(Subjefe) Miguel Castilla", "(Subjefe) Kafeth Morales"],
-            "La Mesa Blanca": ["Alfredo Salvatore"]
-        };
-
-        db.collection('ghost_data').doc('accounts').onSnapshot(doc => {
-            if(doc.exists) accountsMapping = doc.data();
-            if (document.getElementById('loginModal').classList.contains('hidden') === false) {
-                checkClaimStatus(); 
-            }
-        });
-
-        function togglePasswordVisibility() {
-            const passInput = document.getElementById('login-pass');
-            const eyeIcon = document.getElementById('pass-eye-icon');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                passInput.type = 'password';
-                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        }
-
-        function onRoleChange() {
-            const role = document.getElementById('login-role').value;
-            const subroleCont = document.getElementById('subrole-container');
-            const subroleSel = document.getElementById('login-subrole');
-
-            if (roleData[role]) {
-                subroleCont.classList.remove('hidden');
-                subroleSel.innerHTML = '';
-                roleData[role].forEach(name => {
-                    subroleSel.innerHTML += `<option value="${name}">${name}</option>`;
-                });
-            } else {
-                subroleCont.classList.add('hidden');
-                subroleSel.innerHTML = '';
-            }
-            checkClaimStatus();
-        }
-
-        function checkClaimStatus() {
-            const role = document.getElementById('login-role').value;
-            const subrole = document.getElementById('login-subrole').value;
-            
-            const emailInput = document.getElementById('login-email');
-            const btn = document.getElementById('btn-auth');
-            
-            document.getElementById('login-error').classList.add('hidden');
-            document.getElementById('login-pass').value = '';
-
-            currentRoleKey = `${role}_${subrole}`; 
-            const registeredEmail = accountsMapping[currentRoleKey];
-
-            if (registeredEmail) {
-                authMode = 'login';
-                btn.innerText = "Iniciar Sesión Directiva";
-                emailInput.value = registeredEmail;
-                emailInput.readOnly = true;
-                emailInput.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                authMode = 'register';
-                btn.innerText = "Registrar Credenciales";
-                emailInput.value = '';
-                emailInput.readOnly = false;
-                emailInput.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-        }
-
-        function handleAuth(e) {
-            e.preventDefault();
-            const err = document.getElementById('login-error');
-            err.classList.add('hidden');
-
-            const email = document.getElementById('login-email').value.toLowerCase();
-            const pass = document.getElementById('login-pass').value;
-            const btn = document.getElementById('btn-auth');
-            btn.innerText = "Cargando..."; btn.disabled = true;
-
-            if (authMode === 'register') {
-                auth.createUserWithEmailAndPassword(email, pass)
-                    .then(() => {
-                        return db.collection('ghost_data').doc('accounts').set({
-                            [currentRoleKey]: email
-                        }, { merge: true });
-                    })
-                    .catch(error => {
-                        btn.innerText = "Registrar Credenciales"; btn.disabled = false;
-                        err.innerText = error.code === 'auth/email-already-in-use' ? "Este correo ya está registrado." : "Error: Contraseña de 6+ caracteres.";
-                        err.classList.remove('hidden');
-                    });
-            } else if (authMode === 'login') {
-                auth.signInWithEmailAndPassword(email, pass)
-                    .catch(error => {
-                        btn.innerText = "Iniciar Sesión Directiva"; btn.disabled = false;
-                        err.innerText = "Contraseña incorrecta.";
-                        err.classList.remove('hidden');
-                    });
-            }
-        }
-
-        // --- LOGIN CON DISCORD Y SINCRONIZACIÓN DE ROLES ---
+        // --- LOGIN CON DISCORD Y SINCRONIZACIÓN AUTOMÁTICA DE ROL + NOMBRE IC ---
         function loginWithDiscord() {
-            if(DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ") {
+            if(DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ" || !DISCORD_CLIENT_ID) {
                 alert("Configura tu Client ID real de Discord en el código.");
                 return;
             }
             const redirectUri = window.location.origin + window.location.pathname;
-            // Se añaden los scopes guilds y guilds.members.read para leer roles
             const scopes = encodeURIComponent("identify guilds guilds.members.read");
             const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scopes}`;
             window.location.href = discordAuthUrl;
         }
 
         function loginAsGuest() {
-            currentUser = { username: "Invitado", role: "Invitados", isGuest: true };
+            currentUser = { username: "Invitado", icName: "Invitado", role: "Invitados", isGuest: true };
             localStorage.setItem('ghost_session', JSON.stringify(currentUser));
             initApp();
         }
 
-        // VERIFICAR SESIÓN Y SINCRONIZAR ROLES DE DISCORD AL CARGAR
+        // VERIFICAR SESIÓN Y SINCRONIZAR AL CARGAR LA PÁGINA
         window.addEventListener('DOMContentLoaded', async () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
@@ -525,17 +370,17 @@
             if (accessToken) {
                 window.history.replaceState({}, document.title, window.location.pathname);
                 try {
-                    // 1. Obtener perfil básico del usuario
+                    // 1. Obtener perfil de Discord
                     const userRes = await fetch('https://discord.com/api/users/@me', {
                         headers: { authorization: `Bearer ${accessToken}` }
                     });
                     const userData = await userRes.json();
 
-                    // 2. Obtener los roles del usuario en el servidor específico de Discord
                     let assignedRole = 'Miembro';
                     let specialTitle = null;
 
-                    if (DISCORD_GUILD_ID && DISCORD_GUILD_ID !== "TU_SERVER_ID_DE_DISCORD_AQUÍ") {
+                    // 2. Verificar roles en el servidor de Discord
+                    if (DISCORD_GUILD_ID) {
                         try {
                             const memberRes = await fetch(`https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
                                 headers: { authorization: `Bearer ${accessToken}` }
@@ -543,20 +388,17 @@
                             if (memberRes.ok) {
                                 const memberData = await memberRes.json();
                                 const userRoles = memberData.roles || [];
-
-                                // Función para comprobar si el usuario tiene al menos uno de los roles del array
                                 const hasAnyRole = (roleArray) => roleArray.some(roleId => userRoles.includes(roleId));
 
-                                // Asignar jerarquía según roles de Discord
                                 if (hasAnyRole(ROLE_IDS_JEFES)) {
                                     assignedRole = 'JEFES';
                                     specialTitle = `${userData.username} (Jefe)`;
                                 } else if (hasAnyRole(ROLE_IDS_CUPULA)) {
                                     assignedRole = 'Cúpula Administrativa';
-                                    specialTitle = `${userData.username} (Cúpula Administrativa)`;
+                                    specialTitle = `${userData.username} (Cúpula)`;
                                 } else if (hasAnyRole(ROLE_IDS_MESABLANCA)) {
                                     assignedRole = 'La Mesa Blanca';
-                                    specialTitle = `${userData.username} (La Mesa Blanca)`;
+                                    specialTitle = `${userData.username} (Mesa Blanca)`;
                                 }
                             }
                         } catch (e) {
@@ -564,10 +406,35 @@
                         }
                     }
 
+                    // 3. Buscar coincidencia del usuario de Discord con los miembros en la BD para obtener su Nombre IC
+                    let matchedICName = null;
+                    try {
+                        const mainStateDoc = await db.collection('ghost_data').doc('main_state').get();
+                        if (mainStateDoc.exists) {
+                            const data = mainStateDoc.data();
+                            const mems = data.members || [];
+                            const discordTag = userData.username.toLowerCase();
+                            const globalName = (userData.global_name || "").toLowerCase();
+
+                            const foundMember = mems.find(m => {
+                                const mDisc = (m.discord || "").toLowerCase().replace('@', '').trim();
+                                return mDisc === discordTag || discordTag.includes(mDisc) || mDisc.includes(discordTag) ||
+                                       (globalName && mDisc.includes(globalName));
+                            });
+
+                            if (foundMember) {
+                                matchedICName = foundMember.name;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("Error al buscar el Nombre IC en la base de datos:", err);
+                    }
+
                     currentUser = {
                         username: userData.username,
+                        icName: matchedICName || userData.global_name || userData.username,
                         role: assignedRole,
-                        specialTitle: specialTitle,
+                        specialTitle: specialTitle || (matchedICName ? `${matchedICName} (${assignedRole})` : null),
                         isGuest: false
                     };
 
@@ -583,39 +450,14 @@
                     currentUser = JSON.parse(saved);
                     initApp();
                 } else {
-                    onRoleChange();
                     document.getElementById('loginModal').classList.remove('hidden');
-                }
-            }
-        });
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user && !currentUser) {
-                const email = user.email.toLowerCase();
-                const doc = await db.collection('ghost_data').doc('accounts').get();
-                const accounts = doc.exists ? doc.data() : {};
-                const foundKey = Object.keys(accounts).find(k => accounts[k] === email);
-                
-                if (foundKey) {
-                    const sep = foundKey.indexOf('_');
-                    const role = sep !== -1 ? foundKey.substring(0, sep) : foundKey;
-                    const subName = sep !== -1 ? foundKey.substring(sep + 1) : null;
-                    
-                    currentUser = {
-                        username: subName || email,
-                        role: role,
-                        specialTitle: subName ? `${role} (${subName})` : role,
-                        isGuest: false
-                    };
-                    localStorage.setItem('ghost_session', JSON.stringify(currentUser));
-                    initApp();
                 }
             }
         });
 
         function logout() {
             localStorage.removeItem('ghost_session');
-            auth.signOut().then(() => location.reload()).catch(() => location.reload());
+            location.reload();
         }
 
         function initApp() {
@@ -625,7 +467,7 @@
         }
 
         function applyPermissions() {
-            let badgeText = currentUser.username;
+            let badgeText = currentUser.icName || currentUser.username;
             if (currentUser.specialTitle) badgeText = currentUser.specialTitle;
             else if (currentUser.isGuest) badgeText = "Invitado (Lectura)";
 
@@ -645,7 +487,7 @@
                 bReset.classList.replace('flex', 'hidden'); 
             }
 
-            // Ocultar Finanzas a miembros rasos o invitados
+            // Ocultar Finanzas a miembros de Discord o invitados
             if (!isLeadership) {
                 bFin.classList.replace('flex', 'hidden');
                 bFin.classList.add('hidden');
@@ -771,7 +613,7 @@
                     `;
 
                     const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-                    const isOwnRecord = m.discord.toLowerCase().includes(currentUser.username.toLowerCase());
+                    const isOwnRecord = m.discord.toLowerCase().includes(currentUser.username.toLowerCase()) || (currentUser.icName && m.name.toLowerCase() === currentUser.icName.toLowerCase());
 
                     if (isLeadership || isOwnRecord) {
                         strikesHtml = formatStrikes(m.strikes);
@@ -899,7 +741,7 @@
             if(!checkPermission('delete')) return; const m = members.find(x=>x.id===id);
             if(confirm('¿Eliminar a este miembro de GHOST?')) { logAction(`Expulsó a: ${m.name}`); members = members.filter(x=>x.id!==id); saveToCloud(); }
         }
-        function logAction(act) { if(currentUser.isGuest || currentUser.role === 'Miembro') return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.role, action: act }); }
+        function logAction(act) { if(currentUser.isGuest || currentUser.role === 'Miembro') return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.icName || currentUser.role, action: act }); }
         function renderFinanzas() {
             let cash = 0, coca = 0, sns = 0, vintage = 0, mm9 = 0, minismg = 0, tec9 = 0, microsmg = 0, chalecos = 0;
             members.forEach(m => {
