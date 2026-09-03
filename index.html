@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V30.0 (Discord Auth)</title>
+    <title>GHOST | Panel Administrativo V31.0 (Dual Auth)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- FIREBASE SDKs (Solo para Base de Datos Firestore) -->
+    <!-- FIREBASE SDKs (Firestore + Auth) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <style>
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -42,30 +43,74 @@
 </head>
 <body class="bg-black text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
 
-    <!-- MODAL DE INICIO DE SESIÓN CON DISCORD -->
+    <!-- MODAL DE INICIO DE SESIÓN DUAL -->
     <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
-        <div class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal">
-            <div onclick="openImageModal()" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
+        <div class="bg-zinc-900 p-6 md:p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal max-h-[95vh] overflow-y-auto">
+            <div onclick="openImageModal()" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-3 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
                 <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
             </div>
             <h2 class="text-2xl font-black text-white tracking-widest uppercase mb-1">GHOST CLOUD</h2>
-            <p class="text-xs text-zinc-400 mb-6 font-semibold">Autenticación oficial mediante Discord</p>
+            <p class="text-xs text-zinc-400 mb-5 font-semibold">Panel Administrativo y de Control</p>
             
-            <div class="space-y-4">
-                <!-- BOTÓN OFICIAL DE DISCORD -->
-                <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3.5 px-4 rounded-lg interactive-btn flex items-center justify-center gap-3 shadow-lg uppercase tracking-wider text-sm">
-                    <i class="fa-brands fa-discord text-xl"></i> Iniciar Sesión con Discord
-                </button>
-                
-                <div class="relative flex py-2 items-center">
+            <div class="space-y-4 text-left">
+                <!-- 1. ACCESO PARA MIEMBROS CON DISCORD -->
+                <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-center shadow-inner">
+                    <p class="text-[11px] text-zinc-400 mb-2 font-semibold">¿Eres miembro? Inicia sesión con Discord:</p>
+                    <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3 px-4 rounded-lg interactive-btn flex items-center justify-center gap-2 shadow-lg uppercase tracking-wider text-xs">
+                        <i class="fa-brands fa-discord text-base"></i> Discord OAuth
+                    </button>
+                </div>
+
+                <div class="relative flex py-1 items-center">
                     <div class="flex-grow border-t border-zinc-800"></div>
-                    <span class="flex-shrink mx-4 text-zinc-500 text-xs uppercase font-bold">O</span>
+                    <span class="flex-shrink mx-4 text-zinc-500 text-[10px] uppercase font-bold">O ACCESO DIRECTIVO</span>
                     <div class="flex-grow border-t border-zinc-800"></div>
                 </div>
 
-                <button onclick="loginAsGuest()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold py-3 rounded-lg interactive-btn text-xs uppercase tracking-wider border border-zinc-700">
-                    Continuar como Invitado (Modo Lectura)
-                </button>
+                <!-- 2. ACCESO PARA JEFES / CÚPULA / MESA BLANCA -->
+                <form id="login-form" onsubmit="handleAuth(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Rango Directivo</label>
+                        <select id="login-role" onchange="onRoleChange()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-xs text-white interactive-input">
+                            <option value="La Mesa Blanca">La Mesa Blanca</option>
+                            <option value="Cúpula Administrativa">Cúpula Administrativa</option>
+                            <option value="JEFES">JEFES</option>
+                        </select>
+                    </div>
+
+                    <div id="subrole-container" class="transition-all duration-300">
+                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Seleccionar Miembro</label>
+                        <select id="login-subrole" onchange="checkClaimStatus()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-xs text-white interactive-input">
+                            <!-- Opciones insertadas por JS -->
+                        </select>
+                    </div>
+
+                    <div id="email-container" class="transition-all duration-300">
+                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Correo Asignado</label>
+                        <input type="email" id="login-email" placeholder="ejemplo@ghost.com" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-xs text-white interactive-input disabled:opacity-50">
+                    </div>
+                    
+                    <div id="password-container" class="transition-all duration-300">
+                        <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Contraseña</label>
+                        <div class="relative">
+                            <input type="password" id="login-pass" placeholder="••••••••" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 pr-8 text-xs text-white interactive-input">
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2.5 top-2.5 text-zinc-500 hover:text-white transition-colors">
+                                <i id="pass-eye-icon" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p id="login-error" class="text-red-500 text-[10px] font-bold hidden text-center animate-pulse">Error.</p>
+                    <button type="submit" id="btn-auth" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2.5 rounded-lg interactive-btn text-xs uppercase tracking-wider border border-zinc-700 shadow mt-1">
+                        Iniciar Sesión Directiva
+                    </button>
+                </form>
+
+                <div class="pt-2 border-t border-zinc-800 text-center">
+                    <button onclick="loginAsGuest()" class="text-zinc-400 hover:text-white text-[11px] font-semibold underline transition-colors">
+                        Continuar como Invitado (Modo Lectura)
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -81,7 +126,7 @@
                 </div>
                 <h1 class="text-xl font-black text-white tracking-widest uppercase">GHOST</h1>
                 <div class="mt-2 px-2.5 py-1 bg-zinc-900 border border-zinc-700 rounded text-center">
-                    <span class="text-[9px] text-zinc-500 block uppercase font-bold">Usuario Conectado:</span>
+                    <span class="text-[9px] text-zinc-500 block uppercase font-bold">Sesión Activa:</span>
                     <span id="current-role-badge" class="text-xs font-black text-emerald-400">Verificando...</span>
                 </div>
             </div>
@@ -319,7 +364,7 @@
         </div>
     </div>
 
-    <!-- LOGICA DE DISCORD OAUTH2 Y PRIVACIDAD -->
+    <!-- LOGICA DE AUTENTICACIÓN DUAL Y PERMISOS -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo",
@@ -331,32 +376,126 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
         // ⚠️ PEGA AQUÍ TU CLIENT ID DE DISCORD DEVELOPER PORTAL
-        const DISCORD_CLIENT_ID = "1544988442050560050";
+        const DISCORD_CLIENT_ID = "TU_CLIENT_ID_AQUÍ";
 
-        let currentUser = null; // Guardará el objeto de Discord o Rol especial
+        let currentUser = null; 
         let members = []; let logs = []; let dbUnsubscribe = null;
         let sortCol = 'name'; let sortAsc = true;
 
-        // Definición de cuentas de Liderazgo especiales (Jefes, Subjefes, Mesa Blanca)
-        const LEADERSHIP_ACCOUNTS = {
-            "daniel": { name: "Daniel (Jefe)", role: "JEFES" },
-            "mario": { name: "Mario (Jefe)", role: "JEFES" },
-            "facundo": { name: "Facundo (Jefe)", role: "JEFES" },
-            "bartolo": { name: "Bartolo (Jefe)", role: "JEFES" },
-            "daniel olvera": { name: "Daniel Olvera (Subjefe)", role: "Cúpula Administrativa" },
-            "loudzel casillas": { name: "LoudzeL Casillas (Subjefe)", role: "Cúpula Administrativa" },
-            "juanpe moser": { name: "Juanpe Moser (Subjefe)", role: "Cúpula Administrativa" },
-            "miguel castilla": { name: "Miguel Castilla (Subjefe)", role: "Cúpula Administrativa" },
-            "kafeth morales": { name: "Kafeth Morales (Subjefe)", role: "Cúpula Administrativa" },
-            "alfredo salvatore": { name: "Alfredo Salvatore", role: "La Mesa Blanca" }
+        let accountsMapping = {}; 
+        let authMode = 'login'; 
+        let currentRoleKey = '';
+
+        const roleData = {
+            "JEFES": ["Daniel", "Mario", "Facundo", "Bartolo"],
+            "Cúpula Administrativa": ["(Subjefe) Daniel Olvera", "(Subjefe) LoudzeL Casillas", "(Subjefe) Juanpe Moser", "(Subjefe) Miguel Castilla", "(Subjefe) Kafeth Morales"],
+            "La Mesa Blanca": ["Alfredo Salvatore"]
         };
 
-        // --- FLUJO DE AUTENTICACIÓN CON DISCORD ---
+        db.collection('ghost_data').doc('accounts').onSnapshot(doc => {
+            if(doc.exists) accountsMapping = doc.data();
+            if (document.getElementById('loginModal').classList.contains('hidden') === false) {
+                checkClaimStatus(); 
+            }
+        });
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('login-pass');
+            const eyeIcon = document.getElementById('pass-eye-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function onRoleChange() {
+            const role = document.getElementById('login-role').value;
+            const subroleCont = document.getElementById('subrole-container');
+            const subroleSel = document.getElementById('login-subrole');
+
+            if (roleData[role]) {
+                subroleCont.classList.remove('hidden');
+                subroleSel.innerHTML = '';
+                roleData[role].forEach(name => {
+                    subroleSel.innerHTML += `<option value="${name}">${name}</option>`;
+                });
+            } else {
+                subroleCont.classList.add('hidden');
+                subroleSel.innerHTML = '';
+            }
+            checkClaimStatus();
+        }
+
+        function checkClaimStatus() {
+            const role = document.getElementById('login-role').value;
+            const subrole = document.getElementById('login-subrole').value;
+            
+            const emailInput = document.getElementById('login-email');
+            const btn = document.getElementById('btn-auth');
+            
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-pass').value = '';
+
+            currentRoleKey = `${role}_${subrole}`; 
+            const registeredEmail = accountsMapping[currentRoleKey];
+
+            if (registeredEmail) {
+                authMode = 'login';
+                btn.innerText = "Iniciar Sesión Directiva";
+                emailInput.value = registeredEmail;
+                emailInput.readOnly = true;
+                emailInput.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                authMode = 'register';
+                btn.innerText = "Registrar Credenciales";
+                emailInput.value = '';
+                emailInput.readOnly = false;
+                emailInput.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const err = document.getElementById('login-error');
+            err.classList.add('hidden');
+
+            const email = document.getElementById('login-email').value.toLowerCase();
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('btn-auth');
+            btn.innerText = "Cargando..."; btn.disabled = true;
+
+            if (authMode === 'register') {
+                auth.createUserWithEmailAndPassword(email, pass)
+                    .then(() => {
+                        return db.collection('ghost_data').doc('accounts').set({
+                            [currentRoleKey]: email
+                        }, { merge: true });
+                    })
+                    .catch(error => {
+                        btn.innerText = "Registrar Credenciales"; btn.disabled = false;
+                        err.innerText = error.code === 'auth/email-already-in-use' ? "Este correo ya está registrado." : "Error: Contraseña de 6+ caracteres.";
+                        err.classList.remove('hidden');
+                    });
+            } else if (authMode === 'login') {
+                auth.signInWithEmailAndPassword(email, pass)
+                    .catch(error => {
+                        btn.innerText = "Iniciar Sesión Directiva"; btn.disabled = false;
+                        err.innerText = "Contraseña incorrecta.";
+                        err.classList.remove('hidden');
+                    });
+            }
+        }
+
+        // --- LOGIN CON DISCORD ---
         function loginWithDiscord() {
             if(DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ") {
-                alert("Por favor, reemplaza 'TU_CLIENT_ID_AQUÍ' en el código con tu Client ID real de Discord Developer Portal.");
+                alert("Configura tu Client ID real de Discord en el código.");
                 return;
             }
             const redirectUri = window.location.origin + window.location.pathname;
@@ -370,63 +509,66 @@
             initApp();
         }
 
-        // Al cargar la página, verificamos si Discord nos devolvió el Token en la URL
+        // VERIFICAR SESIÓN AL CARGAR
         window.addEventListener('DOMContentLoaded', () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
 
             if (accessToken) {
-                // Limpiar la URL para que no quede el token a la vista
                 window.history.replaceState({}, document.title, window.location.pathname);
-                
-                // Obtener datos del usuario desde la API de Discord
                 fetch('https://discord.com/api/users/@me', {
                     headers: { authorization: `Bearer ${accessToken}` }
                 })
                 .then(res => res.json())
                 .then(data => {
-                    const discordTag = data.username.toLowerCase();
-                    const globalName = (data.global_name || data.username).toLowerCase();
-
-                    // Comprobar si es un líder/subjefe/mesa blanca
-                    let matchedRole = null;
-                    for (let key in LEADERSHIP_ACCOUNTS) {
-                        if (discordTag.includes(key) || globalName.includes(key)) {
-                            matchedRole = LEADERSHIP_ACCOUNTS[key];
-                            break;
-                        }
-                    }
-
                     currentUser = {
                         username: data.username,
-                        globalName: data.global_name || data.username,
-                        role: matchedRole ? matchedRole.role : 'Miembro',
-                        specialTitle: matchedRole ? matchedRole.name : null,
+                        role: 'Miembro',
                         isGuest: false
                     };
-
                     localStorage.setItem('ghost_session', JSON.stringify(currentUser));
                     initApp();
                 })
-                .catch(err => {
-                    console.error("Error al autenticar con Discord:", err);
-                    alert("No se pudo verificar la cuenta de Discord.");
-                });
+                .catch(() => alert("Error al verificar Discord."));
             } else {
-                // Verificar si ya hay una sesión guardada en localStorage
-                const savedSession = localStorage.getItem('ghost_session');
-                if (savedSession) {
-                    currentUser = JSON.parse(savedSession);
+                const saved = localStorage.getItem('ghost_session');
+                if (saved) {
+                    currentUser = JSON.parse(saved);
                     initApp();
                 } else {
+                    onRoleChange();
                     document.getElementById('loginModal').classList.remove('hidden');
+                }
+            }
+        });
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user && !currentUser) {
+                const email = user.email.toLowerCase();
+                const doc = await db.collection('ghost_data').doc('accounts').get();
+                const accounts = doc.exists ? doc.data() : {};
+                const foundKey = Object.keys(accounts).find(k => accounts[k] === email);
+                
+                if (foundKey) {
+                    const sep = foundKey.indexOf('_');
+                    const role = sep !== -1 ? foundKey.substring(0, sep) : foundKey;
+                    const subName = sep !== -1 ? foundKey.substring(sep + 1) : null;
+                    
+                    currentUser = {
+                        username: subName || email,
+                        role: role,
+                        specialTitle: subName ? `${role} (${subName})` : role,
+                        isGuest: false
+                    };
+                    localStorage.setItem('ghost_session', JSON.stringify(currentUser));
+                    initApp();
                 }
             }
         });
 
         function logout() {
             localStorage.removeItem('ghost_session');
-            location.reload();
+            auth.signOut().then(() => location.reload()).catch(() => location.reload());
         }
 
         function initApp() {
@@ -437,7 +579,7 @@
 
         function applyPermissions() {
             let badgeText = currentUser.username;
-            if (currentUser.specialTitle) badgeText = `${currentUser.specialTitle}`;
+            if (currentUser.specialTitle) badgeText = currentUser.specialTitle;
             else if (currentUser.isGuest) badgeText = "Invitado (Lectura)";
 
             document.getElementById('current-role-badge').innerText = badgeText;
@@ -445,7 +587,7 @@
             const bReg = document.getElementById('btn-nav-registro'); 
             const bReset = document.getElementById('btn-reset-db');
             
-            if (currentUser.role === 'JEFES') { 
+            if (['JEFES'].includes(currentUser.role)) { 
                 bReg.classList.replace('hidden', 'flex'); 
                 bReset.classList.replace('hidden', 'flex'); 
             } else { 
@@ -455,12 +597,17 @@
         }
 
         function checkPermission(actionType) {
-            if (currentUser.isGuest || currentUser.role === 'Invitados') { alert("Modo Lectura. Sin permisos."); return false; }
-            if (currentUser.role === 'La Mesa Blanca' && actionType === 'delete') { alert("Sin permisos de eliminación."); return false; }
+            if (currentUser.isGuest || currentUser.role === 'Invitados' || currentUser.role === 'Miembro') { 
+                alert("Sin permisos para realizar esta acción administrativa."); 
+                return false; 
+            }
+            if (currentUser.role === 'La Mesa Blanca' && actionType === 'delete') { 
+                alert("Sin permisos de eliminación."); 
+                return false; 
+            }
             return true;
         }
 
-        // --- CARGA DE DATOS ---
         function loadDatabase() {
             dbUnsubscribe = db.collection("ghost_data").doc("main_state").onSnapshot((doc) => {
                 if (doc.exists) {
@@ -473,9 +620,8 @@
             });
         }
 
-        function saveToCloud() { db.collection("ghost_data").doc("main_state").set({ members, logs }).catch(err => alert("Error al guardar: Permisos denegados.")); }
+        function saveToCloud() { db.collection("ghost_data").doc("main_state").set({ members, logs }).catch(() => alert("Error al guardar.")); }
 
-        // --- RENDERIZADO CON PRIVACIDAD GRANULAR ---
         const RANK_STYLES = {
             "JEFES": "bg-red-950 text-red-500 border-red-900 font-black", "Mano Derecha": "bg-amber-950 text-orange-500 border-amber-900 font-bold",
             "Subjefe": "bg-yellow-950 text-yellow-400 border-yellow-900 font-bold", "Líder de La Mesa Blanca": "bg-zinc-800 text-white border-zinc-600 font-bold",
@@ -497,7 +643,7 @@
         }
 
         function exportToCSV() {
-            if (currentUser.isGuest) return alert("Invitados no pueden exportar.");
+            if (currentUser.isGuest || currentUser.role === 'Miembro') return alert("Sin permisos para exportar.");
             let csv = "data:text/csv;charset=utf-8,\uFEFF";
             csv += "Nombre IC,Discord,Rango,Metodo de Pago,Estado Cuota,Descuento,Faltas Acumuladas\n";
             members.forEach(m => {
@@ -548,15 +694,14 @@
             filtered.forEach(m => {
                 const rStyle = RANK_STYLES[m.rank] || "bg-slate-900 text-slate-300 border-slate-700";
                 
-                // REGLAS DE PRIVACIDAD GRANULAR
                 let quotaHtml = "";
                 let strikesHtml = "";
 
                 if (currentUser.isGuest) {
-                    quotaHtml = '<span class="text-zinc-500 italic"><i class="fa-solid fa-lock"></i> Inicia sesión para ver</span>';
-                    strikesHtml = '<span class="text-zinc-500 italic"><i class="fa-solid fa-lock"></i> Privado</span>';
+                    quotaHtml = '<span class="text-zinc-500 italic text-xs"><i class="fa-solid fa-lock"></i> Inicia sesión</span>';
+                    strikesHtml = '<span class="text-zinc-500 italic text-xs"><i class="fa-solid fa-lock"></i> Privado</span>';
                 } else {
-                    // Si está logueado: ve cuotas de todos
+                    // Miembros de Discord o Directiva ven las cuotas de todos
                     const qInfo = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
                     const payInfo = getPaymentInfo(m.payment || "Pendiente", m.discount || '0');
                     const dLabel = m.discount && m.discount !== '0' ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-purple-950 text-purple-300 border font-bold">Desc: ${m.discount}</span>` : '';
@@ -568,7 +713,7 @@
                         <span class="inline-block py-0.5 px-2 rounded text-[10px] font-bold border ${qInfo.color}">${qInfo.text}</span>
                     `;
 
-                    // Control de Faltas: Solo liderazgo ve las de todos, el miembro normal solo ve las suyas
+                    // Control de Sanciones: Directiva ve todo, Miembro de Discord solo ve su propio registro
                     const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
                     const isOwnRecord = m.discord.toLowerCase().includes(currentUser.username.toLowerCase());
 
@@ -579,8 +724,7 @@
                     }
                 }
 
-                // Botones de acción (Solo liderazgo puede editar/borrar)
-                const canManage = !currentUser.isGuest && currentUser.role !== 'Invitados';
+                const canManage = !currentUser.isGuest && ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
                 const actionsHtml = canManage ? `
                     <button onclick="openModal(${m.id})" class="text-zinc-400 hover:text-white transition-all transform hover:scale-125 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button onclick="deleteMember(${m.id})" class="text-red-500 hover:text-red-400 transition-all transform hover:scale-125"><i class="fa-solid fa-trash"></i></button>
@@ -683,7 +827,7 @@
             if(!checkPermission('delete')) return; const m = members.find(x=>x.id===id);
             if(confirm('¿Eliminar a este miembro de GHOST?')) { logAction(`Expulsó a: ${m.name}`); members = members.filter(x=>x.id!==id); saveToCloud(); }
         }
-        function logAction(act) { if(currentUser.isGuest) return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.role, action: act }); }
+        function logAction(act) { if(currentUser.isGuest || currentUser.role === 'Miembro') return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.role, action: act }); }
         function renderFinanzas() {
             let cash = 0, coca = 0, sns = 0, vintage = 0, mm9 = 0, minismg = 0, tec9 = 0, microsmg = 0, chalecos = 0;
             members.forEach(m => {
