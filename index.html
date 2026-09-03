@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V35.0 (IC Name Sync Fixed)</title>
+    <title>GHOST | Panel Administrativo V36.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -100,9 +100,6 @@
             <div class="p-2 md:p-4 border-t border-zinc-800 flex md:flex-col gap-2">
                 <button onclick="logout()" class="flex-1 flex items-center justify-center gap-2 text-zinc-300 hover:text-white hover:bg-zinc-900 text-xs py-2.5 rounded border border-zinc-700 interactive-btn">
                     <i class="fa-solid fa-right-from-bracket"></i> Cambiar Cuenta
-                </button>
-                <button id="btn-reset-db" onclick="resetDatabase()" class="hidden flex-1 items-center justify-center gap-2 text-red-400 hover:text-white hover:bg-red-950 text-xs py-2.5 rounded border border-red-900/50 interactive-btn">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Reset Datos
                 </button>
             </div>
         </aside>
@@ -318,7 +315,7 @@
         </div>
     </div>
 
-    <!-- LOGICA DE AUTENTICACIÓN Y SINCRONIZACIÓN DE DISCORD CON NOMBRES IC -->
+    <!-- LOGICA DE AUTENTICACIÓN Y SINCRONIZACIÓN -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo",
@@ -416,7 +413,6 @@
                                 const userRoles = memberData.roles || [];
                                 const hasAnyRole = (roleArray) => roleArray.some(roleId => userRoles.includes(roleId));
 
-                                // Usar Nombre IC si existe, sino el usuario de Discord
                                 const displayName = matchedICName || userData.global_name || userData.username;
 
                                 if (hasAnyRole(ROLE_IDS_JEFES)) {
@@ -480,16 +476,13 @@
             
             const bReg = document.getElementById('btn-nav-registro'); 
             const bFin = document.getElementById('btn-nav-finanzas');
-            const bReset = document.getElementById('btn-reset-db');
             
             const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
 
             if (currentUser.role === 'JEFES') { 
                 bReg.classList.replace('hidden', 'flex'); 
-                bReset.classList.replace('hidden', 'flex'); 
             } else { 
                 bReg.classList.replace('flex', 'hidden'); 
-                bReset.classList.replace('flex', 'hidden'); 
             }
 
             // Ocultar Finanzas a miembros de Discord o invitados
