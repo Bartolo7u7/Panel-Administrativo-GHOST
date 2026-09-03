@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V32.0 (Secure & Fixed)</title>
+    <title>GHOST | Panel Administrativo V33.0 (Discord Role Sync)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -50,24 +50,24 @@
                 <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
             </div>
             <h2 class="text-2xl font-black text-white tracking-widest uppercase mb-1">GHOST CLOUD</h2>
-            <p class="text-xs text-zinc-400 mb-5 font-semibold">Panel Administrativo y de Control</p>
+            <p class="text-xs text-zinc-400 mb-5 font-semibold">Sincronización Automática con Discord</p>
             
             <div class="space-y-4 text-left">
-                <!-- 1. ACCESO PARA MIEMBROS CON DISCORD -->
+                <!-- 1. ACCESO GENERAL POR DISCORD (DETECTA RANGOS AUTOMÁTICAMENTE) -->
                 <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-center shadow-inner">
-                    <p class="text-[11px] text-zinc-400 mb-2 font-semibold">¿Eres miembro? Inicia sesión con Discord:</p>
+                    <p class="text-[11px] text-zinc-400 mb-2 font-semibold">Inicia sesión con tu cuenta de Discord:</p>
                     <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3 px-4 rounded-lg interactive-btn flex items-center justify-center gap-2 shadow-lg uppercase tracking-wider text-xs">
-                        <i class="fa-brands fa-discord text-base"></i> Discord OAuth
+                        <i class="fa-brands fa-discord text-base"></i> Autenticar con Discord
                     </button>
                 </div>
 
                 <div class="relative flex py-1 items-center">
                     <div class="flex-grow border-t border-zinc-800"></div>
-                    <span class="flex-shrink mx-4 text-zinc-500 text-[10px] uppercase font-bold">O ACCESO DIRECTIVO</span>
+                    <span class="flex-shrink mx-4 text-zinc-500 text-[10px] uppercase font-bold">O ACCESO ALTERNATIVO</span>
                     <div class="flex-grow border-t border-zinc-800"></div>
                 </div>
 
-                <!-- 2. ACCESO PARA JEFES / CÚPULA / MESA BLANCA -->
+                <!-- 2. ACCESO ALTERNATIVO DIRECTIVO (FIREBASE) -->
                 <form id="login-form" onsubmit="handleAuth(event)" class="space-y-3">
                     <div>
                         <label class="block text-[10px] uppercase font-bold text-zinc-400 mb-1">Rango Directivo</label>
@@ -102,7 +102,7 @@
                     
                     <p id="login-error" class="text-red-500 text-[10px] font-bold hidden text-center animate-pulse">Error.</p>
                     <button type="submit" id="btn-auth" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2.5 rounded-lg interactive-btn text-xs uppercase tracking-wider border border-zinc-700 shadow mt-1">
-                        Iniciar Sesión Directiva
+                        Iniciar Sesión Alternativa
                     </button>
                 </form>
 
@@ -364,7 +364,7 @@
         </div>
     </div>
 
-    <!-- LOGICA DE AUTENTICACIÓN DUAL Y PERMISOS -->
+    <!-- LOGICA DE AUTENTICACIÓN Y SINCRONIZACIÓN DE ROLES DE DISCORD -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo",
@@ -378,8 +378,14 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // ⚠️ REEMPLAZA AQUÍ TU CLIENT ID DE DISCORD DEVELOPER PORTAL
+        // ⚠️ CONFIGURACIÓN DE DISCORD
         const DISCORD_CLIENT_ID = "1544988442050560050";
+        const DISCORD_GUILD_ID = "1541892950571749396";
+
+        // IDs de tus roles en Discord (Usando arrays para múltiples roles)
+        const ROLE_IDS_JEFES = ["1542005912544350260"];
+        const ROLE_IDS_CUPULA = ["1542007539447763055", "1542006640876978257"];
+        const ROLE_IDS_MESABLANCA = ["1542008676577972365", "1542008472978329712"];
 
         let currentUser = null; 
         let members = []; let logs = []; let dbUnsubscribe = null;
@@ -492,14 +498,16 @@
             }
         }
 
-        // --- LOGIN CON DISCORD ---
+        // --- LOGIN CON DISCORD Y SINCRONIZACIÓN DE ROLES ---
         function loginWithDiscord() {
             if(DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ") {
                 alert("Configura tu Client ID real de Discord en el código.");
                 return;
             }
             const redirectUri = window.location.origin + window.location.pathname;
-            const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=identify`;
+            // Se añaden los scopes guilds y guilds.members.read para leer roles
+            const scopes = encodeURIComponent("identify guilds guilds.members.read");
+            const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scopes}`;
             window.location.href = discordAuthUrl;
         }
 
@@ -509,27 +517,66 @@
             initApp();
         }
 
-        // VERIFICAR SESIÓN AL CARGAR
-        window.addEventListener('DOMContentLoaded', () => {
+        // VERIFICAR SESIÓN Y SINCRONIZAR ROLES DE DISCORD AL CARGAR
+        window.addEventListener('DOMContentLoaded', async () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
 
             if (accessToken) {
                 window.history.replaceState({}, document.title, window.location.pathname);
-                fetch('https://discord.com/api/users/@me', {
-                    headers: { authorization: `Bearer ${accessToken}` }
-                })
-                .then(res => res.json())
-                .then(data => {
+                try {
+                    // 1. Obtener perfil básico del usuario
+                    const userRes = await fetch('https://discord.com/api/users/@me', {
+                        headers: { authorization: `Bearer ${accessToken}` }
+                    });
+                    const userData = await userRes.json();
+
+                    // 2. Obtener los roles del usuario en el servidor específico de Discord
+                    let assignedRole = 'Miembro';
+                    let specialTitle = null;
+
+                    if (DISCORD_GUILD_ID && DISCORD_GUILD_ID !== "TU_SERVER_ID_DE_DISCORD_AQUÍ") {
+                        try {
+                            const memberRes = await fetch(`https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
+                                headers: { authorization: `Bearer ${accessToken}` }
+                            });
+                            if (memberRes.ok) {
+                                const memberData = await memberRes.json();
+                                const userRoles = memberData.roles || [];
+
+                                // Función para comprobar si el usuario tiene al menos uno de los roles del array
+                                const hasAnyRole = (roleArray) => roleArray.some(roleId => userRoles.includes(roleId));
+
+                                // Asignar jerarquía según roles de Discord
+                                if (hasAnyRole(ROLE_IDS_JEFES)) {
+                                    assignedRole = 'JEFES';
+                                    specialTitle = `${userData.username} (Jefe)`;
+                                } else if (hasAnyRole(ROLE_IDS_CUPULA)) {
+                                    assignedRole = 'Cúpula Administrativa';
+                                    specialTitle = `${userData.username} (Cúpula Administrativa)`;
+                                } else if (hasAnyRole(ROLE_IDS_MESABLANCA)) {
+                                    assignedRole = 'La Mesa Blanca';
+                                    specialTitle = `${userData.username} (La Mesa Blanca)`;
+                                }
+                            }
+                        } catch (e) {
+                            console.warn("No se pudieron verificar los roles del servidor de Discord:", e);
+                        }
+                    }
+
                     currentUser = {
-                        username: data.username,
-                        role: 'Miembro',
+                        username: userData.username,
+                        role: assignedRole,
+                        specialTitle: specialTitle,
                         isGuest: false
                     };
+
                     localStorage.setItem('ghost_session', JSON.stringify(currentUser));
                     initApp();
-                })
-                .catch(() => alert("Error al verificar Discord."));
+                } catch (err) {
+                    console.error("Error al autenticar con Discord:", err);
+                    alert("No se pudo verificar la cuenta de Discord.");
+                }
             } else {
                 const saved = localStorage.getItem('ghost_session');
                 if (saved) {
@@ -598,7 +645,7 @@
                 bReset.classList.replace('flex', 'hidden'); 
             }
 
-            // Ocultar Finanzas a miembros de Discord o invitados
+            // Ocultar Finanzas a miembros rasos o invitados
             if (!isLeadership) {
                 bFin.classList.replace('flex', 'hidden');
                 bFin.classList.add('hidden');
@@ -757,8 +804,6 @@
                 alert("No tienes permisos para ver las finanzas.");
                 return;
             }
-            if(view === 'finanzas' && currentUser.isGuest) return alert("Inicia sesión para ver las finanzas.");
-            
             ['miembros','finanzas','registro'].forEach(v => { 
                 const el = document.getElementById(`view-${v}`);
                 if(el) {
@@ -816,8 +861,6 @@
             const map = { "Nuevo": { label: "Nuevo", color: "bg-teal-950 text-teal-300" }, "Pendiente": { label: "Pendiente", color: "bg-red-950 text-red-400" }, "Efectivo": { label: `$${Math.round(150000*m).toLocaleString('es')}`, color: "bg-emerald-950 text-emerald-300" }, "Coca": { label: `${Math.round(1500*m)} Coca`, color: "bg-lime-950 text-lime-300" }, "SNS": { label: `${Math.ceil(5*m)} SNS`, color: "bg-cyan-950 text-cyan-300" }, "Vintage": { label: `${Math.ceil(4*m)} Vintage`, color: "bg-blue-950 text-blue-300" }, "9mm": { label: `${Math.ceil(3*m)} 9mm`, color: "bg-indigo-950 text-indigo-300" }, "MiniSMG": { label: `${Math.ceil(1*m)} MiniSMG+$${Math.round(30000*m)/1000}k`, color: "bg-purple-950 text-purple-300" }, "TEC9": { label: `${Math.ceil(1*m)} TEC9+$${Math.round(10000*m)/1000}k`, color: "bg-fuchsia-950 text-fuchsia-300" }, "MicroSMG": { label: `${Math.ceil(1*m)} MicroSMG`, color: "bg-rose-950 text-rose-300" }, "Chalecos": { label: `${Math.ceil(11*m)} Chalecos`, color: "bg-amber-950 text-amber-300" }, "Pagado": { label: "Pagado", color: "bg-emerald-950 text-emerald-300" } };
             return map[k]||map["Pendiente"];
         }
-
-        // --- CORRECCIÓN DE FALTAS (TEXTO LEGIBLE) ---
         function formatStrikes(p) {
             if(p >= 108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>';
             if(!p) return '<span class="text-zinc-500">0 Faltas</span>';
@@ -831,7 +874,6 @@
             if(ll) pt.push(`<span class="text-zinc-300">${ll} Llamado${ll > 1 ? 's' : ''}</span>`);
             return pt.join(' • ');
         }
-
         function addStrike(a) { let el = document.getElementById('f-strikes'); el.value = parseInt(el.value)+a; document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(el.value)); }
         function clearStrikes() { document.getElementById('f-strikes').value = 0; document.getElementById('strike-preview').innerHTML = '0 Faltas'; }
         function addExtraWeek() { let e = document.getElementById('f-extra'); e.value = parseInt(e.value)+1; }
