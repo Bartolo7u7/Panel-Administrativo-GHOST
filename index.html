@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V37.0</title>
+    <title>GHOST | Panel Administrativo V39.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -86,8 +86,11 @@
             </div>
 
             <nav class="flex-row md:flex-col flex flex-1 p-2 md:p-4 gap-2 overflow-x-auto md:overflow-x-visible">
-                <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-zinc-800 text-white px-4 py-3 rounded-lg font-semibold border border-zinc-700 shadow-sm text-sm interactive-btn">
-                    <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline" id="nav-label-miembros">Miembros</span>
+                <button onclick="switchView('mi-estado')" id="btn-nav-mi-estado" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-zinc-800 text-white px-4 py-3 rounded-lg font-semibold border border-zinc-700 shadow-sm text-sm interactive-btn">
+                    <i class="fa-solid fa-id-card text-zinc-400"></i> <span class="hidden md:inline">Mi Estado</span>
+                </button>
+                <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
+                    <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline">Miembros</span>
                 </button>
                 <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
                     <i class="fa-solid fa-money-bill-wave text-zinc-400"></i> <span class="hidden md:inline">Finanzas</span>
@@ -107,103 +110,98 @@
         <!-- CONTENIDO PRINCIPAL -->
         <main class="flex-1 flex flex-col overflow-y-auto relative bg-zinc-950">
             
-            <!-- VISTA: MIEMBROS / PORTAL PERSONAL -->
-            <div id="view-miembros" class="block h-full flex flex-col animate-view">
-                
-                <!-- A) CONTENIDO PARA ALTOS MANDOS (TABLA GENERAL Y STATS) -->
-                <div id="leadership-content" class="flex-1 flex flex-col hidden">
-                    <header class="p-4 md:p-8 pb-4">
-                        <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
-                            <span class="inline-block w-2 h-6 bg-white transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
-                        </h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-                            <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                                <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Total Miembros</div>
-                                <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
-                                <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-users"></i></div>
-                            </div>
-                            <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                                <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Cuotas Atrasadas</div>
-                                <div id="stat-pending" class="text-3xl md:text-4xl font-black text-red-500">0</div>
-                                <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-clock"></i></div>
-                            </div>
-                            <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                                <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación Total (Eq.)</div>
-                                <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
-                                <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-vault"></i></div>
-                            </div>
-                        </div>
-                    </header>
-
-                    <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
-                        <div class="bg-zinc-900 rounded-xl border border-zinc-800 shadow-lg flex-1 flex flex-col overflow-hidden">
-                            <div class="p-4 border-b border-zinc-800 flex flex-wrap gap-3 justify-between items-center bg-zinc-900/50">
-                                <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
-                                    <div class="relative w-full md:w-auto">
-                                        <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
-                                        <input type="text" id="search-input" placeholder="Buscar nombre o Discord..." class="bg-black border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full md:w-64 interactive-input">
-                                    </div>
-                                    <select id="rank-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
-                                        <option value="">Rango (Todos)</option>
-                                        <option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option>
-                                        <option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option>
-                                        <option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option>
-                                        <option>Líder de Operativa Antrax</option><option>Operativa Antrax</option>
-                                        <option>Líder de Dealers</option><option>Dealers</option>
-                                        <option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
-                                    </select>
-                                    <select id="strike-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
-                                        <option value="">Faltas (Todas)</option>
-                                        <option value="clean">Sin Faltas</option>
-                                        <option value="has_strikes">Con Faltas</option>
-                                    </select>
-                                </div>
-                                <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
-                                    <button onclick="exportToCSV()" class="flex-1 md:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow">
-                                        <i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar
-                                    </button>
-                                    <button onclick="openModal()" class="flex-1 md:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md">
-                                        <i class="fa-solid fa-user-plus"></i> Añadir
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="overflow-x-auto flex-1 w-full bg-zinc-950">
-                                <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
-                                    <thead class="text-xs text-zinc-300 uppercase bg-zinc-900 border-b border-zinc-800 sticky top-0">
-                                        <tr>
-                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
-                                            <th class="px-6 py-4">Discord</th>
-                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
-                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
-                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('strikes')">Faltas <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-strikes"></i></th>
-                                            <th class="px-6 py-4 text-right">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="table-body">
-                                        <!-- Generado por JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- B) PORTAL PERSONAL PARA MIEMBROS RASOS -->
-                <div id="member-portal-content" class="flex-1 flex flex-col p-6 md:p-12 items-center justify-center hidden">
-                    <div class="max-w-xl w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-2xl animate-modal text-center">
-                        <div class="w-20 h-20 bg-zinc-950 border-2 border-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-emerald-400 text-3xl font-black">
-                            <i class="fa-solid fa-user-shield"></i>
-                        </div>
-                        <h2 class="text-2xl font-black text-white uppercase tracking-wider mb-1" id="portal-name">Cargando...</h2>
-                        <p class="text-xs text-zinc-400 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
-                        
-                        <div id="portal-data-container" class="space-y-4 text-left bg-zinc-950 p-5 rounded-xl border border-zinc-800 shadow-inner">
-                            <!-- Inyectado dinámicamente -->
-                        </div>
+            <!-- VISTA: MI ESTADO (PORTAL PERSONAL) -->
+            <div id="view-mi-estado" class="hidden h-full flex flex-col p-6 md:p-12 items-center justify-center animate-view overflow-y-auto">
+                <div class="max-w-xl w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-2xl animate-modal text-center">
+                    <div class="w-20 h-20 bg-zinc-950 border-2 border-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-emerald-400 text-3xl font-black">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <h2 class="text-2xl font-black text-white uppercase tracking-wider mb-1" id="portal-name">Cargando...</h2>
+                    <p class="text-xs text-zinc-400 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
+                    
+                    <div id="portal-data-container" class="space-y-4 text-left bg-zinc-950 p-5 rounded-xl border border-zinc-800 shadow-inner">
+                        <!-- Inyectado dinámicamente -->
                     </div>
                 </div>
+            </div>
 
+            <!-- VISTA: MIEMBROS (TABLA GENERAL) -->
+            <div id="view-miembros" class="hidden h-full flex flex-col animate-view">
+                <header class="p-4 md:p-8 pb-4">
+                    <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
+                        <span class="inline-block w-2 h-6 bg-white transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Total Miembros</div>
+                            <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
+                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-users"></i></div>
+                        </div>
+                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Cuotas Atrasadas</div>
+                            <div id="stat-pending" class="text-3xl md:text-4xl font-black text-red-500">0</div>
+                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-clock"></i></div>
+                        </div>
+                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación Total (Eq.)</div>
+                            <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
+                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-vault"></i></div>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
+                    <div class="bg-zinc-900 rounded-xl border border-zinc-800 shadow-lg flex-1 flex flex-col overflow-hidden">
+                        <div class="p-4 border-b border-zinc-800 flex flex-wrap gap-3 justify-between items-center bg-zinc-900/50">
+                            <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                                <div class="relative w-full md:w-auto">
+                                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
+                                    <input type="text" id="search-input" placeholder="Buscar nombre o Discord..." class="bg-black border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full md:w-64 interactive-input">
+                                </div>
+                                <select id="rank-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
+                                    <option value="">Rango (Todos)</option>
+                                    <option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option>
+                                    <option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option>
+                                    <option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option>
+                                    <option>Líder de Operativa Antrax</option><option>Operativa Antrax</option>
+                                    <option>Líder de Dealers</option><option>Dealers</option>
+                                    <option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
+                                </select>
+                                <select id="strike-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
+                                    <option value="">Faltas (Todas)</option>
+                                    <option value="clean">Sin Faltas</option>
+                                    <option value="has_strikes">Con Faltas</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+                                <button onclick="exportToCSV()" class="flex-1 md:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow">
+                                    <i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar
+                                </button>
+                                <button onclick="openModal()" class="flex-1 md:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md">
+                                    <i class="fa-solid fa-user-plus"></i> Añadir
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto flex-1 w-full bg-zinc-950">
+                            <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
+                                <thead class="text-xs text-zinc-300 uppercase bg-zinc-900 border-b border-zinc-800 sticky top-0">
+                                    <tr>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
+                                        <th class="px-6 py-4">Discord</th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('strikes')">Faltas <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-strikes"></i></th>
+                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <!-- Generado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </div>
 
             <!-- VISTA: FINANZAS -->
@@ -460,17 +458,16 @@
                     };
 
                     localStorage.setItem('ghost_session', JSON.stringify(currentUser));
-                    initApp();
+                    initApp(true);
                 } catch (err) {
                     console.error("Error al autenticar con Discord:", err);
                     alert("No se pudo verificar la cuenta de Discord.");
                 }
             } else {
-                // Recuperar sesión persistente de localStorage sin pedir nuevo login
                 const saved = localStorage.getItem('ghost_session');
                 if (saved) {
                     currentUser = JSON.parse(saved);
-                    initApp();
+                    initApp(false);
                 } else {
                     document.getElementById('loginModal').classList.remove('hidden');
                 }
@@ -482,10 +479,10 @@
             location.reload();
         }
 
-        function initApp() {
+        function initApp(isFreshLogin = false) {
             document.getElementById('loginModal').classList.add('hidden');
             applyPermissions();
-            loadDatabase();
+            loadDatabase(isFreshLogin);
         }
 
         function applyPermissions() {
@@ -497,8 +494,6 @@
             
             const bReg = document.getElementById('btn-nav-registro'); 
             const bFin = document.getElementById('btn-nav-finanzas');
-            const navLabelMiembros = document.getElementById('nav-label-miembros');
-            
             const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
 
             if (currentUser.role === 'JEFES') { 
@@ -507,14 +502,12 @@
                 bReg.classList.replace('flex', 'hidden'); 
             }
 
-            // Ocultar Finanzas a miembros rasos o invitados
-            if (!isLeadership) {
+            // Permitir acceso a Finanzas a todos los usuarios logueados (excepto invitados)
+            if (currentUser.isGuest) {
                 bFin.classList.replace('flex', 'hidden');
                 bFin.classList.add('hidden');
-                navLabelMiembros.innerText = "Mi Estado";
             } else {
                 bFin.classList.replace('hidden', 'flex');
-                navLabelMiembros.innerText = "Miembros";
             }
         }
 
@@ -530,7 +523,7 @@
             return true;
         }
 
-        function loadDatabase() {
+        function loadDatabase(isFreshLogin = false) {
             dbUnsubscribe = db.collection("ghost_data").doc("main_state").onSnapshot((doc) => {
                 if (doc.exists) {
                     const data = doc.data(); members = data.members || []; logs = data.logs || [];
@@ -539,6 +532,16 @@
                     db.collection("ghost_data").doc("main_state").set({ members, logs });
                 }
                 renderDashboard(); renderFinanzas(); renderRegistro();
+
+                // Si es un nuevo login y es miembro raso, abrir por defecto en "Mi Estado"
+                if (isFreshLogin) {
+                    const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+                    if (!isLeadership && !currentUser.isGuest) {
+                        switchView('mi-estado');
+                    } else {
+                        switchView('miembros');
+                    }
+                }
             });
         }
 
@@ -585,26 +588,15 @@
         }
 
         function renderDashboard() {
-            const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-            const leadershipCont = document.getElementById('leadership-content');
-            const memberPortalCont = document.getElementById('member-portal-content');
-
-            if (currentUser.isGuest || isLeadership) {
-                leadershipCont.classList.remove('hidden');
-                memberPortalCont.classList.add('hidden');
-                renderLeadershipTable();
-            } else {
-                leadershipCont.classList.add('hidden');
-                memberPortalCont.classList.remove('hidden');
-                renderMemberPortal();
-            }
+            renderLeadershipTable();
+            renderMemberPortal();
         }
 
         function renderLeadershipTable() {
-            const tbody = document.getElementById('table-body'); tbody.innerHTML = ''; 
-            const term = document.getElementById('search-input').value.toLowerCase();
-            const rFilter = document.getElementById('rank-filter').value;
-            const sFilter = document.getElementById('strike-filter').value;
+            const tbody = document.getElementById('table-body'); if(!tbody) return; tbody.innerHTML = ''; 
+            const term = document.getElementById('search-input')?.value.toLowerCase() || '';
+            const rFilter = document.getElementById('rank-filter')?.value || '';
+            const sFilter = document.getElementById('strike-filter')?.value || '';
 
             let filtered = members.filter(m => {
                 const mSearch = m.name.toLowerCase().includes(term) || m.discord.toLowerCase().includes(term);
@@ -625,7 +617,8 @@
                 return 0;
             });
 
-            document.getElementById('stat-total').innerText = members.length;
+            const statTotal = document.getElementById('stat-total');
+            if(statTotal) statTotal.innerText = members.length;
             
             let atrasados = 0; let totalMoney = 0;
             members.forEach(m => {
@@ -633,7 +626,10 @@
                 if (info.status === 'Pendiente' || info.status === 'Atrasado') atrasados++;
                 if (info.status === 'Al día' && m.discount !== 'Exonerado') totalMoney += 150000 * getDiscountMultiplier(m.discount);
             });
-            document.getElementById('stat-pending').innerText = atrasados; document.getElementById('stat-money').innerText = "$" + Math.round(totalMoney).toLocaleString('es-ES');
+            const statPending = document.getElementById('stat-pending');
+            const statMoney = document.getElementById('stat-money');
+            if(statPending) statPending.innerText = atrasados; 
+            if(statMoney) statMoney.innerText = "$" + Math.round(totalMoney).toLocaleString('es-ES');
 
             filtered.forEach(m => {
                 const rStyle = RANK_STYLES[m.rank] || "bg-slate-900 text-slate-300 border-slate-700";
@@ -659,8 +655,8 @@
                     strikesHtml = formatStrikes(m.strikes);
                 }
 
-                const canManage = !currentUser.isGuest && ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-                const actionsHtml = canManage ? `
+                const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+                const actionsHtml = (!currentUser.isGuest && isLeadership) ? `
                     <button onclick="openModal(${m.id})" class="text-zinc-400 hover:text-white transition-all transform hover:scale-125 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button onclick="deleteMember(${m.id})" class="text-red-500 hover:text-red-400 transition-all transform hover:scale-125"><i class="fa-solid fa-trash"></i></button>
                 ` : '<span class="text-zinc-600 text-xs">Lectura</span>';
@@ -681,6 +677,7 @@
             const portalName = document.getElementById('portal-name');
             const portalDiscord = document.getElementById('portal-discord');
             const portalData = document.getElementById('portal-data-container');
+            if(!portalName) return;
 
             portalDiscord.innerText = "@" + currentUser.username;
             
@@ -735,12 +732,11 @@
         }
 
         function switchView(view) {
-            const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-            if(view === 'finanzas' && (!isLeadership || currentUser.isGuest)) {
-                alert("No tienes permisos para ver las finanzas.");
+            if(view === 'finanzas' && currentUser.isGuest) {
+                alert("Los invitados no tienen acceso a las finanzas.");
                 return;
             }
-            ['miembros','finanzas','registro'].forEach(v => { 
+            ['mi-estado','miembros','finanzas','registro'].forEach(v => { 
                 const el = document.getElementById(`view-${v}`);
                 if(el) {
                     el.classList.add('hidden'); 
@@ -850,7 +846,7 @@
             });
             document.getElementById('fin-efectivo').innerText = "$" + Math.round(cash).toLocaleString('es-ES'); document.getElementById('fin-coca').innerText = coca.toLocaleString('es-ES'); document.getElementById('fin-sns').innerText = sns; document.getElementById('fin-vintage').innerText = vintage; document.getElementById('fin-9mm').innerText = mm9; document.getElementById('fin-minismg').innerText = minismg; document.getElementById('fin-tec9').innerText = tec9; document.getElementById('fin-microsmg').innerText = microsmg; document.getElementById('fin-chalecos').innerText = chalecos;
         }
-        function renderRegistro() { const tbody = document.getElementById('logs-table-body'); tbody.innerHTML = ''; logs.forEach(l => { tbody.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400">${l.date}</td><td class="px-6 py-4 font-bold text-white">${l.role}</td><td class="px-6 py-4 text-zinc-300">${l.action}</td></tr>`; }); }
+        function renderRegistro() { const tbody = document.getElementById('logs-table-body'); if(!tbody) return; tbody.innerHTML = ''; logs.forEach(l => { tbody.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400">${l.date}</td><td class="px-6 py-4 font-bold text-white">${l.role}</td><td class="px-6 py-4 text-zinc-300">${l.action}</td></tr>`; }); }
         function formatDateTime() { const d=new Date(); return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
         function formatDate(dt) { if(!dt) return 'N/A'; const p=dt.split('T')[0].split('-'); return `${p[2]}/${p[1]}/${p[0].slice(-2)}`; }
         
