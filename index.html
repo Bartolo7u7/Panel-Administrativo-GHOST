@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo</title>
+    <title>GHOST | Panel Administrativo V41.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -92,7 +92,7 @@
                 <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
                     <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline">Miembros</span>
                 </button>
-                <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
+                <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
                     <i class="fa-solid fa-money-bill-wave text-zinc-400"></i> <span class="hidden md:inline">Finanzas</span>
                 </button>
                 <button onclick="switchView('registro')" id="btn-nav-registro" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
@@ -111,7 +111,7 @@
         <main class="flex-1 flex flex-col overflow-y-auto relative bg-zinc-950">
             
             <!-- VISTA: MI ESTADO (PORTAL PERSONAL) -->
-            <div id="view-mi-estado" class="hidden h-full flex flex-col p-6 md:p-12 items-center justify-center animate-view overflow-y-auto">
+            <div id="view-mi-estado" class="hidden h-full flex flex-col p-6 md:p-12 items-center justify-center overflow-y-auto">
                 <div class="max-w-xl w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-2xl animate-modal text-center">
                     <div class="w-20 h-20 bg-zinc-950 border-2 border-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-emerald-400 text-3xl font-black">
                         <i class="fa-solid fa-user-shield"></i>
@@ -126,7 +126,7 @@
             </div>
 
             <!-- VISTA: MIEMBROS (TABLA GENERAL) -->
-            <div id="view-miembros" class="hidden h-full flex flex-col animate-view">
+            <div id="view-miembros" class="hidden h-full flex flex-col">
                 <header class="p-4 md:p-8 pb-4">
                     <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
                         <span class="inline-block w-2 h-6 bg-white transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
@@ -358,6 +358,7 @@
         let currentUser = null; 
         let members = []; let logs = []; let dbUnsubscribe = null;
         let sortCol = 'name'; let sortAsc = true;
+        let isFirstLoad = true; // Controla la carga inicial de las vistas
 
         // --- LOGIN CON DISCORD ---
         function loginWithDiscord() {
@@ -458,7 +459,7 @@
                     };
 
                     localStorage.setItem('ghost_session', JSON.stringify(currentUser));
-                    initApp(true);
+                    initApp();
                 } catch (err) {
                     console.error("Error al autenticar con Discord:", err);
                     alert("No se pudo verificar la cuenta de Discord.");
@@ -467,7 +468,7 @@
                 const saved = localStorage.getItem('ghost_session');
                 if (saved) {
                     currentUser = JSON.parse(saved);
-                    initApp(false);
+                    initApp();
                 } else {
                     document.getElementById('loginModal').classList.remove('hidden');
                 }
@@ -479,10 +480,10 @@
             location.reload();
         }
 
-        function initApp(isFreshLogin = false) {
+        function initApp() {
             document.getElementById('loginModal').classList.add('hidden');
             applyPermissions();
-            loadDatabase(isFreshLogin);
+            loadDatabase();
         }
 
         function applyPermissions() {
@@ -518,7 +519,7 @@
             return true;
         }
 
-        function loadDatabase(isFreshLogin = false) {
+        function loadDatabase() {
             dbUnsubscribe = db.collection("ghost_data").doc("main_state").onSnapshot((doc) => {
                 if (doc.exists) {
                     const data = doc.data(); members = data.members || []; logs = data.logs || [];
@@ -526,15 +527,20 @@
                     members = []; logs = [];
                     db.collection("ghost_data").doc("main_state").set({ members, logs });
                 }
-                renderDashboard(); renderFinanzas(); renderRegistro();
+                
+                renderDashboard(); 
+                renderFinanzas(); 
+                renderRegistro();
 
-                if (isFreshLogin) {
+                // SOLUCIÓN AL BUG: Cargar vista por defecto la primera vez tras descargar datos (sea refresco o nuevo login)
+                if (isFirstLoad) {
                     const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
                     if (!isLeadership && !currentUser.isGuest) {
                         switchView('mi-estado');
                     } else {
                         switchView('miembros');
                     }
+                    isFirstLoad = false;
                 }
             });
         }
@@ -739,6 +745,9 @@
                 if(el) {
                     el.classList.add('hidden'); 
                     el.classList.remove('animate-view');
+                    // Restaurar clases base (flex o block) en función de la vista
+                    if(v === 'mi-estado') el.classList.remove('flex');
+                    if(v === 'miembros') el.classList.remove('flex');
                 }
                 const btnNav = document.getElementById(`btn-nav-${v}`);
                 if(btnNav) btnNav.classList.remove('bg-zinc-800','text-white'); 
@@ -747,6 +756,11 @@
             const targetView = document.getElementById(`view-${view}`);
             if(targetView) {
                 targetView.classList.remove('hidden');
+                
+                // Asegurarse de que el contenedor de flex funcione correctamente después de quitar el hidden
+                if(view === 'mi-estado') targetView.classList.add('flex');
+                if(view === 'miembros') targetView.classList.add('flex');
+
                 void targetView.offsetWidth; 
                 targetView.classList.add('animate-view');
             }
