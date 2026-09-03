@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V36.0</title>
+    <title>GHOST | Panel Administrativo V37.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -87,7 +87,7 @@
 
             <nav class="flex-row md:flex-col flex flex-1 p-2 md:p-4 gap-2 overflow-x-auto md:overflow-x-visible">
                 <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-zinc-800 text-white px-4 py-3 rounded-lg font-semibold border border-zinc-700 shadow-sm text-sm interactive-btn">
-                    <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline">Miembros</span>
+                    <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline" id="nav-label-miembros">Miembros</span>
                 </button>
                 <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
                     <i class="fa-solid fa-money-bill-wave text-zinc-400"></i> <span class="hidden md:inline">Finanzas</span>
@@ -107,83 +107,103 @@
         <!-- CONTENIDO PRINCIPAL -->
         <main class="flex-1 flex flex-col overflow-y-auto relative bg-zinc-950">
             
-            <!-- VISTA: MIEMBROS -->
+            <!-- VISTA: MIEMBROS / PORTAL PERSONAL -->
             <div id="view-miembros" class="block h-full flex flex-col animate-view">
-                <header class="p-4 md:p-8 pb-4">
-                    <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
-                        <span class="inline-block w-2 h-6 bg-white transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
-                    </h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Total Miembros</div>
-                            <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
-                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-users"></i></div>
+                
+                <!-- A) CONTENIDO PARA ALTOS MANDOS (TABLA GENERAL Y STATS) -->
+                <div id="leadership-content" class="flex-1 flex flex-col hidden">
+                    <header class="p-4 md:p-8 pb-4">
+                        <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
+                            <span class="inline-block w-2 h-6 bg-white transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                            <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                                <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Total Miembros</div>
+                                <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
+                                <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-users"></i></div>
+                            </div>
+                            <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                                <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Cuotas Atrasadas</div>
+                                <div id="stat-pending" class="text-3xl md:text-4xl font-black text-red-500">0</div>
+                                <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-clock"></i></div>
+                            </div>
+                            <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                                <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación Total (Eq.)</div>
+                                <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
+                                <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-vault"></i></div>
+                            </div>
                         </div>
-                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Cuotas Atrasadas</div>
-                            <div id="stat-pending" class="text-3xl md:text-4xl font-black text-red-500">0</div>
-                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-clock"></i></div>
-                        </div>
-                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación Total (Eq.)</div>
-                            <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
-                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-vault"></i></div>
-                        </div>
-                    </div>
-                </header>
+                    </header>
 
-                <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
-                    <div class="bg-zinc-900 rounded-xl border border-zinc-800 shadow-lg flex-1 flex flex-col overflow-hidden">
-                        <div class="p-4 border-b border-zinc-800 flex flex-wrap gap-3 justify-between items-center bg-zinc-900/50">
-                            <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
-                                <div class="relative w-full md:w-auto">
-                                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
-                                    <input type="text" id="search-input" placeholder="Buscar nombre o Discord..." class="bg-black border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full md:w-64 interactive-input">
+                    <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
+                        <div class="bg-zinc-900 rounded-xl border border-zinc-800 shadow-lg flex-1 flex flex-col overflow-hidden">
+                            <div class="p-4 border-b border-zinc-800 flex flex-wrap gap-3 justify-between items-center bg-zinc-900/50">
+                                <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                                    <div class="relative w-full md:w-auto">
+                                        <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
+                                        <input type="text" id="search-input" placeholder="Buscar nombre o Discord..." class="bg-black border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full md:w-64 interactive-input">
+                                    </div>
+                                    <select id="rank-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
+                                        <option value="">Rango (Todos)</option>
+                                        <option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option>
+                                        <option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option>
+                                        <option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option>
+                                        <option>Líder de Operativa Antrax</option><option>Operativa Antrax</option>
+                                        <option>Líder de Dealers</option><option>Dealers</option>
+                                        <option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
+                                    </select>
+                                    <select id="strike-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
+                                        <option value="">Faltas (Todas)</option>
+                                        <option value="clean">Sin Faltas</option>
+                                        <option value="has_strikes">Con Faltas</option>
+                                    </select>
                                 </div>
-                                <select id="rank-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
-                                    <option value="">Rango (Todos)</option>
-                                    <option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option>
-                                    <option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option>
-                                    <option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option>
-                                    <option>Líder de Operativa Antrax</option><option>Operativa Antrax</option>
-                                    <option>Líder de Dealers</option><option>Dealers</option>
-                                    <option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
-                                </select>
-                                <select id="strike-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
-                                    <option value="">Faltas (Todas)</option>
-                                    <option value="clean">Sin Faltas</option>
-                                    <option value="has_strikes">Con Faltas</option>
-                                </select>
+                                <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+                                    <button onclick="exportToCSV()" class="flex-1 md:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow">
+                                        <i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar
+                                    </button>
+                                    <button onclick="openModal()" class="flex-1 md:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md">
+                                        <i class="fa-solid fa-user-plus"></i> Añadir
+                                    </button>
+                                </div>
                             </div>
-                            <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
-                                <button onclick="exportToCSV()" class="flex-1 md:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow">
-                                    <i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar
-                                </button>
-                                <button onclick="openModal()" class="flex-1 md:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md">
-                                    <i class="fa-solid fa-user-plus"></i> Añadir
-                                </button>
+                            
+                            <div class="overflow-x-auto flex-1 w-full bg-zinc-950">
+                                <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
+                                    <thead class="text-xs text-zinc-300 uppercase bg-zinc-900 border-b border-zinc-800 sticky top-0">
+                                        <tr>
+                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
+                                            <th class="px-6 py-4">Discord</th>
+                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
+                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
+                                            <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('strikes')">Faltas <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-strikes"></i></th>
+                                            <th class="px-6 py-4 text-right">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body">
+                                        <!-- Generado por JS -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                    </section>
+                </div>
+
+                <!-- B) PORTAL PERSONAL PARA MIEMBROS RASOS -->
+                <div id="member-portal-content" class="flex-1 flex flex-col p-6 md:p-12 items-center justify-center hidden">
+                    <div class="max-w-xl w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-2xl animate-modal text-center">
+                        <div class="w-20 h-20 bg-zinc-950 border-2 border-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-emerald-400 text-3xl font-black">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-white uppercase tracking-wider mb-1" id="portal-name">Cargando...</h2>
+                        <p class="text-xs text-zinc-400 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
                         
-                        <div class="overflow-x-auto flex-1 w-full bg-zinc-950">
-                            <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
-                                <thead class="text-xs text-zinc-300 uppercase bg-zinc-900 border-b border-zinc-800 sticky top-0">
-                                    <tr>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
-                                        <th class="px-6 py-4">Discord</th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('strikes')">Faltas <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-strikes"></i></th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-body">
-                                    <!-- Generado por JS -->
-                                </tbody>
-                            </table>
+                        <div id="portal-data-container" class="space-y-4 text-left bg-zinc-950 p-5 rounded-xl border border-zinc-800 shadow-inner">
+                            <!-- Inyectado dinámicamente -->
                         </div>
                     </div>
-                </section>
+                </div>
+
             </div>
 
             <!-- VISTA: FINANZAS -->
@@ -359,7 +379,7 @@
             initApp();
         }
 
-        // VERIFICAR SESIÓN Y SINCRONIZAR AL CARGAR LA PÁGINA
+        // VERIFICAR SESIÓN Y SINCRONIZAR AL CARGAR LA PÁGINA (PERSISTENTE)
         window.addEventListener('DOMContentLoaded', async () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
@@ -375,7 +395,7 @@
                     const discordTag = (userData.username || "").toLowerCase().trim();
                     const globalName = (userData.global_name || "").toLowerCase().trim();
 
-                    // 2. BUSCAR COINCIDENCIA DE NOMBRE IC EN FIRESTORE PRIMERO
+                    // 2. BUSCAR COINCIDENCIA DE NOMBRE IC EN FIRESTORE
                     let matchedICName = null;
                     try {
                         const mainStateDoc = await db.collection('ghost_data').doc('main_state').get();
@@ -446,6 +466,7 @@
                     alert("No se pudo verificar la cuenta de Discord.");
                 }
             } else {
+                // Recuperar sesión persistente de localStorage sin pedir nuevo login
                 const saved = localStorage.getItem('ghost_session');
                 if (saved) {
                     currentUser = JSON.parse(saved);
@@ -476,6 +497,7 @@
             
             const bReg = document.getElementById('btn-nav-registro'); 
             const bFin = document.getElementById('btn-nav-finanzas');
+            const navLabelMiembros = document.getElementById('nav-label-miembros');
             
             const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
 
@@ -485,12 +507,14 @@
                 bReg.classList.replace('flex', 'hidden'); 
             }
 
-            // Ocultar Finanzas a miembros de Discord o invitados
+            // Ocultar Finanzas a miembros rasos o invitados
             if (!isLeadership) {
                 bFin.classList.replace('flex', 'hidden');
                 bFin.classList.add('hidden');
+                navLabelMiembros.innerText = "Mi Estado";
             } else {
                 bFin.classList.replace('hidden', 'flex');
+                navLabelMiembros.innerText = "Miembros";
             }
         }
 
@@ -561,6 +585,22 @@
         }
 
         function renderDashboard() {
+            const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+            const leadershipCont = document.getElementById('leadership-content');
+            const memberPortalCont = document.getElementById('member-portal-content');
+
+            if (currentUser.isGuest || isLeadership) {
+                leadershipCont.classList.remove('hidden');
+                memberPortalCont.classList.add('hidden');
+                renderLeadershipTable();
+            } else {
+                leadershipCont.classList.add('hidden');
+                memberPortalCont.classList.remove('hidden');
+                renderMemberPortal();
+            }
+        }
+
+        function renderLeadershipTable() {
             const tbody = document.getElementById('table-body'); tbody.innerHTML = ''; 
             const term = document.getElementById('search-input').value.toLowerCase();
             const rFilter = document.getElementById('rank-filter').value;
@@ -616,14 +656,7 @@
                         <span class="inline-block py-0.5 px-2 rounded text-[10px] font-bold border ${qInfo.color}">${qInfo.text}</span>
                     `;
 
-                    const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-                    const isOwnRecord = m.discord.toLowerCase().includes(currentUser.username.toLowerCase()) || (currentUser.icName && m.name.toLowerCase() === currentUser.icName.toLowerCase());
-
-                    if (isLeadership || isOwnRecord) {
-                        strikesHtml = formatStrikes(m.strikes);
-                    } else {
-                        strikesHtml = '<span class="text-zinc-500 text-xs italic"><i class="fa-solid fa-lock"></i> Solo visible para el titular</span>';
-                    }
+                    strikesHtml = formatStrikes(m.strikes);
                 }
 
                 const canManage = !currentUser.isGuest && ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
@@ -642,6 +675,63 @@
                         <td class="px-6 py-4 text-right whitespace-nowrap">${actionsHtml}</td>
                     </tr>`;
             });
+        }
+
+        function renderMemberPortal() {
+            const portalName = document.getElementById('portal-name');
+            const portalDiscord = document.getElementById('portal-discord');
+            const portalData = document.getElementById('portal-data-container');
+
+            portalDiscord.innerText = "@" + currentUser.username;
+            
+            const found = members.find(m => {
+                const mDisc = (m.discord || "").toLowerCase().replace('@', '').trim();
+                const uTag = currentUser.username.toLowerCase();
+                const ic = (currentUser.icName || "").toLowerCase();
+                return mDisc === uTag || m.name.toLowerCase() === ic;
+            });
+
+            if (!found) {
+                portalName.innerText = currentUser.icName || currentUser.username;
+                portalData.innerHTML = `
+                    <div class="text-center py-6">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3"></i>
+                        <p class="text-sm text-zinc-300 font-bold mb-1">Perfil no vinculado o no registrado</p>
+                        <p class="text-xs text-zinc-500">Tu cuenta de Discord está conectada correctamente, pero aún no tienes un registro de miembro creado en el sistema. Contacta a un superior para que te dé de alta.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            portalName.innerText = found.name;
+            const rStyle = RANK_STYLES[found.rank] || "bg-slate-900 text-slate-300 border-slate-700";
+            const qInfo = calculateQuotaStatus(found.payment, found.lastPaymentDate, found.extraWeeks, found.discount);
+            const payInfo = getPaymentInfo(found.payment || "Pendiente", found.discount || '0');
+            const descText = found.discount && found.discount !== '0' ? found.discount : 'Ninguno';
+            const strikesText = formatStrikes(found.strikes || 0);
+
+            portalData.innerHTML = `
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                    <span class="text-xs uppercase font-bold text-zinc-400">Rango / Jerarquía</span>
+                    <span class="py-1 px-3 rounded text-xs border font-semibold ${rStyle}">${found.rank}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                    <span class="text-xs uppercase font-bold text-zinc-400">Método de Pago</span>
+                    <span class="py-1 px-2.5 rounded text-xs border ${payInfo.color}">${payInfo.label}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                    <span class="text-xs uppercase font-bold text-zinc-400">Descuento Asignado</span>
+                    <span class="text-xs font-bold text-purple-300">${descText}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                    <span class="text-xs uppercase font-bold text-zinc-400">Estado de Cuota</span>
+                    <span class="py-1 px-2.5 rounded text-xs font-bold border ${qInfo.color}">${qInfo.text}</span>
+                </div>
+                <div class="flex justify-between items-center pt-1">
+                    <span class="text-xs uppercase font-bold text-zinc-400">Faltas Acumuladas</span>
+                    <span class="text-xs font-bold text-amber-400">${strikesText}</span>
+                </div>
+            `;
         }
 
         function switchView(view) {
@@ -767,7 +857,7 @@
         function openImageModal() { document.getElementById('imageModal').classList.remove('hidden'); } 
         function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
         
-        document.getElementById('search-input').addEventListener('input', renderDashboard);
+        document.getElementById('search-input')?.addEventListener('input', renderDashboard);
     </script>
 </body>
 </html>
