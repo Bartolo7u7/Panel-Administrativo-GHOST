@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOST | Panel Administrativo V29.0 (Animated Views)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FIREBASE SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-modal { animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* ANIMACIÓN SIMPLE PARA CAMBIO DE VISTAS */
+        @keyframes viewFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-view {
+            animation: viewFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* TRANSICIONES Y ANIMACIONES GLOBALES */
+        .interactive-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-card:hover {
+            transform: translateY(-3px) scale(1.01);
+            border-color: #52525b;
+            box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.05);
+        }
+
+        .interactive-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-btn:hover {
+            transform: translateY(-1px);
+        }
+        .interactive-btn:active {
+            transform: scale(0.95) translateY(0);
+        }
+
+        .interactive-input {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-input:focus {
+            transform: scale(1.005);
+            border-color: #a1a1aa;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-black text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
+
+    <!-- MODAL DE INICIO DE SESIÓN / REGISTRO -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
+        <div class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal">
+            <div onclick="openImageModal()" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
+                <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
+            </div>
+            <h2 class="text-2xl font-black text-white tracking-widest uppercase mb-1">GHOST CLOUD</h2>
+            <p id="auth-status-msg" class="text-xs text-zinc-400 mb-6 font-semibold">Cargando estado del servidor...</p>
+            
+            <form id="login-form" onsubmit="handleAuth(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Rol</label>
+                    <select id="login-role" onchange="onRoleChange()" class="w-full bg-black border border-zinc-700 rounded-lg p-3 text-white interactive-input">
+                        <option value="Invitados">Invitados (Sin contraseña)</option>
+                        <option value="La Mesa Blanca">La Mesa Blanca</option>
+                        <option value="Cúpula Administrativa">Cúpula Administrativa</option>
+                        <option value="JEFES">JEFES</option>
+                    </select>
+                </div>
+
+                <div id="subrole-container" class="hidden transition-all duration-300">
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Seleccionar Miembro</label>
+                    <select id="login-subrole" onchange="checkClaimStatus()" class="w-full bg-black border border-zinc-700 rounded-lg p-3 text-white interactive-input">
+                        <!-- Opciones insertadas por JS -->
+                    </select>
+                </div>
+
+                <div id="email-container" class="hidden transition-all duration-300">
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Correo Asignado</label>
+                    <input type="email" id="login-email" placeholder="ejemplo@ghost.com" class="w-full bg-black border border-zinc-700 rounded-lg p-3 text-white interactive-input disabled:opacity-50">
+                </div>
+                
+                <div id="password-container" class="hidden transition-all duration-300">
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Contraseña</label>
+                    <div class="relative">
+                        <input type="password" id="login-pass" placeholder="••••••••" class="w-full bg-black border border-zinc-700 rounded-lg p-3 pr-10 text-white interactive-input">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-3.5 text-zinc-500 hover:text-white transition-colors">
+                            <i id="pass-eye-icon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <p id="login-error" class="text-red-500 text-xs font-bold hidden text-center animate-pulse">Error.</p>
+                <button type="submit" id="btn-auth" class="w-full bg-white hover:bg-zinc-200 text-black font-black py-3 rounded-lg interactive-btn uppercase tracking-wider shadow-lg mt-2">
+                    Entrar como Invitado
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="flex h-screen overflow-hidden flex-col md:flex-row">
+
+        <!-- BARRA LATERAL -->
+        <aside class="w-full md:w-72 bg-zinc-950 border-b md:border-b-0 md:border-r border-zinc-800 flex flex-col z-10 relative shadow-2xl">
+            <div class="p-4 md:p-6 text-center border-b border-zinc-800 flex flex-col items-center">
+                <div onclick="openImageModal()" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-zinc-700 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-3 bg-black flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-6 cursor-pointer" title="Click para ver en grande">
+                    <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
+                </div>
+                <h1 class="text-xl font-black text-white tracking-widest uppercase">GHOST</h1>
+                <div class="mt-2 px-2.5 py-1 bg-zinc-900 border border-zinc-700 rounded text-center transition-all duration-200 hover:border-zinc-500">
+                    <span class="text-[9px] text-zinc-500 block uppercase font-bold">Sesión Activa:</span>
+                    <span id="current-role-badge" class="text-xs font-black text-emerald-400">Verificando...</span>
+                </div>
+            </div>
+
+            <nav class="flex-row md:flex-col flex flex-1 p-2 md:p-4 gap-2 overflow-x-auto md:overflow-x-visible">
+                <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-zinc-800 text-white px-4 py-3 rounded-lg font-semibold border border-zinc-700 shadow-sm text-sm interactive-btn">
+                    <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline">Miembros</span>
+                </button>
+                <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
+                    <i class="fa-solid fa-money-bill-wave text-zinc-400"></i> <span class="hidden md:inline">Finanzas</span>
+                </button>
+                <button onclick="switchView('registro')" id="btn-nav-registro" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
+                    <i class="fa-solid fa-clipboard-list text-zinc-400"></i> <span class="hidden md:inline">Logs</span>
+                </button>
+            </nav>
+            
+            <div class="p-2 md:p-4 border-t border-zinc-800 flex md:flex-col gap-2">
+                <button onclick="logout()" class="flex-1 flex items-center justify-center gap-2 text-zinc-300 hover:text-white hover:bg-zinc-900 text-xs py-2.5 rounded border border-zinc-700 interactive-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                </button>
+                <button id="btn-reset-db" onclick="resetDatabase()" class="hidden flex-1 items-center justify-center gap-2 text-red-400 hover:text-white hover:bg-red-950 text-xs py-2.5 rounded border border-red-900/50 interactive-btn">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Reset Datos
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="flex-1 flex flex-col overflow-y-auto relative bg-zinc-950">
+            
+            <!-- VISTA: MIEMBROS -->
+            <div id="view-miembros" class="block h-full flex flex-col animate-view">
+                <header class="p-4 md:p-8 pb-4">
+                    <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
+                        <span class="inline-block w-2 h-6 bg-white transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Total Miembros</div>
+                            <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
+                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-users"></i></div>
+                        </div>
+                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Cuotas Atrasadas</div>
+                            <div id="stat-pending" class="text-3xl md:text-4xl font-black text-red-500">0</div>
+                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-clock"></i></div>
+                        </div>
+                        <div class="bg-zinc-900 p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación Total (Eq.)</div>
+                            <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
+                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-vault"></i></div>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
+                    <div class="bg-zinc-900 rounded-xl border border-zinc-800 shadow-lg flex-1 flex flex-col overflow-hidden">
+                        <div class="p-4 border-b border-zinc-800 flex flex-wrap gap-3 justify-between items-center bg-zinc-900/50">
+                            <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                                <div class="relative w-full md:w-auto">
+                                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
+                                    <input type="text" id="search-input" placeholder="Buscar nombre o Discord..." class="bg-black border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full md:w-64 interactive-input">
+                                </div>
+                                <select id="rank-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
+                                    <option value="">Rango (Todos)</option>
+                                    <option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option>
+                                    <option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option>
+                                    <option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option>
+                                    <option>Líder de Operativa Antrax</option><option>Operativa Antrax</option>
+                                    <option>Líder de Dealers</option><option>Dealers</option>
+                                    <option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
+                                </select>
+                                <select id="strike-filter" onchange="renderDashboard()" class="bg-black border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
+                                    <option value="">Faltas (Todas)</option>
+                                    <option value="clean">Sin Faltas</option>
+                                    <option value="has_strikes">Con Faltas</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+                                <button onclick="exportToCSV()" class="flex-1 md:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow">
+                                    <i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar
+                                </button>
+                                <button onclick="openModal()" class="flex-1 md:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md">
+                                    <i class="fa-solid fa-user-plus"></i> Añadir
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto flex-1 w-full bg-zinc-950">
+                            <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
+                                <thead class="text-xs text-zinc-300 uppercase bg-zinc-900 border-b border-zinc-800 sticky top-0">
+                                    <tr>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
+                                        <th class="px-6 py-4">Discord</th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('strikes')">Faltas <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-strikes"></i></th>
+                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <!-- Generado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VISTA: FINANZAS -->
+            <div id="view-finanzas" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+                <h2 class="text-3xl font-black mb-1 text-white">Desglose Financiero</h2>
+                <p class="text-zinc-400 mb-8 text-sm">Inventario real y capital recaudado.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-emerald-950 p-6 md:p-8 rounded-xl border border-emerald-500 shadow-lg flex items-center justify-between interactive-card">
+                        <div>
+                            <div class="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">Efectivo Líquido Total</div>
+                            <div id="fin-efectivo" class="text-4xl md:text-5xl font-black text-white">$0</div>
+                        </div>
+                        <i class="fa-solid fa-sack-dollar text-5xl md:text-6xl text-emerald-500/60"></i>
+                    </div>
+                    <div class="bg-lime-950 p-6 md:p-8 rounded-xl border border-lime-500 shadow-lg flex items-center justify-between interactive-card">
+                        <div>
+                            <div class="text-lime-300 text-xs font-bold uppercase tracking-wider mb-2">Hojas de Coca</div>
+                            <div id="fin-coca" class="text-4xl md:text-5xl font-black text-white">0</div>
+                        </div>
+                        <i class="fa-solid fa-leaf text-5xl md:text-6xl text-lime-500/60"></i>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-zinc-300 mb-4 border-b border-zinc-800 pb-2 flex items-center gap-2"><i class="fa-solid fa-gun text-white"></i> Arsenal y Equipamiento</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-cyan-950 p-4 rounded-lg border border-cyan-500 text-center shadow-lg interactive-card"><div class="text-cyan-300 text-xs font-bold uppercase">Pistolas SNS</div><div id="fin-sns" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-blue-950 p-4 rounded-lg border border-blue-500 text-center shadow-lg interactive-card"><div class="text-blue-300 text-xs font-bold uppercase">Pistolas Vintage</div><div id="fin-vintage" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-indigo-950 p-4 rounded-lg border border-indigo-500 text-center shadow-lg interactive-card"><div class="text-indigo-300 text-xs font-bold uppercase">Pistolas 9mm</div><div id="fin-9mm" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-purple-950 p-4 rounded-lg border border-purple-500 text-center shadow-lg interactive-card"><div class="text-purple-300 text-xs font-bold uppercase">Mini SMG</div><div id="fin-minismg" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-fuchsia-950 p-4 rounded-lg border border-fuchsia-500 text-center shadow-lg interactive-card"><div class="text-fuchsia-300 text-xs font-bold uppercase">TEC-9</div><div id="fin-tec9" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-rose-950 p-4 rounded-lg border border-rose-500 text-center shadow-lg interactive-card"><div class="text-rose-300 text-xs font-bold uppercase">Micro SMG</div><div id="fin-microsmg" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-amber-950 p-4 rounded-lg border border-amber-500 text-center col-span-2 shadow-lg interactive-card"><div class="text-amber-300 text-xs font-bold uppercase">Chalecos</div><div id="fin-chalecos" class="text-2xl font-bold text-white mt-1">0</div></div>
+                </div>
+            </div>
+
+            <!-- VISTA: REGISTRO -->
+            <div id="view-registro" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+                <h2 class="text-3xl font-black mb-1 text-white">Registro de Actividad</h2>
+                <p class="text-zinc-400 mb-8 text-sm">Historial de acciones (Auditoría).</p>
+                <div class="bg-zinc-900 rounded-xl border border-zinc-800 shadow-lg overflow-hidden flex-1 flex flex-col">
+                    <div class="overflow-x-auto flex-1 w-full bg-zinc-950">
+                        <table class="w-full min-w-[600px] text-sm text-left text-zinc-400">
+                            <thead class="text-xs text-zinc-300 uppercase bg-zinc-900 border-b border-zinc-800 sticky top-0">
+                                <tr>
+                                    <th class="px-6 py-4">Fecha y Hora</th>
+                                    <th class="px-6 py-4">Responsable</th>
+                                    <th class="px-6 py-4">Acción Realizada</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE IMAGEN GRANDE (LIGHTBOX) -->
+    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300 cursor-pointer" onclick="closeImageModal()">
+        <div class="relative p-2 max-w-4xl max-h-[90vh] flex items-center justify-center" onclick="event.stopPropagation()">
+            <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo Grande" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-zinc-700 shadow-2xl animate-modal">
+            <button onclick="closeImageModal()" class="absolute -top-4 -right-4 text-white bg-zinc-800 hover:bg-red-600 rounded-full w-10 h-10 flex items-center justify-center font-bold transition-all shadow-lg border border-zinc-700 hover:rotate-90">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE MIEMBRO (Agregar/Editar) -->
+    <div id="memberModal" class="hidden fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 p-4">
+        <div class="bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-800 w-full max-w-2xl shadow-2xl animate-modal overflow-y-auto max-h-screen">
+            <h3 id="modal-title" class="text-xl font-bold text-white mb-6 border-b border-zinc-800 pb-2">Añadir Miembro</h3>
+            <form id="member-form" class="space-y-4 md:space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Nombre In-Character</label><input type="text" id="f-name" required class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input"></div>
+                    <div><label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Usuario Discord</label><input type="text" id="f-discord" required class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Jerarquía (Rango)</label>
+                        <select id="f-rank" onchange="onRankFormChange()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                            <option>Recolector</option><option>Novato</option><option>Soldado</option><option>GHOST</option><option>Dealers</option><option>Grupo Sigilo</option><option>Operativa Antrax</option><option>La Mesa Blanca</option><option>Líder de Dealers</option><option>Líder de Grupo Sigilo</option><option>Líder de Operativa Antrax</option><option>Líder de La Mesa Blanca</option><option>Subjefe</option><option>Mano Derecha</option><option>JEFES</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Método de Pago</label>
+                        <select id="f-payment" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Fecha Base</label>
+                        <input type="date" id="f-date" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Descuento</label>
+                        <select id="f-discount" onchange="updatePaymentOptions()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                            <option value="0">0 Hojas</option><option value="100">100 Hojas</option><option value="200">200 Hojas</option><option value="300">300 Hojas (Sigilo)</option><option value="500">500 Hojas (Dealers)</option><option value="Exonerado">Exonerado (Jefes)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Cuotas Extra Pagadas</label>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="subExtraWeek()" class="bg-zinc-800 text-white px-3 py-2 rounded-lg interactive-btn">-</button>
+                            <input type="number" id="f-extra" min="0" value="0" class="w-16 bg-black border border-zinc-700 rounded-lg p-2 text-white font-bold text-center">
+                            <button type="button" onclick="addExtraWeek()" class="bg-zinc-800 text-emerald-400 px-3 py-2 rounded-lg font-bold interactive-btn">+1</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-black p-4 rounded-lg border border-zinc-800">
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-2">Faltas (Puntos)</label>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button type="button" onclick="addStrike(1)" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Llamado</button>
+                        <button type="button" onclick="addStrike(3)" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Leve</button>
+                        <button type="button" onclick="addStrike(18)" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Intermedia</button>
+                        <button type="button" onclick="addStrike(54)" class="bg-red-950 text-xs px-2.5 py-1.5 rounded text-red-300 font-semibold border border-red-900 interactive-btn">+1 Grave</button>
+                        <button type="button" onclick="clearStrikes()" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded ml-auto text-zinc-400 interactive-btn">Limpiar</button>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <input type="number" id="f-strikes" min="0" value="0" class="w-16 bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white font-bold text-center" readonly>
+                        <div id="strike-preview" class="text-sm font-bold text-amber-400">0 Faltas</div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-zinc-800">
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-white text-black rounded-lg font-black shadow-lg interactive-btn">Guardar Perfil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LOGICA Y ANIMACIONES DE VISTA -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo",
+            authDomain: "panel-administrativo-de-ghost.firebaseapp.com",
+            projectId: "panel-administrativo-de-ghost",
+            storageBucket: "panel-administrativo-de-ghost.firebasestorage.app",
+            messagingSenderId: "80093895927",
+            appId: "1:80093895927:web:824ac7131336e1f130c7f2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        let currentRole = null; 
+        let currentSubName = null; 
+        let members = []; let logs = []; let dbUnsubscribe = null;
+        let sortCol = 'name'; let sortAsc = true;
+
+        let accountsMapping = {}; 
+        let authMode = 'invitado'; 
+        let currentRoleKey = '';
+
+        const roleData = {
+            "JEFES": ["Daniel", "Mario", "Facundo", "Bartolo"],
+            "Cúpula Administrativa": ["(Subjefe) Daniel Olvera", "(Subjefe) LoudzeL Casillas", "(Subjefe) Juanpe Moser", "(Subjefe) Miguel Castilla", "(Subjefe) Kafeth Morales"],
+            "La Mesa Blanca": ["Alfredo Salvatore"]
+        };
+
+        db.collection('ghost_data').doc('accounts').onSnapshot(doc => {
+            if(doc.exists) accountsMapping = doc.data();
+            if (document.getElementById('loginModal').classList.contains('hidden') === false) {
+                checkClaimStatus(); 
+            }
+        });
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('login-pass');
+            const eyeIcon = document.getElementById('pass-eye-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function onRoleChange() {
+            const role = document.getElementById('login-role').value;
+            const subroleCont = document.getElementById('subrole-container');
+            const subroleSel = document.getElementById('login-subrole');
+
+            if (roleData[role]) {
+                subroleCont.classList.remove('hidden');
+                subroleSel.innerHTML = '';
+                roleData[role].forEach(name => {
+                    subroleSel.innerHTML += `<option value="${name}">${name}</option>`;
+                });
+            } else {
+                subroleCont.classList.add('hidden');
+                subroleSel.innerHTML = '';
+            }
+            checkClaimStatus();
+        }
+
+        function checkClaimStatus() {
+            const role = document.getElementById('login-role').value;
+            const subrole = document.getElementById('login-subrole').value;
+            
+            const emailCont = document.getElementById('email-container');
+            const passCont = document.getElementById('password-container');
+            const btn = document.getElementById('btn-auth');
+            const statusMsg = document.getElementById('auth-status-msg');
+            const emailInput = document.getElementById('login-email');
+            
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-pass').value = '';
+
+            if (role === 'Invitados') {
+                emailCont.classList.add('hidden'); passCont.classList.add('hidden');
+                btn.innerText = "Entrar como Invitado";
+                statusMsg.innerHTML = '<span class="text-zinc-400">Modo de lectura sin contraseña.</span>';
+                authMode = 'invitado';
+                emailInput.required = false; document.getElementById('login-pass').required = false;
+                return;
+            }
+
+            emailInput.required = true; document.getElementById('login-pass').required = true;
+            emailCont.classList.remove('hidden'); passCont.classList.remove('hidden');
+
+            currentRoleKey = `${role}_${subrole}`; 
+            const registeredEmail = accountsMapping[currentRoleKey];
+
+            if (registeredEmail) {
+                authMode = 'login';
+                statusMsg.innerHTML = '<span class="text-emerald-400"><i class="fa-solid fa-lock"></i> Cuenta en uso. Inicia Sesión.</span>';
+                btn.innerText = "Iniciar Sesión";
+                emailInput.value = registeredEmail;
+                emailInput.readOnly = true;
+                emailInput.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                authMode = 'register';
+                statusMsg.innerHTML = '<span class="text-amber-400"><i class="fa-solid fa-user-plus"></i> Libre. Crea un correo y contraseña para reclamar el rol.</span>';
+                btn.innerText = "Registrar Credenciales";
+                emailInput.value = '';
+                emailInput.readOnly = false;
+                emailInput.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const err = document.getElementById('login-error');
+            err.classList.add('hidden');
+
+            if (authMode === 'invitado') {
+                localStorage.setItem('ghost_role', 'Invitados');
+                currentRole = 'Invitados'; currentSubName = null;
+                document.getElementById('loginModal').classList.add('hidden');
+                applyPermissions(); loadDatabase();
+                return;
+            }
+
+            const email = document.getElementById('login-email').value.toLowerCase();
+            const pass = document.getElementById('login-pass').value;
+
+            btn = document.getElementById('btn-auth');
+            btn.innerText = "Cargando..."; btn.disabled = true;
+
+            if (authMode === 'register') {
+                auth.createUserWithEmailAndPassword(email, pass)
+                    .then(() => {
+                        return db.collection('ghost_data').doc('accounts').set({
+                            [currentRoleKey]: email
+                        }, { merge: true });
+                    })
+                    .catch(error => {
+                        btn.innerText = "Registrar Credenciales"; btn.disabled = false;
+                        err.innerText = error.code === 'auth/email-already-in-use' ? "Este correo ya está registrado." : "Error: Contraseña debe ser de 6+ caracteres.";
+                        err.classList.remove('hidden');
+                    });
+            } else if (authMode === 'login') {
+                auth.signInWithEmailAndPassword(email, pass)
+                    .catch(error => {
+                        btn.innerText = "Iniciar Sesión"; btn.disabled = false;
+                        err.innerText = "Contraseña incorrecta.";
+                        err.classList.remove('hidden');
+                    });
+            }
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const email = user.email.toLowerCase();
+                const doc = await db.collection('ghost_data').doc('accounts').get();
+                const accounts = doc.exists ? doc.data() : {};
+                const foundKey = Object.keys(accounts).find(k => accounts[k] === email);
+                
+                if (foundKey) {
+                    const separatorIndex = foundKey.indexOf('_');
+                    if (separatorIndex !== -1) {
+                        currentRole = foundKey.substring(0, separatorIndex);
+                        currentSubName = foundKey.substring(separatorIndex + 1);
+                    } else {
+                        currentRole = foundKey;
+                        currentSubName = null;
+                    }
+                    localStorage.setItem('ghost_role', currentRole);
+                    if(currentSubName) localStorage.setItem('ghost_jefe', currentSubName);
+                }
+                
+                document.getElementById('loginModal').classList.add('hidden');
+                applyPermissions(); loadDatabase();
+            } else {
+                if (localStorage.getItem('ghost_role') === 'Invitados') {
+                    currentRole = 'Invitados'; currentSubName = null;
+                    document.getElementById('loginModal').classList.add('hidden');
+                    applyPermissions(); loadDatabase();
+                } else {
+                    currentRole = null; currentSubName = null;
+                    if(dbUnsubscribe) dbUnsubscribe();
+                    document.getElementById('loginModal').classList.remove('hidden');
+                    if(document.getElementById('login-subrole').options.length === 0) onRoleChange();
+                    checkClaimStatus();
+                }
+            }
+        });
+
+        function logout() { 
+            localStorage.removeItem('ghost_role'); localStorage.removeItem('ghost_jefe');
+            auth.signOut().then(() => location.reload()).catch(() => location.reload());
+        }
+
+        function loadDatabase() {
+            dbUnsubscribe = db.collection("ghost_data").doc("main_state").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data(); members = data.members || []; logs = data.logs || [];
+                } else {
+                    members = []; logs = [];
+                    db.collection("ghost_data").doc("main_state").set({ members, logs });
+                }
+                renderDashboard(); renderFinanzas(); renderRegistro();
+            });
+        }
+
+        function saveToCloud() { db.collection("ghost_data").doc("main_state").set({ members, logs }).catch(err => alert("Error al guardar: Permisos denegados.")); }
+
+        function applyPermissions() {
+            document.getElementById('current-role-badge').innerText = currentSubName ? `${currentRole} (${currentSubName})` : currentRole;
+            const bReg = document.getElementById('btn-nav-registro'); const bReset = document.getElementById('btn-reset-db');
+            if (currentRole === 'JEFES') { bReg.classList.replace('hidden', 'flex'); bReset.classList.replace('hidden', 'flex'); } 
+            else { bReg.classList.replace('flex', 'hidden'); bReset.classList.replace('flex', 'hidden'); }
+        }
+
+        function checkPermission(actionType) {
+            if (currentRole === 'Invitados') { alert("Modo Lectura. Sin permisos."); return false; }
+            if (currentRole === 'La Mesa Blanca' && actionType === 'delete') { alert("Sin permisos de eliminación."); return false; }
+            return true;
+        }
+
+        const RANK_STYLES = {
+            "JEFES": "bg-red-950 text-red-500 border-red-900 font-black", "Mano Derecha": "bg-amber-950 text-orange-500 border-amber-900 font-bold",
+            "Subjefe": "bg-yellow-950 text-yellow-400 border-yellow-900 font-bold", "Líder de La Mesa Blanca": "bg-zinc-800 text-white border-zinc-600 font-bold",
+            "Líder de Grupo Sigilo": "bg-zinc-900 text-zinc-300 border-zinc-700 font-bold", "Líder de Operativa Antrax": "bg-green-950 text-green-400 border-green-900 font-bold",
+            "Líder de Dealers": "bg-purple-950 text-purple-400 border-purple-900 font-bold", "La Mesa Blanca": "bg-zinc-900 text-white border-zinc-700",
+            "Grupo Sigilo": "bg-zinc-950 text-zinc-400 border-zinc-800", "Operativa Antrax": "bg-green-950 text-green-500 border-green-900",
+            "Dealers": "bg-purple-950 text-purple-500 border-purple-900", "GHOST": "bg-teal-950 text-teal-300 border-teal-900",
+            "Soldado": "bg-slate-900 text-slate-300 border-slate-700", "Novato": "bg-cyan-950 text-cyan-400 border-cyan-900", "Recolector": "bg-emerald-950 text-emerald-500 border-emerald-900"
+        };
+        const RANK_HIERARCHY = { "JEFES": 1, "Mano Derecha": 2, "Subjefe": 3, "Líder de La Mesa Blanca": 4, "La Mesa Blanca": 5, "Líder de Grupo Sigilo": 6, "Grupo Sigilo": 7, "Líder de Operativa Antrax": 8, "Operativa Antrax": 9, "Líder de Dealers": 10, "Dealers": 11, "GHOST": 12, "Soldado": 13, "Novato": 14, "Recolector": 15 };
+
+        function changeSort(column) {
+            if (sortCol === column) { sortAsc = !sortAsc; } else { sortCol = column; sortAsc = true; }
+            ['name', 'rank', 'quota', 'strikes'].forEach(c => {
+                const icon = document.getElementById(`sort-icon-${c}`);
+                if(icon) icon.className = `fa-solid ml-1 text-zinc-600 ${c === sortCol ? (sortAsc ? 'fa-sort-up text-white' : 'fa-sort-down text-white') : 'fa-sort'}`;
+            });
+            renderDashboard();
+        }
+
+        function exportToCSV() {
+            let csv = "data:text/csv;charset=utf-8,\uFEFF";
+            csv += "Nombre IC,Discord,Rango,Metodo de Pago,Estado Cuota,Descuento,Faltas Acumuladas\n";
+            members.forEach(m => {
+                const info = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                const desc = m.discount === 'Exonerado' ? 'Exonerado' : m.discount + ' Hojas';
+                csv += `"${m.name}","${m.discord}","${m.rank}","${m.payment}","${info.status}","${desc}","${m.strikes||0}"\n`;
+            });
+            const link = document.createElement("a"); link.href = encodeURI(csv); link.download = `GHOST_Reporte_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            logAction("Exportó la base de datos a Excel (CSV)");
+        }
+
+        function renderDashboard() {
+            const tbody = document.getElementById('table-body'); tbody.innerHTML = ''; 
+            const term = document.getElementById('search-input').value.toLowerCase();
+            const rFilter = document.getElementById('rank-filter').value;
+            const sFilter = document.getElementById('strike-filter').value;
+
+            let filtered = members.filter(m => {
+                const mSearch = m.name.toLowerCase().includes(term) || m.discord.toLowerCase().includes(term);
+                const mRank = rFilter === "" || m.rank === rFilter;
+                const str = m.strikes || 0;
+                const mStr = sFilter === 'clean' ? str === 0 : (sFilter === 'has_strikes' ? str > 0 : true);
+                return mSearch && mRank && mStr;
+            });
+
+            filtered.sort((a, b) => {
+                let vA, vB;
+                if (sortCol === 'name') { vA = a.name.toLowerCase(); vB = b.name.toLowerCase(); }
+                if (sortCol === 'rank') { vA = RANK_HIERARCHY[a.rank] || 99; vB = RANK_HIERARCHY[b.rank] || 99; }
+                if (sortCol === 'quota') { vA = calculateQuotaStatus(a.payment, a.lastPaymentDate, a.extraWeeks, a.discount).weeksLate; vB = calculateQuotaStatus(b.payment, b.lastPaymentDate, b.extraWeeks, b.discount).weeksLate; }
+                if (sortCol === 'strikes') { vA = a.strikes || 0; vB = b.strikes || 0; }
+                if (vA < vB) return sortAsc ? -1 : 1;
+                if (vA > vB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            document.getElementById('stat-total').innerText = members.length;
+            
+            let atrasados = 0; let totalMoney = 0;
+            members.forEach(m => {
+                const info = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                if (info.status === 'Pendiente' || info.status === 'Atrasado') atrasados++;
+                if (info.status === 'Al día' && m.discount !== 'Exonerado') totalMoney += 150000 * getDiscountMultiplier(m.discount);
+            });
+            document.getElementById('stat-pending').innerText = atrasados; document.getElementById('stat-money').innerText = "$" + Math.round(totalMoney).toLocaleString('es-ES');
+
+            filtered.forEach(m => {
+                const rStyle = RANK_STYLES[m.rank] || "bg-slate-900 text-slate-300 border-slate-700";
+                const qInfo = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                const payInfo = getPaymentInfo(m.payment || "Pendiente", m.discount || '0');
+                const strikeHtml = formatStrikes(m.strikes);
+                const eText = (m.extraWeeks > 0) ? ` (+${m.extraWeeks})` : '';
+                const dLabel = m.discount && m.discount !== '0' ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-purple-950 text-purple-300 border font-bold">Desc: ${m.discount}</span>` : '';
+
+                tbody.innerHTML += `
+                    <tr class="bg-zinc-950/40 border-b border-zinc-800 hover:bg-zinc-900 transition-colors duration-150">
+                        <td class="px-6 py-4 font-bold text-white whitespace-nowrap">${m.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap"><i class="fa-brands fa-discord text-zinc-400 mr-1"></i> ${m.discord}</td>
+                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-xs border font-semibold ${rStyle}">${m.rank}</span></td>
+                        <td class="px-6 py-4 min-w-[250px]">
+                            <div class="mb-1 flex items-center flex-wrap gap-1"><span class="py-1 px-2.5 rounded text-[10px] border ${payInfo.color}">${payInfo.label}</span>${dLabel}</div>
+                            <div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${eText}</div>
+                            <span class="inline-block py-0.5 px-2 rounded text-[10px] font-bold border ${qInfo.color}">${qInfo.text}</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs min-w-[150px]">${strikeHtml}</td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <button onclick="openModal(${m.id})" class="text-zinc-400 hover:text-white transition-all transform hover:scale-125 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteMember(${m.id})" class="text-red-500 hover:text-red-400 transition-all transform hover:scale-125"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        // --- FUNCIÓN DE CAMBIO DE VISTA CON ANIMACIÓN FLUIDA ---
+        function switchView(view) {
+            if(view === 'finanzas' && currentRole === 'Invitados') return alert("Sin permisos.");
+            
+            ['miembros','finanzas','registro'].forEach(v => { 
+                const el = document.getElementById(`view-${v}`);
+                el.classList.add('hidden'); 
+                el.classList.remove('animate-view');
+                document.getElementById(`btn-nav-${v}`).classList.remove('bg-zinc-800','text-white'); 
+            });
+
+            const targetView = document.getElementById(`view-${view}`);
+            targetView.classList.remove('hidden');
+            // Forzar reinicio de animación agregando y quitando la clase en el mismo ciclo
+            void targetView.offsetWidth; 
+            targetView.classList.add('animate-view');
+
+            document.getElementById(`btn-nav-${view}`).classList.add('bg-zinc-800','text-white');
+            
+            if(view === 'finanzas') renderFinanzas(); 
+            if(view === 'registro') renderRegistro();
+        }
+
+        function getDiscountMultiplier(disc) { if(disc === 'Exonerado') return 0; let d = parseInt(disc)||0; return d<=0 ? 1 : (1500-d)/1500; }
+        function updatePaymentOptions() {
+            const mult = getDiscountMultiplier(document.getElementById('f-discount').value);
+            const sel = document.getElementById('f-payment'); const val = sel.value;
+            sel.innerHTML = `<option value="Nuevo">Nuevo (1 Sem. Libre)</option><option value="Pendiente">Pendiente</option><option value="Efectivo">Efectivo ($${Math.round(150000*mult).toLocaleString('es')})</option><option value="Coca">${Math.round(1500*mult)} Hojas de Coca</option><option value="SNS">${Math.ceil(5*mult)} SNS</option><option value="Vintage">${Math.ceil(4*mult)} Vintage</option><option value="9mm">${Math.ceil(3*mult)} 9mm</option><option value="MiniSMG">${Math.ceil(1*mult)} Mini SMG + $${Math.round(30000*mult).toLocaleString('es')}</option><option value="TEC9">${Math.ceil(1*mult)} TEC-9 + $${Math.round(10000*mult).toLocaleString('es')}</option><option value="MicroSMG">${Math.ceil(1*mult)} Micro SMG</option><option value="Chalecos">${Math.ceil(11*mult)} Chalecos</option><option value="Pagado">Pagado (Antiguo)</option>`;
+            if([...sel.options].some(o=>o.value===val)) sel.value = val;
+        }
+        function onRankFormChange() {
+            const r = document.getElementById('f-rank').value, d = document.getElementById('f-discount');
+            if(['JEFES','Mano Derecha','Subjefe','La Mesa Blanca','Líder de La Mesa Blanca'].includes(r)) d.value = 'Exonerado';
+            else if(r.includes('Dealers')) d.value = '500'; else if(r.includes('Sigilo')||r.includes('Antrax')) d.value = '300'; else d.value = '0';
+            updatePaymentOptions();
+        }
+        function calculateQuotaStatus(pay, lastDate, ex = 0, disc = '0') {
+            if(disc === 'Exonerado') return { status: 'Al día', color: 'bg-amber-950 text-amber-300 border-amber-500', text: 'Exonerado', weeksLate: 0 };
+            if(!pay || pay === 'Pendiente') return { status: 'Pendiente', color: 'bg-red-950 text-red-400 border-red-800', text: 'Pendiente', weeksLate: 1 };
+            if(!lastDate) return { status: 'Sin Fecha', color: 'bg-yellow-950 text-yellow-400', text: 'No Data', weeksLate: 0 };
+            const l = new Date(lastDate+'T00:00:00'), n = new Date();
+            if(pay === 'Nuevo') {
+                const f = new Date(l); f.setDate(f.getDate()+7); f.setHours(23,59,59);
+                return n<=f ? {status:'Libre', color:'bg-teal-950 text-teal-300', text:`Libre (${formatDate(f.toISOString())})`, weeksLate:0} : {status:'Pendiente', color:'bg-red-950 text-red-400', text:'Libre Expirado', weeksLate:1};
+            }
+            const dToSun = l.getDay() === 0 ? 0 : 7 - l.getDay();
+            const sun = new Date(l); sun.setDate(sun.getDate() + dToSun + (ex*7)); sun.setHours(23,59,59);
+            if(n<=sun) return {status:'Al día', color: 'bg-emerald-950 text-emerald-400', text:`Límite: Dom ${formatDate(sun.toISOString())}`, weeksLate:0};
+            const wks = 1 + Math.floor((n-sun)/(1000*60*60*24*7));
+            return {status:'Atrasado', color:'bg-red-950 text-red-400', text:`${wks} cuota(s) pendiente(s)`, weeksLate:wks};
+        }
+        function getPaymentInfo(k, d) {
+            const m = getDiscountMultiplier(d);
+            const map = { "Nuevo": { label: "Nuevo", color: "bg-teal-950 text-teal-300" }, "Pendiente": { label: "Pendiente", color: "bg-red-950 text-red-400" }, "Efectivo": { label: `$${Math.round(150000*m).toLocaleString('es')}`, color: "bg-emerald-950 text-emerald-300" }, "Coca": { label: `${Math.round(1500*m)} Coca`, color: "bg-lime-950 text-lime-300" }, "SNS": { label: `${Math.ceil(5*m)} SNS`, color: "bg-cyan-950 text-cyan-300" }, "Vintage": { label: `${Math.ceil(4*m)} Vintage`, color: "bg-blue-950 text-blue-300" }, "9mm": { label: `${Math.ceil(3*m)} 9mm`, color: "bg-indigo-950 text-indigo-300" }, "MiniSMG": { label: `${Math.ceil(1*m)} MiniSMG+$${Math.round(30000*m)/1000}k`, color: "bg-purple-950 text-purple-300" }, "TEC9": { label: `${Math.ceil(1*m)} TEC9+$${Math.round(10000*m)/1000}k`, color: "bg-fuchsia-950 text-fuchsia-300" }, "MicroSMG": { label: `${Math.ceil(1*m)} MicroSMG`, color: "bg-rose-950 text-rose-300" }, "Chalecos": { label: `${Math.ceil(11*m)} Chalecos`, color: "bg-amber-950 text-amber-300" }, "Pagado": { label: "Pagado", color: "bg-emerald-950 text-emerald-300" } };
+            return map[k]||map["Pendiente"];
+        }
+        function formatStrikes(p) {
+            if(p>=108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>'; if(!p) return '0 Faltas';
+            let gr = Math.floor(p/54), r = p%54, it = Math.floor(r/18), r2 = r%18, lv = Math.floor(r2/3), ll = r2%3, pt=[];
+            if(gr) pt.push(`<span class="text-red-400 font-bold">${gr}G</span>`); if(it) pt.push(`<span class="text-orange-400">${it}I</span>`);
+            if(lv) pt.push(`<span class="text-yellow-400">${lv}L</span>`); if(ll) pt.push(`<span class="text-zinc-400">${ll}Llam</span>`);
+            return pt.join(' | ');
+        }
+        function addStrike(a) { let el = document.getElementById('f-strikes'); el.value = parseInt(el.value)+a; document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(el.value)); }
+        function clearStrikes() { document.getElementById('f-strikes').value = 0; document.getElementById('strike-preview').innerHTML = '0 Faltas'; }
+        function addExtraWeek() { let e = document.getElementById('f-extra'); e.value = parseInt(e.value)+1; }
+        function subExtraWeek() { let e = document.getElementById('f-extra'); if(parseInt(e.value)>0) e.value = parseInt(e.value)-1; }
+        let editId = null;
+        function openModal(id = null) {
+            if(!checkPermission('add_edit')) return;
+            editId = id; document.getElementById('modal-title').innerText = id ? 'Editar Miembro' : 'Nuevo Miembro';
+            if(id) { const m = members.find(x=>x.id===id); document.getElementById('f-name').value = m.name; document.getElementById('f-discord').value = m.discord; document.getElementById('f-rank').value = m.rank||'Soldado'; document.getElementById('f-discount').value = m.discount||'0'; updatePaymentOptions(); document.getElementById('f-payment').value = m.payment||'Nuevo'; document.getElementById('f-date').value = m.lastPaymentDate; document.getElementById('f-extra').value = m.extraWeeks||0; document.getElementById('f-strikes').value = m.strikes||0; } 
+            else { document.getElementById('member-form').reset(); document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; onRankFormChange(); clearStrikes(); }
+            document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value));
+            document.getElementById('memberModal').classList.remove('hidden');
+        }
+        function closeModal() { document.getElementById('memberModal').classList.add('hidden'); }
+        document.getElementById('member-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const n = document.getElementById('f-name').value, d = document.getElementById('f-discord').value, r = document.getElementById('f-rank').value, p = document.getElementById('f-payment').value, dt = document.getElementById('f-date').value, ex = parseInt(document.getElementById('f-extra').value)||0, disc = document.getElementById('f-discount').value, s = parseInt(document.getElementById('f-strikes').value)||0;
+            if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], name:n, discord:d, rank:r, payment:p, lastPaymentDate:dt, extraWeeks:ex, discount:disc, strikes:s}; logAction(`Editó perfil de: ${n}`); }
+            else { members.push({id: members.length ? Math.max(...members.map(x=>x.id))+1 : 1, name:n, discord:d, rank:r, payment:p, lastPaymentDate:dt, extraWeeks:ex, discount:disc, strikes:s}); logAction(`Añadió miembro: ${n}`); }
+            saveToCloud(); closeModal();
+        });
+        function deleteMember(id) {
+            if(!checkPermission('delete')) return; const m = members.find(x=>x.id===id);
+            if(confirm('¿Eliminar a este miembro de GHOST?')) { logAction(`Expulsó a: ${m.name}`); members = members.filter(x=>x.id!==id); saveToCloud(); }
+        }
+        function logAction(act) { if(currentRole === 'Invitados') return; logs.unshift({ date: formatDateTime(), role: currentSubName ? `${currentRole} (${currentSubName})` : currentRole, action: act }); }
+        function renderFinanzas() {
+            let cash = 0, coca = 0, sns = 0, vintage = 0, mm9 = 0, minismg = 0, tec9 = 0, microsmg = 0, chalecos = 0;
+            members.forEach(m => {
+                const info = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                if (info.status === 'Al día' && m.discount !== 'Exonerado') {
+                    const mult = getDiscountMultiplier(m.discount);
+                    if(m.payment === 'Efectivo' || m.payment === 'Pagado') cash += 150000 * mult; if(m.payment === 'Coca') coca += Math.round(1500 * mult);
+                    if(m.payment === 'SNS') sns += Math.ceil(5 * mult); if(m.payment === 'Vintage') vintage += Math.ceil(4 * mult); if(m.payment === '9mm') mm9 += Math.ceil(3 * mult);
+                    if(m.payment === 'MiniSMG') { minismg += Math.ceil(1 * mult); cash += 30000 * mult; } if(m.payment === 'TEC9') { tec9 += Math.ceil(1 * mult); cash += 10000 * mult; }
+                    if(m.payment === 'MicroSMG') microsmg += Math.ceil(1 * mult); if(m.payment === 'Chalecos') chalecos += Math.ceil(11 * mult);
+                }
+            });
+            document.getElementById('fin-efectivo').innerText = "$" + Math.round(cash).toLocaleString('es-ES'); document.getElementById('fin-coca').innerText = coca.toLocaleString('es-ES'); document.getElementById('fin-sns').innerText = sns; document.getElementById('fin-vintage').innerText = vintage; document.getElementById('fin-9mm').innerText = mm9; document.getElementById('fin-minismg').innerText = minismg; document.getElementById('fin-tec9').innerText = tec9; document.getElementById('fin-microsmg').innerText = microsmg; document.getElementById('fin-chalecos').innerText = chalecos;
+        }
+        function renderRegistro() { const tbody = document.getElementById('logs-table-body'); tbody.innerHTML = ''; logs.forEach(l => { tbody.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400">${l.date}</td><td class="px-6 py-4 font-bold text-white">${l.role}</td><td class="px-6 py-4 text-zinc-300">${l.action}</td></tr>`; }); }
+        function formatDateTime() { const d=new Date(); return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
+        function formatDate(dt) { if(!dt) return 'N/A'; const p=dt.split('T')[0].split('-'); return `${p[2]}/${p[1]}/${p[0].slice(-2)}`; }
+        
+        function openImageModal() { document.getElementById('imageModal').classList.remove('hidden'); } 
+        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+        
+        document.getElementById('search-input').addEventListener('input', renderDashboard);
+    </script>
+</body>
+</html>
