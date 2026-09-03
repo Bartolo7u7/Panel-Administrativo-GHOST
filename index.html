@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V31.0 (Dual Auth)</title>
+    <title>GHOST | Panel Administrativo V32.0 (Secure & Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -135,7 +135,7 @@
                 <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-zinc-800 text-white px-4 py-3 rounded-lg font-semibold border border-zinc-700 shadow-sm text-sm interactive-btn">
                     <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline">Miembros</span>
                 </button>
-                <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
+                <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
                     <i class="fa-solid fa-money-bill-wave text-zinc-400"></i> <span class="hidden md:inline">Finanzas</span>
                 </button>
                 <button onclick="switchView('registro')" id="btn-nav-registro" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900 hover:text-white border border-transparent text-sm interactive-btn">
@@ -378,8 +378,8 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // ⚠️ PEGA AQUÍ TU CLIENT ID DE DISCORD DEVELOPER PORTAL
-        const DISCORD_CLIENT_ID = "1544988442050560050";
+        // ⚠️ REEMPLAZA AQUÍ TU CLIENT ID DE DISCORD DEVELOPER PORTAL
+        const DISCORD_CLIENT_ID = "TU_CLIENT_ID_AQUÍ";
 
         let currentUser = null; 
         let members = []; let logs = []; let dbUnsubscribe = null;
@@ -585,14 +585,25 @@
             document.getElementById('current-role-badge').innerText = badgeText;
             
             const bReg = document.getElementById('btn-nav-registro'); 
+            const bFin = document.getElementById('btn-nav-finanzas');
             const bReset = document.getElementById('btn-reset-db');
             
-            if (['JEFES'].includes(currentUser.role)) { 
+            const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+
+            if (currentUser.role === 'JEFES') { 
                 bReg.classList.replace('hidden', 'flex'); 
                 bReset.classList.replace('hidden', 'flex'); 
             } else { 
                 bReg.classList.replace('flex', 'hidden'); 
                 bReset.classList.replace('flex', 'hidden'); 
+            }
+
+            // Ocultar Finanzas a miembros de Discord o invitados
+            if (!isLeadership) {
+                bFin.classList.replace('flex', 'hidden');
+                bFin.classList.add('hidden');
+            } else {
+                bFin.classList.replace('hidden', 'flex');
             }
         }
 
@@ -701,7 +712,6 @@
                     quotaHtml = '<span class="text-zinc-500 italic text-xs"><i class="fa-solid fa-lock"></i> Inicia sesión</span>';
                     strikesHtml = '<span class="text-zinc-500 italic text-xs"><i class="fa-solid fa-lock"></i> Privado</span>';
                 } else {
-                    // Miembros de Discord o Directiva ven las cuotas de todos
                     const qInfo = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
                     const payInfo = getPaymentInfo(m.payment || "Pendiente", m.discount || '0');
                     const dLabel = m.discount && m.discount !== '0' ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-purple-950 text-purple-300 border font-bold">Desc: ${m.discount}</span>` : '';
@@ -713,7 +723,6 @@
                         <span class="inline-block py-0.5 px-2 rounded text-[10px] font-bold border ${qInfo.color}">${qInfo.text}</span>
                     `;
 
-                    // Control de Sanciones: Directiva ve todo, Miembro de Discord solo ve su propio registro
                     const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
                     const isOwnRecord = m.discord.toLowerCase().includes(currentUser.username.toLowerCase());
 
@@ -743,20 +752,32 @@
         }
 
         function switchView(view) {
+            const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+            if(view === 'finanzas' && (!isLeadership || currentUser.isGuest)) {
+                alert("No tienes permisos para ver las finanzas.");
+                return;
+            }
             if(view === 'finanzas' && currentUser.isGuest) return alert("Inicia sesión para ver las finanzas.");
+            
             ['miembros','finanzas','registro'].forEach(v => { 
                 const el = document.getElementById(`view-${v}`);
-                el.classList.add('hidden'); 
-                el.classList.remove('animate-view');
-                document.getElementById(`btn-nav-${v}`).classList.remove('bg-zinc-800','text-white'); 
+                if(el) {
+                    el.classList.add('hidden'); 
+                    el.classList.remove('animate-view');
+                }
+                const btnNav = document.getElementById(`btn-nav-${v}`);
+                if(btnNav) btnNav.classList.remove('bg-zinc-800','text-white'); 
             });
 
             const targetView = document.getElementById(`view-${view}`);
-            targetView.classList.remove('hidden');
-            void targetView.offsetWidth; 
-            targetView.classList.add('animate-view');
+            if(targetView) {
+                targetView.classList.remove('hidden');
+                void targetView.offsetWidth; 
+                targetView.classList.add('animate-view');
+            }
 
-            document.getElementById(`btn-nav-${view}`).classList.add('bg-zinc-800','text-white');
+            const targetBtn = document.getElementById(`btn-nav-${view}`);
+            if(targetBtn) targetBtn.classList.add('bg-zinc-800','text-white');
             
             if(view === 'finanzas') renderFinanzas(); 
             if(view === 'registro') renderRegistro();
@@ -795,13 +816,22 @@
             const map = { "Nuevo": { label: "Nuevo", color: "bg-teal-950 text-teal-300" }, "Pendiente": { label: "Pendiente", color: "bg-red-950 text-red-400" }, "Efectivo": { label: `$${Math.round(150000*m).toLocaleString('es')}`, color: "bg-emerald-950 text-emerald-300" }, "Coca": { label: `${Math.round(1500*m)} Coca`, color: "bg-lime-950 text-lime-300" }, "SNS": { label: `${Math.ceil(5*m)} SNS`, color: "bg-cyan-950 text-cyan-300" }, "Vintage": { label: `${Math.ceil(4*m)} Vintage`, color: "bg-blue-950 text-blue-300" }, "9mm": { label: `${Math.ceil(3*m)} 9mm`, color: "bg-indigo-950 text-indigo-300" }, "MiniSMG": { label: `${Math.ceil(1*m)} MiniSMG+$${Math.round(30000*m)/1000}k`, color: "bg-purple-950 text-purple-300" }, "TEC9": { label: `${Math.ceil(1*m)} TEC9+$${Math.round(10000*m)/1000}k`, color: "bg-fuchsia-950 text-fuchsia-300" }, "MicroSMG": { label: `${Math.ceil(1*m)} MicroSMG`, color: "bg-rose-950 text-rose-300" }, "Chalecos": { label: `${Math.ceil(11*m)} Chalecos`, color: "bg-amber-950 text-amber-300" }, "Pagado": { label: "Pagado", color: "bg-emerald-950 text-emerald-300" } };
             return map[k]||map["Pendiente"];
         }
+
+        // --- CORRECCIÓN DE FALTAS (TEXTO LEGIBLE) ---
         function formatStrikes(p) {
-            if(p>=108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>'; if(!p) return '0 Faltas';
-            let gr = Math.floor(p/54), r = p%54, it = Math.floor(r/18), r2 = r%18, lv = Math.floor(r2/3), ll = r2%3, pt=[];
-            if(gr) pt.push(`<span class="text-red-400 font-bold">${gr}G</span>`); if(it) pt.push(`<span class="text-orange-400">${it}I</span>`);
-            if(lv) pt.push(`<span class="text-yellow-400">${lv}L</span>`); if(ll) pt.push(`<span class="text-zinc-400">${ll}Llam</span>`);
-            return pt.join(' | ');
+            if(p >= 108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>';
+            if(!p) return '<span class="text-zinc-500">0 Faltas</span>';
+            let gr = Math.floor(p / 54), r = p % 54;
+            let it = Math.floor(r / 18), r2 = r % 18;
+            let lv = Math.floor(r2 / 3), ll = r2 % 3;
+            let pt = [];
+            if(gr) pt.push(`<span class="text-red-400 font-bold">${gr} Grave${gr > 1 ? 's' : ''}</span>`);
+            if(it) pt.push(`<span class="text-orange-400 font-semibold">${it} Intermedia${it > 1 ? 's' : ''}</span>`);
+            if(lv) pt.push(`<span class="text-yellow-400 font-semibold">${lv} Leve${lv > 1 ? 's' : ''}</span>`);
+            if(ll) pt.push(`<span class="text-zinc-300">${ll} Llamado${ll > 1 ? 's' : ''}</span>`);
+            return pt.join(' • ');
         }
+
         function addStrike(a) { let el = document.getElementById('f-strikes'); el.value = parseInt(el.value)+a; document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(el.value)); }
         function clearStrikes() { document.getElementById('f-strikes').value = 0; document.getElementById('strike-preview').innerHTML = '0 Faltas'; }
         function addExtraWeek() { let e = document.getElementById('f-extra'); e.value = parseInt(e.value)+1; }
