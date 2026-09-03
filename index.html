@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V34.0 (Discord IC Sync)</title>
+    <title>GHOST | Panel Administrativo V35.0 (IC Name Sync Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -42,7 +42,7 @@
 </head>
 <body class="bg-black text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
 
-    <!-- MODAL DE INICIO DE SESIÓN SIMPLIFICADO (SOLO DISCORD E INVITADO) -->
+    <!-- MODAL DE INICIO DE SESIÓN SIMPLIFICADO -->
     <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
         <div class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal">
             <div onclick="openImageModal()" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
@@ -344,7 +344,7 @@
         let members = []; let logs = []; let dbUnsubscribe = null;
         let sortCol = 'name'; let sortAsc = true;
 
-        // --- LOGIN CON DISCORD Y SINCRONIZACIÓN AUTOMÁTICA DE ROL + NOMBRE IC ---
+        // --- LOGIN CON DISCORD ---
         function loginWithDiscord() {
             if(DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ" || !DISCORD_CLIENT_ID) {
                 alert("Configura tu Client ID real de Discord en el código.");
@@ -375,11 +375,37 @@
                         headers: { authorization: `Bearer ${accessToken}` }
                     });
                     const userData = await userRes.json();
+                    const discordTag = (userData.username || "").toLowerCase().trim();
+                    const globalName = (userData.global_name || "").toLowerCase().trim();
+
+                    // 2. BUSCAR COINCIDENCIA DE NOMBRE IC EN FIRESTORE PRIMERO
+                    let matchedICName = null;
+                    try {
+                        const mainStateDoc = await db.collection('ghost_data').doc('main_state').get();
+                        if (mainStateDoc.exists) {
+                            const data = mainStateDoc.data();
+                            const mems = data.members || [];
+                            
+                            const foundMember = mems.find(m => {
+                                const mDisc = (m.discord || "").toLowerCase().replace('@', '').trim();
+                                return mDisc === discordTag || 
+                                       discordTag.includes(mDisc) || 
+                                       mDisc.includes(discordTag) ||
+                                       (globalName && mDisc.includes(globalName));
+                            });
+
+                            if (foundMember) {
+                                matchedICName = foundMember.name;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("Error al buscar el Nombre IC en la base de datos:", err);
+                    }
 
                     let assignedRole = 'Miembro';
                     let specialTitle = null;
 
-                    // 2. Verificar roles en el servidor de Discord
+                    // 3. Verificar roles en el servidor de Discord
                     if (DISCORD_GUILD_ID) {
                         try {
                             const memberRes = await fetch(`https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
@@ -390,44 +416,23 @@
                                 const userRoles = memberData.roles || [];
                                 const hasAnyRole = (roleArray) => roleArray.some(roleId => userRoles.includes(roleId));
 
+                                // Usar Nombre IC si existe, sino el usuario de Discord
+                                const displayName = matchedICName || userData.global_name || userData.username;
+
                                 if (hasAnyRole(ROLE_IDS_JEFES)) {
                                     assignedRole = 'JEFES';
-                                    specialTitle = `${userData.username} (Jefe)`;
+                                    specialTitle = `${displayName} (Jefe)`;
                                 } else if (hasAnyRole(ROLE_IDS_CUPULA)) {
                                     assignedRole = 'Cúpula Administrativa';
-                                    specialTitle = `${userData.username} (Cúpula)`;
+                                    specialTitle = `${displayName} (Cúpula)`;
                                 } else if (hasAnyRole(ROLE_IDS_MESABLANCA)) {
                                     assignedRole = 'La Mesa Blanca';
-                                    specialTitle = `${userData.username} (Mesa Blanca)`;
+                                    specialTitle = `${displayName} (Mesa Blanca)`;
                                 }
                             }
                         } catch (e) {
                             console.warn("No se pudieron verificar los roles del servidor de Discord:", e);
                         }
-                    }
-
-                    // 3. Buscar coincidencia del usuario de Discord con los miembros en la BD para obtener su Nombre IC
-                    let matchedICName = null;
-                    try {
-                        const mainStateDoc = await db.collection('ghost_data').doc('main_state').get();
-                        if (mainStateDoc.exists) {
-                            const data = mainStateDoc.data();
-                            const mems = data.members || [];
-                            const discordTag = userData.username.toLowerCase();
-                            const globalName = (userData.global_name || "").toLowerCase();
-
-                            const foundMember = mems.find(m => {
-                                const mDisc = (m.discord || "").toLowerCase().replace('@', '').trim();
-                                return mDisc === discordTag || discordTag.includes(mDisc) || mDisc.includes(discordTag) ||
-                                       (globalName && mDisc.includes(globalName));
-                            });
-
-                            if (foundMember) {
-                                matchedICName = foundMember.name;
-                            }
-                        }
-                    } catch (err) {
-                        console.warn("Error al buscar el Nombre IC en la base de datos:", err);
                     }
 
                     currentUser = {
@@ -521,12 +526,12 @@
         }
 
         function saveToCloud() { 
-    db.collection("ghost_data").doc("main_state").set({ members, logs })
-    .catch(err => {
-        console.error("Error detallado:", err);
-        alert("Error al guardar: " + err.message);
-    }); 
-}
+            db.collection("ghost_data").doc("main_state").set({ members, logs })
+            .catch(err => {
+                console.error("Error detallado:", err);
+                alert("Error al guardar: " + err.message);
+            }); 
+        }
 
         const RANK_STYLES = {
             "JEFES": "bg-red-950 text-red-500 border-red-900 font-black", "Mano Derecha": "bg-amber-950 text-orange-500 border-amber-900 font-bold",
