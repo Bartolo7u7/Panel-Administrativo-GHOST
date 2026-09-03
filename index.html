@@ -520,7 +520,13 @@
             });
         }
 
-        function saveToCloud() { db.collection("ghost_data").doc("main_state").set({ members, logs }).catch(() => alert("Error al guardar.")); }
+        function saveToCloud() { 
+    db.collection("ghost_data").doc("main_state").set({ members, logs })
+    .catch(err => {
+        console.error("Error detallado:", err);
+        alert("Error al guardar: " + err.message);
+    }); 
+}
 
         const RANK_STYLES = {
             "JEFES": "bg-red-950 text-red-500 border-red-900 font-black", "Mano Derecha": "bg-amber-950 text-orange-500 border-amber-900 font-bold",
