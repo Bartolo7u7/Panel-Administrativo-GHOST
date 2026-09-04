@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V44.0</title>
+    <title>GHOST | Panel Administrativo V45.0</title>
     <link rel="icon" type="image/jpeg" href="icono web panel de ghost.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -219,12 +219,12 @@
                 </div>
             </div>
 
-            <!-- VISTA: REGISTRO -->
+            <!-- VISTA: REGISTRO (LOGS EXCLUSIVO JEFES) -->
             <div id="view-registro" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <h2 class="text-3xl font-black mb-1 text-white">Registro de Actividad</h2>
                 <div class="flex flex-col sm:flex-row gap-3 mb-6 items-center">
-                    <p class="text-zinc-400 text-sm flex-1">Historial de acciones (Auditoría).</p>
-                    <input type="text" id="log-search-input" placeholder="Buscar por acción, responsable o fecha..." oninput="renderRegistro()" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg p-2.5 w-full sm:w-80 interactive-input">
+                    <p class="text-zinc-400 text-sm flex-1">Auditoría completa (Filtrable por acción, responsable o fecha).</p>
+                    <input type="text" id="log-search-input" placeholder="🔍 Buscar por acción, responsable o fecha..." oninput="renderRegistro()" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg p-2.5 w-full sm:w-96 interactive-input">
                 </div>
                 <div class="bg-zinc-900/85 backdrop-blur-md rounded-xl border border-zinc-800 shadow-lg overflow-hidden flex-1 flex flex-col">
                     <div class="overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
@@ -310,11 +310,11 @@
     <!-- MODAL SELECCIÓN DE PAGO -->
     <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
         <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-md shadow-2xl animate-modal">
-            <h3 class="text-xl font-bold text-white mb-2">Registrar Pago</h3>
+            <h3 class="text-xl font-bold text-white mb-2">Registrar Pago de Cuota</h3>
             <p id="payment-member-name" class="text-sm text-zinc-400 mb-4 pb-3 border-b border-zinc-800">Cargando...</p>
             <div class="space-y-4 mb-6">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Medio / Método de Pago utilizado</label>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Selecciona el Método con el que Pagó:</label>
                     <select id="modal-payment-method" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
                         <!-- Generado por JS -->
                     </select>
@@ -561,12 +561,12 @@
             renderMemberPortal();
         }
 
-        // --- MODAL SELECTOR DE PAGO ---
+        // --- MODAL SELECTOR DE PAGO CORREGIDO ---
         function openPaymentModal(id) {
             if(!checkPermission('edit')) return;
             paymentTargetId = id;
             const m = members.find(x => x.id === id);
-            document.getElementById('payment-member-name').innerText = `Miembro: ${m.name}`;
+            document.getElementById('payment-member-name').innerText = `Miembro: ${m.name} (Rango: ${m.rank})`;
             
             const mult = getDiscountMultiplier(m.discount);
             const sel = document.getElementById('modal-payment-method');
@@ -595,8 +595,10 @@
             const pI = getPaymentInfo(chosenMethod, m.discount);
 
             if(!m.payHistory) m.payHistory = [];
-            m.payHistory.unshift({ date: formatDateTime(), detail: pI.label });
+            m.payHistory.unshift({ date: formatDateTime(), detail: `${chosenMethod}: ${pI.label}` });
             
+            // Actualizar método de pago activo y avanzar fecha
+            m.payment = chosenMethod;
             if(m.lastPaymentDate) {
                 let d = new Date(m.lastPaymentDate + 'T00:00:00'); 
                 d.setDate(d.getDate() + 7); 
@@ -605,7 +607,7 @@
                 m.lastPaymentDate = new Date().toISOString().split('T')[0];
             }
 
-            logAction(`Pagó Cuota con [${chosenMethod}]: ${pI.label} (${m.name})`);
+            logAction(`Registró pago con [${chosenMethod}] (${pI.label}) para ${m.name}`);
             closePaymentModal();
             await saveToCloud();
         }
@@ -657,8 +659,8 @@
             pc.innerHTML = `
                 ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950 border border-red-900 p-2 text-center rounded text-red-500 font-black mb-3">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS}">${f.rank}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Pago Base</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color}">${q.text}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Método de Pago</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Estado de Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color}">${q.text}</span></div>
                 <div class="flex justify-between items-center pt-1"><span class="text-xs font-bold text-zinc-400 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400">${formatStrikes(f.strikes||0)}</span></div>
             `;
         }
@@ -687,13 +689,14 @@
         }
         function calculateQuotaStatus(pay, last, ex=0, disc='0') {
             if(disc==='Exonerado') return {status:'Al día',color:'bg-amber-950 text-amber-300 border-amber-500',text:'Exonerado',weeksLate:0};
-            if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'Pendiente',weeksLate:1};
-            if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400',text:'No Data',weeksLate:0};
+            if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ CUOTA PENDIENTE (1 sem.)',weeksLate:1};
+            if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400',text:'Sin Fecha Base',weeksLate:0};
             const l=new Date(last+'T00:00:00'), n=new Date();
-            if(pay==='Nuevo') { const f=new Date(l); f.setDate(f.getDate()+7); f.setHours(23,59,59); return n<=f ? {status:'Libre',color:'bg-teal-950 text-teal-300',text:`Libre`,weeksLate:0} : {status:'Pendiente',color:'bg-red-950 text-red-400',text:'Expirado',weeksLate:1}; }
+            if(pay==='Nuevo') { const f=new Date(l); f.setDate(f.getDate()+7); f.setHours(23,59,59); return n<=f ? {status:'Libre',color:'bg-teal-950 text-teal-300',text:`Libre`,weeksLate:0} : {status:'Pendiente',color:'bg-red-950 text-red-400',text:'⚠️ LIBRE EXPIRADO (1 sem.)',weeksLate:1}; }
             const sun=new Date(l); sun.setDate(sun.getDate()+(l.getDay()===0?0:7-l.getDay())+(ex*7)); sun.setHours(23,59,59);
-            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400',text:`Límite: ${formatDate(sun.toISOString())}`,weeksLate:0};
-            const w = 1+Math.floor((n-sun)/(86400000*7)); return {status:'Atrasado',color:'bg-red-950 text-red-400',text:`${w} atrasada(s)`,weeksLate:w};
+            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400',text:`Al día (Dom ${formatDate(sun.toISOString())})`,weeksLate:0};
+            const w = 1+Math.floor((n-sun)/(86400000*7)); 
+            return {status:'Atrasado',color:'bg-red-950 text-red-400',text:`❌ ATRASADO: ${w} sem. pendiente(s)`,weeksLate:w};
         }
         function getPaymentInfo(k, d) {
             const m = getDiscountMultiplier(d), map = { "Nuevo":{label:"Nuevo",color:"bg-teal-950 text-teal-300"},"Pendiente":{label:"Pendiente",color:"bg-red-950 text-red-400"},"Efectivo":{label:`$${Math.round(150000*m).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300"},"Coca":{label:`${Math.round(1500*m)} Coca`,color:"bg-lime-950 text-lime-300"},"SNS":{label:`5 SNS`,color:"bg-cyan-950 text-cyan-300"},"Vintage":{label:`4 Vintage`,color:"bg-blue-950 text-blue-300"},"9mm":{label:`3 9mm`,color:"bg-indigo-950 text-indigo-300"},"MiniSMG":{label:`MiniSMG`,color:"bg-purple-950 text-purple-300"},"TEC9":{label:`TEC9`,color:"bg-fuchsia-950 text-fuchsia-300"},"MicroSMG":{label:`MicroSMG`,color:"bg-rose-950 text-rose-300"},"Chalecos":{label:`11 Chalecos`,color:"bg-amber-950 text-amber-300"},"Pagado":{label:"Pagado",color:"bg-emerald-950 text-emerald-300"} };
@@ -749,13 +752,30 @@
             document.getElementById('fin-efectivo').innerText = "$" + Math.round(cash).toLocaleString('es-ES'); document.getElementById('fin-coca').innerText = coca.toLocaleString('es-ES'); document.getElementById('fin-sns').innerText = sns; document.getElementById('fin-vintage').innerText = vintage; document.getElementById('fin-9mm').innerText = mm9; document.getElementById('fin-minismg').innerText = minismg; document.getElementById('fin-tec9').innerText = tec9; document.getElementById('fin-microsmg').innerText = microsmg; document.getElementById('fin-chalecos').innerText = chalecos;
         }
 
+        // --- BUSCADOR DE LOGS MULTICRITERIO ---
         function renderRegistro() { 
-            const tb = document.getElementById('logs-table-body'), term = (document.getElementById('log-search-input')?.value||'').toLowerCase();
+            const tb = document.getElementById('logs-table-body');
+            const term = (document.getElementById('log-search-input')?.value || '').toLowerCase().trim();
             if(!tb) return; tb.innerHTML = ''; 
-            logs.filter(l => l.action.toLowerCase().includes(term) || l.role.toLowerCase().includes(term) || l.date.toLowerCase().includes(term)).forEach(l => { 
+            
+            const filteredLogs = logs.filter(l => {
+                if(!term) return true;
+                const actionMatch = (l.action || '').toLowerCase().includes(term);
+                const roleMatch = (l.role || '').toLowerCase().includes(term);
+                const dateMatch = (l.date || '').toLowerCase().includes(term);
+                return actionMatch || roleMatch || dateMatch;
+            });
+
+            if(filteredLogs.length === 0) {
+                tb.innerHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-zinc-500 italic">No se encontraron registros en los logs.</td></tr>`;
+                return;
+            }
+
+            filteredLogs.forEach(l => { 
                 tb.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400 whitespace-nowrap">${l.date}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-zinc-300 min-w-[250px]">${l.action}</td></tr>`; 
             }); 
         }
+
         document.getElementById('search-input')?.addEventListener('input', renderDashboard);
     </script>
 </body>
