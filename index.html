@@ -544,7 +544,7 @@
             finally { hideLoader(); }
         }
 
-        // --- SISTEMA DE GALERÍA Y REACCIONES (OPTIMIZADO SIN STORAGE) ---
+        // --- SISTEMA DE GALERÍA Y REACCIONES (COMPATIBLE FIRESTORE) ---
         function openImageModal(src, caption) {
             document.getElementById('fullscreen-image').src = src;
             const captionEl = document.getElementById('fullscreen-caption');
@@ -607,16 +607,22 @@
             if(!img) return;
 
             if(!img.reactions) img.reactions = {};
-            if(!img.reactions[emoji]) img.reactions[emoji] = [];
-
-            const userIdentifier = currentUser.username;
-            const index = img.reactions[emoji].indexOf(userIdentifier);
+            
+            // Usamos un string plano separado por comas para evitar arrays anidados en Firestore
+            let usersStr = img.reactions[emoji] || "";
+            let usersArr = usersStr ? usersStr.split(',').map(u => u.trim()) : [];
+            const index = usersArr.indexOf(currentUser.username);
 
             if(index > -1) {
-                img.reactions[emoji].splice(index, 1);
-                if(img.reactions[emoji].length === 0) delete img.reactions[emoji];
+                usersArr.splice(index, 1);
+                if(usersArr.length === 0) {
+                    delete img.reactions[emoji];
+                } else {
+                    img.reactions[emoji] = usersArr.join(',');
+                }
             } else {
-                img.reactions[emoji].push(userIdentifier);
+                usersArr.push(currentUser.username);
+                img.reactions[emoji] = usersArr.join(',');
             }
 
             try {
@@ -668,8 +674,9 @@
                 let reactionsHtml = '<div class="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-zinc-800/80" onclick="event.stopPropagation()">';
                 
                 availableEmojis.forEach(emoji => {
-                    const reactedUsers = (img.reactions && img.reactions[emoji]) || [];
-                    const count = reactedUsers.length;
+                    const usersStr = (img.reactions && img.reactions[emoji]) || "";
+                    const reactedUsers = usersStr ? usersStr.split(',').map(u => u.trim()) : [];
+                    const count = reactedUsers.length > 0 && reactedUsers[0] !== "" ? reactedUsers.length : 0;
                     const hasReacted = reactedUsers.includes(currentUser.username);
                     
                     const btnClass = hasReacted 
