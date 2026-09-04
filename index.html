@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V46.0</title>
+    <title>GHOST | Panel Administrativo V47.0</title>
     <link rel="icon" type="image/jpeg" href="icono web panel de ghost.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -484,7 +484,10 @@
             const term = (document.getElementById('search-input')?.value || '').toLowerCase();
             const rF = document.getElementById('rank-filter')?.value || '';
             const sF = document.getElementById('strike-filter')?.value || '';
-            const stF = document.getElementById('status-filter')?.value || 'Activo';
+            
+            // CORREGIDO: Uso de operador de nulidad para permitir el valor vacío "" (Histórico)
+            const statusEl = document.getElementById('status-filter');
+            const stF = statusEl ? statusEl.value : 'Activo';
 
             let filtered = members.filter(m => {
                 const s1 = m.name.toLowerCase().includes(term) || (m.discord||'').toLowerCase().includes(term);
