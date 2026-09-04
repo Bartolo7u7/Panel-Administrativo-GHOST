@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- FIREBASE SDK (Firestore) -->
+    <!-- FIREBASE SDK (Solo Firestore) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -415,6 +415,9 @@
     </div>
 
     <script>
+        // PEGA TU API KEY DE IMGBB AQUÍ ABAJO:
+        const IMGBB_API_KEY = "0a824764dca72f7e4df7dda75f1aceae"; 
+
         const firebaseConfig = {
             apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo", authDomain: "panel-administrativo-de-ghost.firebaseapp.com", projectId: "panel-administrativo-de-ghost", storageBucket: "panel-administrativo-de-ghost.firebasestorage.app", messagingSenderId: "80093895927", appId: "1:80093895927:web:824ac7131336e1f130c7f2"
         };
@@ -544,7 +547,7 @@
             finally { hideLoader(); }
         }
 
-        // --- SISTEMA DE GALERÍA Y REACCIONES (COMPATIBLE FIRESTORE) ---
+        // --- SUBIDA DIRECTA CON IMGBB ---
         function openImageModal(src, caption) {
             document.getElementById('fullscreen-image').src = src;
             const captionEl = document.getElementById('fullscreen-caption');
@@ -561,44 +564,49 @@
             document.getElementById('gallery-title').value = ''; 
         }
 
-        function uploadImage(e) {
+        async function uploadImage(e) {
             e.preventDefault();
             if(currentUser.isGuest) return alert("Los invitados no pueden subir fotos.");
+            if(IMGBB_API_KEY === "AQUÍ_TU_API_KEY") return alert("Ingresa tu API Key de ImgBB en el código.");
+
             const file = document.getElementById('gallery-file').files[0];
             const title = document.getElementById('gallery-title').value.trim();
             if(!file) return;
             
-            showLoader("Procesando imagen...");
-            
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async function() {
-                try {
-                    const base64String = reader.result;
-                    const newImg = { 
-                        id: Date.now(), 
-                        url: base64String, 
-                        title: title,
-                        uploader: currentUser.icName || currentUser.username, 
-                        date: formatDateTime(),
-                        reactions: {} 
-                    };
-                    
-                    images.unshift(newImg);
-                    await db.collection("ghost_data").doc("main_state").update({ images: images });
-                    
-                    logAction(`Subió una foto a la galería`);
-                    closeUploadModal();
-                } catch(err) { 
-                    alert("Error al guardar imagen: " + err.message); 
-                } finally { 
-                    hideLoader(); 
-                }
-            };
-            reader.onerror = function() {
-                hideLoader();
-                alert("Error al leer el archivo de imagen.");
-            };
+            showLoader("Subiendo foto a la nube...");
+            try {
+                const formData = new FormData();
+                formData.append("image", file);
+
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+                if(!data.success) throw new Error(data.error ? data.error.message : "Error de respuesta en ImgBB");
+
+                const imageUrl = data.data.url;
+
+                const newImg = { 
+                    id: Date.now(), 
+                    url: imageUrl, 
+                    title: title,
+                    uploader: currentUser.icName || currentUser.username, 
+                    date: formatDateTime(),
+                    reactions: {} 
+                };
+                
+                images.unshift(newImg);
+                await db.collection("ghost_data").doc("main_state").update({ images: images });
+                
+                logAction(`Subió una foto a la galería`);
+                closeUploadModal();
+            } catch(err) { 
+                alert("Error al subir la imagen: " + err.message); 
+            } finally { 
+                hideLoader(); 
+            }
         }
 
         async function toggleReaction(imageId, emoji) {
@@ -608,7 +616,6 @@
 
             if(!img.reactions) img.reactions = {};
             
-            // Usamos un string plano separado por comas para evitar arrays anidados en Firestore
             let usersStr = img.reactions[emoji] || "";
             let usersArr = usersStr ? usersStr.split(',').map(u => u.trim()) : [];
             const index = usersArr.indexOf(currentUser.username);
