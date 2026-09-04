@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V47.0</title>
+    <title>GHOST | Panel Administrativo V48.0</title>
     <link rel="icon" type="image/jpeg" href="icono web panel de ghost.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -285,6 +285,10 @@
                         </div>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Notas u Observaciones Internas</label>
+                    <textarea id="f-notes" rows="2" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input text-xs" placeholder="Ej: Aviso de vacaciones hasta el viernes, motivo de faltas..."></textarea>
+                </div>
                 <div class="bg-black p-4 rounded-lg border border-zinc-800">
                     <label class="block text-xs uppercase font-bold text-zinc-400 mb-2">Faltas (Puntos)</label>
                     <div class="flex flex-wrap gap-2 mb-3">
@@ -485,7 +489,6 @@
             const rF = document.getElementById('rank-filter')?.value || '';
             const sF = document.getElementById('strike-filter')?.value || '';
             
-            // CORREGIDO: Uso de operador de nulidad para permitir el valor vacío "" (Histórico)
             const statusEl = document.getElementById('status-filter');
             const stF = statusEl ? statusEl.value : 'Activo';
 
@@ -526,6 +529,12 @@
                 const isActivo = m.status === 'Activo' || !m.status;
                 const statBadge = isActivo ? '' : `<span class="ml-2 py-0.5 px-2 rounded text-[10px] font-black uppercase ${m.status==='CK'?'bg-red-950 text-red-500 border border-red-900':'bg-orange-950 text-orange-400 border border-orange-900'}">${m.status}</span>`;
 
+                // Indicador visual de advertencia temprana (A un paso del límite de expulsión: 108 pts)
+                const warningBadge = (m.strikes >= 54 && m.strikes < 108) ? `<span class="ml-2 py-0.5 px-1.5 rounded text-[9px] font-black uppercase bg-amber-950 text-amber-400 border border-amber-800 animate-pulse" title="A un paso del límite de expulsión (108 pts)">⚠️ En Riesgo</span>` : '';
+                
+                // Nota interna si existe
+                const notesHtml = m.notes ? `<div class="text-[10px] text-amber-300/80 italic mt-0.5 flex items-center gap-1" title="${m.notes}"><i class="fa-solid fa-note-sticky text-amber-500"></i><span class="truncate max-w-[220px]">${m.notes}</span></div>` : '';
+
                 let qHtml = currentUser.isGuest ? '<span class="text-zinc-500 text-xs"><i class="fa-solid fa-lock"></i></span>' : `<div class="mb-1 text-[10px]"><span class="py-1 px-2 rounded border ${pI.color}">${pI.label}</span></div><div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${m.extraWeeks>0?' (+'+m.extraWeeks+')':''}</div><span class="py-0.5 px-2 rounded text-[10px] font-bold border ${qI.color}">${qI.text}</span>`;
                 let sHtml = currentUser.isGuest ? '<span class="text-zinc-500 text-xs"><i class="fa-solid fa-lock"></i></span>' : formatStrikes(m.strikes);
                 
@@ -540,13 +549,28 @@
                 }
 
                 // Desktop Row
-                tbody.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800 hover:bg-zinc-900/80 transition-colors"><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${m.name}${statBadge}</td><td class="px-6 py-4 whitespace-nowrap text-xs"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i>${m.discord}</td><td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS}">${m.rank}</span></td><td class="px-6 py-4 min-w-[200px]">${qHtml}</td><td class="px-6 py-4 text-xs min-w-[150px]">${sHtml}</td><td class="px-6 py-4">${actions}</td></tr>`;
+                tbody.innerHTML += `
+                    <tr class="bg-zinc-950/40 border-b border-zinc-800 hover:bg-zinc-900/80 transition-colors">
+                        <td class="px-6 py-4 font-bold text-white whitespace-nowrap">
+                            <div>${m.name}${statBadge}${warningBadge}</div>
+                            ${notesHtml}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-xs"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i>${m.discord}</td>
+                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS}">${m.rank}</span></td>
+                        <td class="px-6 py-4 min-w-[200px]">${qHtml}</td>
+                        <td class="px-6 py-4 text-xs min-w-[150px]">${sHtml}</td>
+                        <td class="px-6 py-4">${actions}</td>
+                    </tr>`;
 
                 // Mobile Card
                 mContainer.innerHTML += `
                     <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-lg">
                         <div class="flex justify-between items-start mb-3 border-b border-zinc-800 pb-3">
-                            <div><h4 class="font-black text-white text-lg">${m.name}${statBadge}</h4><p class="text-xs text-zinc-400 mt-1"><i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}</p></div>
+                            <div>
+                                <h4 class="font-black text-white text-lg flex items-center flex-wrap gap-1">${m.name}${statBadge}${warningBadge}</h4>
+                                <p class="text-xs text-zinc-400 mt-1"><i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}</p>
+                                ${notesHtml}
+                            </div>
                             <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS}">${m.rank}</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
@@ -643,10 +667,10 @@
 
         function exportToCSV() {
             if(currentUser.isGuest || currentUser.role === 'Miembro') return alert("Sin permisos.");
-            let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas\n";
+            let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas,Notas\n";
             members.forEach(m => {
                 const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
-                csv += `"${m.name}","${m.discord}","${m.rank}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}"\n`;
+                csv += `"${m.name}","${m.discord}","${m.rank}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}","${(m.notes||'').replace(/"/g, '""')}"\n`;
             });
             const l = document.createElement("a"); l.href = encodeURI(csv); l.download = `GHOST_Reporte.csv`;
             document.body.appendChild(l); l.click(); document.body.removeChild(l);
@@ -664,7 +688,8 @@
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS}">${f.rank}</span></div>
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Método de Pago</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Estado de Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color}">${q.text}</span></div>
-                <div class="flex justify-between items-center pt-1"><span class="text-xs font-bold text-zinc-400 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400">${formatStrikes(f.strikes||0)}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400">${formatStrikes(f.strikes||0)}</span></div>
+                ${f.notes ? `<div class="bg-black/50 p-3 rounded border border-zinc-800"><span class="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nota Interna:</span><p class="text-xs text-amber-300 italic">${f.notes}</p></div>` : ''}
             `;
         }
 
@@ -727,14 +752,41 @@
         function openModal(id = null) {
             if(!checkPermission('add_edit')) return; editId = id; document.getElementById('modal-title').innerText = id ? 'Editar Miembro' : 'Nuevo Miembro';
             if(id) {
-                const m = members.find(x=>x.id===id); document.getElementById('f-name').value = m.name; document.getElementById('f-discord').value = m.discord; document.getElementById('f-rank').value = m.rank||'Soldado'; document.getElementById('f-discount').value = m.discount||'0'; updatePaymentOptions(); document.getElementById('f-payment').value = m.payment||'Nuevo'; document.getElementById('f-date').value = m.lastPaymentDate; document.getElementById('f-extra').value = m.extraWeeks||0; document.getElementById('f-strikes').value = m.strikes||0;
-            } else { document.getElementById('member-form').reset(); document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; onRankFormChange(); clearStrikes(); }
-            document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value)); document.getElementById('memberModal').classList.remove('hidden');
+                const m = members.find(x=>x.id===id); 
+                document.getElementById('f-name').value = m.name; 
+                document.getElementById('f-discord').value = m.discord; 
+                document.getElementById('f-rank').value = m.rank||'Soldado'; 
+                document.getElementById('f-discount').value = m.discount||'0'; 
+                updatePaymentOptions(); 
+                document.getElementById('f-payment').value = m.payment||'Nuevo'; 
+                document.getElementById('f-date').value = m.lastPaymentDate; 
+                document.getElementById('f-extra').value = m.extraWeeks||0; 
+                document.getElementById('f-strikes').value = m.strikes||0;
+                document.getElementById('f-notes').value = m.notes||'';
+            } else { 
+                document.getElementById('member-form').reset(); 
+                document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; 
+                onRankFormChange(); 
+                clearStrikes(); 
+                document.getElementById('f-notes').value = '';
+            }
+            document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value)); 
+            document.getElementById('memberModal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('memberModal').classList.add('hidden'); }
         document.getElementById('member-form').addEventListener('submit', async e => {
             e.preventDefault();
-            const mData = { name:document.getElementById('f-name').value, discord:document.getElementById('f-discord').value, rank:document.getElementById('f-rank').value, payment:document.getElementById('f-payment').value, lastPaymentDate:document.getElementById('f-date').value, extraWeeks:parseInt(document.getElementById('f-extra').value)||0, discount:document.getElementById('f-discount').value, strikes:parseInt(document.getElementById('f-strikes').value)||0 };
+            const mData = { 
+                name: document.getElementById('f-name').value, 
+                discord: document.getElementById('f-discord').value, 
+                rank: document.getElementById('f-rank').value, 
+                payment: document.getElementById('f-payment').value, 
+                lastPaymentDate: document.getElementById('f-date').value, 
+                extraWeeks: parseInt(document.getElementById('f-extra').value)||0, 
+                discount: document.getElementById('f-discount').value, 
+                strikes: parseInt(document.getElementById('f-strikes').value)||0,
+                notes: document.getElementById('f-notes').value.trim()
+            };
             if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], ...mData}; logAction(`Editó a ${mData.name}`); }
             else { mData.id = members.length ? Math.max(...members.map(x=>x.id))+1 : 1; mData.status = 'Activo'; members.push(mData); logAction(`Añadió a ${mData.name}`); }
             closeModal(); await saveToCloud();
