@@ -514,7 +514,10 @@
             activos.forEach(m => {
                 const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
                 if (i.status === 'Pendiente' || i.status === 'Atrasado') atrasados++;
-                if (i.status === 'Al día' && m.discount !== 'Exonerado') totalMoney += 150000 * getDiscountMultiplier(m.discount);
+                if (i.status === 'Al día' && m.discount !== 'Exonerado') {
+                    const dv = getDiscountValues(m.discount);
+                    totalMoney += dv.remVal;
+                }
             });
             document.getElementById('stat-pending').innerText = atrasados; document.getElementById('stat-money').innerText = "$" + Math.round(totalMoney).toLocaleString('es-ES');
 
@@ -608,22 +611,23 @@
             const m = members.find(x => x.id === id);
             document.getElementById('payment-member-name').innerText = `Miembro: ${m.name} (Rango: ${m.rank})`;
             
-            const mult = getDiscountMultiplier(m.discount);
+            const dv = getDiscountValues(m.discount);
             const sel = document.getElementById('modal-payment-method');
             
-            const snsCount = Math.ceil(5 * mult);
-            const vintageCount = Math.ceil(4 * mult);
-            const mm9Count = Math.ceil(3 * mult);
-            const miniSmgCount = Math.ceil(1 * mult);
-            const miniSmgCash = Math.round(30000 * mult);
-            const tec9Count = Math.ceil(1 * mult);
-            const tec9Cash = Math.round(10000 * mult);
-            const microSmgCount = Math.ceil(1 * mult);
-            const chalecosCount = Math.ceil(11 * mult);
+            const snsCount = Math.round(5 * dv.ratio);
+            const vintageCount = Math.round(4 * dv.ratio);
+            const mm9Count = Math.round(3 * dv.ratio);
+            const miniSmgCount = dv.remVal > 0 ? 1 : 0;
+            const miniSmgCash = Math.max(0, 30000 - dv.cash);
+            const tec9Count = dv.remVal > 0 ? 1 : 0;
+            const tec9Cash = Math.max(0, 10000 - dv.cash);
+            const microSmgCount = dv.remVal > 0 ? 1 : 0;
+            const chalecosCount = Math.round(11 * dv.ratio);
+            const cocaCount = Math.max(0, 1500 - dv.hojas);
 
             sel.innerHTML = `
-                <option value="Efectivo">Efectivo ($${Math.round(150000*mult).toLocaleString('es')})</option>
-                <option value="Coca">${Math.round(1500*mult)} Hojas de Coca</option>
+                <option value="Efectivo">Efectivo ($${Math.round(dv.remVal).toLocaleString('es')})</option>
+                <option value="Coca">${cocaCount} Hojas de Coca</option>
                 <option value="SNS">${snsCount} SNS</option>
                 <option value="Vintage">${vintageCount} Vintage</option>
                 <option value="9mm">${mm9Count} 9mm</option>
@@ -727,26 +731,35 @@
             const tb = document.getElementById(`btn-nav-${view}`); if(tb) tb.classList.add('bg-zinc-800/90','text-white');
         }
 
-        function getDiscountMultiplier(d) { return d === 'Exonerado' ? 0 : (parseInt(d)||0)<=0 ? 1 : (1500-parseInt(d))/1500; }
+        function getDiscountValues(d) {
+            if (d === 'Exonerado') return { hojas: 1500, cash: 150000, remVal: 0, ratio: 0 };
+            const hojas = parseInt(d) || 0;
+            const cash = hojas * 100; // 100 hojas = $10.000 ($100 c/u)
+            const remVal = Math.max(0, 150000 - cash);
+            const ratio = remVal / 150000;
+            return { hojas, cash, remVal, ratio };
+        }
         
         function updatePaymentOptions() {
-            const m = getDiscountMultiplier(document.getElementById('f-discount').value), s = document.getElementById('f-payment'), v = s.value;
+            const dv = getDiscountValues(document.getElementById('f-discount').value);
+            const s = document.getElementById('f-payment'), v = s.value;
             
-            const snsCount = Math.ceil(5 * m);
-            const vintageCount = Math.ceil(4 * m);
-            const mm9Count = Math.ceil(3 * m);
-            const miniSmgCount = Math.ceil(1 * m);
-            const miniSmgCash = Math.round(30000 * m);
-            const tec9Count = Math.ceil(1 * m);
-            const tec9Cash = Math.round(10000 * m);
-            const microSmgCount = Math.ceil(1 * m);
-            const chalecosCount = Math.ceil(11 * m);
+            const snsCount = Math.round(5 * dv.ratio);
+            const vintageCount = Math.round(4 * dv.ratio);
+            const mm9Count = Math.round(3 * dv.ratio);
+            const miniSmgCount = dv.remVal > 0 ? 1 : 0;
+            const miniSmgCash = Math.max(0, 30000 - dv.cash);
+            const tec9Count = dv.remVal > 0 ? 1 : 0;
+            const tec9Cash = Math.max(0, 10000 - dv.cash);
+            const microSmgCount = dv.remVal > 0 ? 1 : 0;
+            const chalecosCount = Math.round(11 * dv.ratio);
+            const cocaCount = Math.max(0, 1500 - dv.hojas);
 
             s.innerHTML = `
                 <option value="Nuevo">Nuevo</option>
                 <option value="Pendiente">Pendiente</option>
-                <option value="Efectivo">Efectivo ($${Math.round(150000*m).toLocaleString('es')})</option>
-                <option value="Coca">${Math.round(1500*m)} Coca</option>
+                <option value="Efectivo">Efectivo ($${Math.round(dv.remVal).toLocaleString('es')})</option>
+                <option value="Coca">${cocaCount} Coca</option>
                 <option value="SNS">${snsCount} SNS</option>
                 <option value="Vintage">${vintageCount} Vintage</option>
                 <option value="9mm">${mm9Count} 9mm</option>
@@ -781,22 +794,23 @@
             return {status:'Atrasado',color:'bg-red-950 text-red-400',text:`❌ ATRASADO: ${w} sem. pendiente(s)`,weeksLate:w};
         }
         function getPaymentInfo(k, d) {
-            const m = getDiscountMultiplier(d);
-            const snsCount = Math.ceil(5 * m);
-            const vintageCount = Math.ceil(4 * m);
-            const mm9Count = Math.ceil(3 * m);
-            const miniSmgCount = Math.ceil(1 * m);
-            const miniSmgCash = Math.round(30000 * m);
-            const tec9Count = Math.ceil(1 * m);
-            const tec9Cash = Math.round(10000 * m);
-            const microSmgCount = Math.ceil(1 * m);
-            const chalecosCount = Math.ceil(11 * m);
+            const dv = getDiscountValues(d);
+            const snsCount = Math.round(5 * dv.ratio);
+            const vintageCount = Math.round(4 * dv.ratio);
+            const mm9Count = Math.round(3 * dv.ratio);
+            const miniSmgCount = dv.remVal > 0 ? 1 : 0;
+            const miniSmgCash = Math.max(0, 30000 - dv.cash);
+            const tec9Count = dv.remVal > 0 ? 1 : 0;
+            const tec9Cash = Math.max(0, 10000 - dv.cash);
+            const microSmgCount = dv.remVal > 0 ? 1 : 0;
+            const chalecosCount = Math.round(11 * dv.ratio);
+            const cocaCount = Math.max(0, 1500 - dv.hojas);
 
             const map = { 
                 "Nuevo":{label:"Nuevo",color:"bg-teal-950 text-teal-300"},
                 "Pendiente":{label:"Pendiente",color:"bg-red-950 text-red-400"},
-                "Efectivo":{label:`$${Math.round(150000*m).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300"},
-                "Coca":{label:`${Math.round(1500*m)} Coca`,color:"bg-lime-950 text-lime-300"},
+                "Efectivo":{label:`$${Math.round(dv.remVal).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300"},
+                "Coca":{label:`${cocaCount} Coca`,color:"bg-lime-950 text-lime-300"},
                 "SNS":{label:`${snsCount} SNS`,color:"bg-cyan-950 text-cyan-300"},
                 "Vintage":{label:`${vintageCount} Vintage`,color:"bg-blue-950 text-blue-300"},
                 "9mm":{label:`${mm9Count} 9mm`,color:"bg-indigo-950 text-indigo-300"},
@@ -875,11 +889,22 @@
             members.filter(m => m.status === 'Activo' || !m.status).forEach(m => {
                 const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
                 if (i.status === 'Al día' && m.discount !== 'Exonerado') {
-                    const mul = getDiscountMultiplier(m.discount);
-                    if(['Efectivo','Pagado'].includes(m.payment)) cash+=150000*mul; if(m.payment==='Coca') coca+=Math.round(1500*mul);
-                    if(m.payment==='SNS') sns+=Math.ceil(5*mul); if(m.payment==='Vintage') vintage+=Math.ceil(4*mul); if(m.payment==='9mm') mm9+=Math.ceil(3*mul);
-                    if(m.payment==='MiniSMG') { minismg+=Math.ceil(1*mul); cash+=30000*mul; } if(m.payment==='TEC9') { tec9+=Math.ceil(1*mul); cash+=10000*mul; }
-                    if(m.payment==='MicroSMG') microsmg+=Math.ceil(1*mul); if(m.payment==='Chalecos') chalecos+=Math.ceil(11*mul);
+                    const dv = getDiscountValues(m.discount);
+                    if(['Efectivo','Pagado'].includes(m.payment)) cash += dv.remVal;
+                    if(m.payment==='Coca') coca += Math.max(0, 1500 - dv.hojas);
+                    if(m.payment==='SNS') sns += Math.round(5 * dv.ratio);
+                    if(m.payment==='Vintage') vintage += Math.round(4 * dv.ratio);
+                    if(m.payment==='9mm') mm9 += Math.round(3 * dv.ratio);
+                    if(m.payment==='MiniSMG') { 
+                        minismg += (dv.remVal > 0 ? 1 : 0); 
+                        cash += Math.max(0, 30000 - dv.cash); 
+                    }
+                    if(m.payment==='TEC9') { 
+                        tec9 += (dv.remVal > 0 ? 1 : 0); 
+                        cash += Math.max(0, 10000 - dv.cash); 
+                    }
+                    if(m.payment==='MicroSMG') microsmg += (dv.remVal > 0 ? 1 : 0);
+                    if(m.payment==='Chalecos') chalecos += Math.round(11 * dv.ratio);
                 }
             });
             document.getElementById('fin-efectivo').innerText = "$" + Math.round(cash).toLocaleString('es-ES'); document.getElementById('fin-coca').innerText = coca.toLocaleString('es-ES'); document.getElementById('fin-sns').innerText = sns; document.getElementById('fin-vintage').innerText = vintage; document.getElementById('fin-9mm').innerText = mm9; document.getElementById('fin-minismg').innerText = minismg; document.getElementById('fin-tec9').innerText = tec9; document.getElementById('fin-microsmg').innerText = microsmg; document.getElementById('fin-chalecos').innerText = chalecos;
