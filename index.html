@@ -45,7 +45,7 @@
     <!-- SPINNER DE CARGA GLOBAL -->
     <div id="global-loader" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl text-emerald-500 mb-4"></i>
-        <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con GHOST Cloud...</p>
+        <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con la nube de GHOST...</p>
     </div>
 
     <!-- MODAL DE INICIO DE SESIÓN -->
@@ -529,15 +529,27 @@
                 const isActivo = m.status === 'Activo' || !m.status;
                 const statBadge = isActivo ? '' : `<span class="ml-2 py-0.5 px-2 rounded text-[10px] font-black uppercase ${m.status==='CK'?'bg-red-950 text-red-500 border border-red-900':'bg-orange-950 text-orange-400 border border-orange-900'}">${m.status}</span>`;
 
-                // Indicador visual de advertencia temprana (A un paso del límite de expulsión: 108 pts)
-                const warningBadge = (m.strikes >= 54 && m.strikes < 108) ? `<span class="ml-2 py-0.5 px-1.5 rounded text-[9px] font-black uppercase bg-amber-950 text-amber-400 border border-amber-800 animate-pulse" title="A un paso del límite de expulsión (108 pts)">⚠️ En Riesgo</span>` : '';
-                
-                // Nota interna si existe
-                const notesHtml = m.notes ? `<div class="text-[10px] text-amber-300/80 italic mt-0.5 flex items-center gap-1" title="${m.notes}"><i class="fa-solid fa-note-sticky text-amber-500"></i><span class="truncate max-w-[220px]">${m.notes}</span></div>` : '';
+                // --- NUEVA LÓGICA DE PRIVACIDAD ---
+                const md = (m.discord || '').toLowerCase().replace('@', '').trim();
+                const isMe = md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName || '').toLowerCase();
+                const canViewData = !currentUser.isGuest && (isL || isMe);
 
-                let qHtml = currentUser.isGuest ? '<span class="text-zinc-500 text-xs"><i class="fa-solid fa-lock"></i></span>' : `<div class="mb-1 text-[10px]"><span class="py-1 px-2 rounded border ${pI.color}">${pI.label}</span></div><div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${m.extraWeeks>0?' (+'+m.extraWeeks+')':''}</div><span class="py-0.5 px-2 rounded text-[10px] font-bold border ${qI.color}">${qI.text}</span>`;
-                let sHtml = currentUser.isGuest ? '<span class="text-zinc-500 text-xs"><i class="fa-solid fa-lock"></i></span>' : formatStrikes(m.strikes);
+                // Indicador visual de advertencia temprana solo si tiene permisos para verlo
+                const warningBadge = (canViewData && m.strikes >= 54 && m.strikes < 108) ? `<span class="ml-2 py-0.5 px-1.5 rounded text-[9px] font-black uppercase bg-amber-950 text-amber-400 border border-amber-800 animate-pulse" title="A un paso del límite de expulsión (108 pts)">⚠️ En Riesgo</span>` : '';
                 
+                // Nota interna solo visible para altos mandos
+                const notesHtml = (isL && m.notes) ? `<div class="text-[10px] text-amber-300/80 italic mt-0.5 flex items-center gap-1" title="${m.notes}"><i class="fa-solid fa-note-sticky text-amber-500"></i><span class="truncate max-w-[220px]">${m.notes}</span></div>` : '';
+
+                // Ocultar la cuota y faltas a los demás miembros
+                let qHtml = canViewData ? 
+                    `<div class="mb-1 text-[10px]"><span class="py-1 px-2 rounded border ${pI.color}">${pI.label}</span></div><div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${m.extraWeeks>0?' (+'+m.extraWeeks+')':''}</div><span class="py-0.5 px-2 rounded text-[10px] font-bold border ${qI.color}">${qI.text}</span>` : 
+                    '<span class="text-zinc-500 text-[11px] px-2.5 py-1 bg-black/80 rounded border border-zinc-800" title="Información privada"><i class="fa-solid fa-lock mr-1 text-zinc-600"></i> Privado</span>';
+                
+                let sHtml = canViewData ? 
+                    formatStrikes(m.strikes) : 
+                    '<span class="text-zinc-500 text-[11px] px-2.5 py-1 bg-black/80 rounded border border-zinc-800" title="Información privada"><i class="fa-solid fa-lock mr-1 text-zinc-600"></i> Privado</span>';
+                // ------------------------------------
+
                 let actions = '<span class="text-zinc-600 text-xs">Lectura</span>';
                 if (!currentUser.isGuest && isL) {
                     actions = `<div class="flex items-center justify-end gap-3 text-lg">
