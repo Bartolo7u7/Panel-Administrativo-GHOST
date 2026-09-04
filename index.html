@@ -91,6 +91,9 @@
                 <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
                     <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline">Miembros</span>
                 </button>
+                <button onclick="switchView('garaje')" id="btn-nav-garaje" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
+                    <i class="fa-solid fa-warehouse text-zinc-400"></i> <span class="hidden md:inline">Garaje</span>
+                </button>
                 <button onclick="switchView('galeria')" id="btn-nav-galeria" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
                     <i class="fa-solid fa-images text-zinc-400"></i> <span class="hidden md:inline">Galería</span>
                 </button>
@@ -196,6 +199,23 @@
                 </section>
             </div>
 
+            <!-- VISTA: GARAJE (NUEVA) -->
+            <div id="view-garaje" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-black text-white">Garaje Organizativo</h2>
+                        <p class="text-zinc-400 text-sm mt-1">Catálogo de vehículos, estado y asignación operativa.</p>
+                    </div>
+                    <button id="btn-add-vehicle" onclick="openVehicleModal()" class="hidden bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md w-full md:w-auto">
+                        <i class="fa-solid fa-car-side"></i> Añadir Vehículo
+                    </button>
+                </div>
+                
+                <div id="garage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Vehículos generados por JS -->
+                </div>
+            </div>
+
             <!-- VISTA: GALERÍA -->
             <div id="view-galeria" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -265,6 +285,38 @@
     </div>
 
     <!-- MODALES VARIOS -->
+
+    <!-- MODAL VEHÍCULOS (GARAJE) -->
+    <div id="vehicleModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-md shadow-2xl animate-modal">
+            <h3 id="vehicle-modal-title" class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-car text-zinc-400 mr-2"></i> Añadir Vehículo</h3>
+            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b border-zinc-800">Registra un nuevo coche en el garaje de la organización.</p>
+            <form id="vehicle-form" onsubmit="saveVehicle(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Modelo / Nombre del Vehículo</label>
+                    <input type="text" id="v-model" required placeholder="Ej: Kuruma Blindado" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Asignación / Uso Permtido</label>
+                    <select id="v-usage" required class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                        <option value="Uso Público">Uso Público (Cualquier miembro)</option>
+                        <option value="Grupo Sigilo">Exclusivo: Grupo Sigilo</option>
+                        <option value="Operativa Antrax">Exclusivo: Operativa Antrax</option>
+                        <option value="Dealers">Exclusivo: Dealers</option>
+                        <option value="Jefatura">Exclusivo: Cúpula / Jefatura</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1 mt-2">Foto del Vehículo <span id="v-file-optional" class="text-zinc-500 font-normal lowercase hidden">(Opcional al editar)</span></label>
+                    <input type="file" id="v-file" accept="image/png, image/jpeg, image/webp" class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 interactive-btn cursor-pointer bg-black rounded-lg border border-zinc-800">
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-zinc-800 mt-6">
+                    <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-white text-black rounded-lg font-black interactive-btn shadow-md">Guardar Vehículo</button>
+                </div>
+            </form>
+        </div>
+    </div>
     
     <!-- MODAL DE IMAGEN FULLSCREEN -->
     <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-xl flex items-center justify-center z-[100] transition-opacity duration-300 p-4" onclick="closeImageModal()">
@@ -415,7 +467,7 @@
     </div>
 
     <script>
-        // PEGA TU API KEY DE IMGBB AQUÍ ABAJO:
+        // PEGA TU API KEY DE IMGBB AQUÍ ABAJO (La misma que obtuviste en el paso anterior):
         const IMGBB_API_KEY = "0a824764dca72f7e4df7dda75f1aceae"; 
 
         const firebaseConfig = {
@@ -427,7 +479,7 @@
         const DISCORD_CLIENT_ID = "1544988442050560050"; const DISCORD_GUILD_ID = "1541892950571749396";
         const ROLE_IDS_JEFES = ["1542005912544350260"]; const ROLE_IDS_CUPULA = ["1542007539447763055", "1542006640876978257"]; const ROLE_IDS_MESABLANCA = ["1542008676577972365", "1542008472978329712"];
 
-        let currentUser = null; let members = []; let logs = []; let images = []; let dbUnsubscribe = null;
+        let currentUser = null; let members = []; let logs = []; let images = []; let vehicles = []; let dbUnsubscribe = null;
         let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
         let targetStatusId = null; let paymentTargetId = null;
 
@@ -505,6 +557,9 @@
             document.getElementById('btn-nav-finanzas').classList.replace('hidden', 'flex');
 
             if(!currentUser.isGuest) document.getElementById('btn-upload-photo').classList.remove('hidden');
+            if(['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) {
+                document.getElementById('btn-add-vehicle').classList.replace('hidden', 'flex');
+            }
             
             loadDatabase();
         }
@@ -523,14 +578,15 @@
                     members = data.members || []; 
                     logs = data.logs || []; 
                     images = data.images || [];
+                    vehicles = data.vehicles || [];
                 } else { 
-                    members = []; logs = []; images = [];
-                    db.collection("ghost_data").doc("main_state").set({ members, logs, images }); 
+                    members = []; logs = []; images = []; vehicles = [];
+                    db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); 
                 }
                 
                 members.forEach(m => { if(!m.status) m.status = 'Activo'; });
 
-                renderDashboard(); renderFinanzas(); renderRegistro(); renderGallery();
+                renderDashboard(); renderFinanzas(); renderRegistro(); renderGallery(); renderGarage();
                 if (isFirstLoad) {
                     isFirstLoad = false;
                     const isL = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
@@ -542,12 +598,138 @@
 
         async function saveToCloud() { 
             showLoader("Guardando en la nube...");
-            try { await db.collection("ghost_data").doc("main_state").set({ members, logs, images }); } 
+            try { await db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); } 
             catch (err) { alert("Error al guardar: " + err.message); } 
             finally { hideLoader(); }
         }
 
-        // --- SUBIDA DIRECTA CON IMGBB ---
+        // --- SISTEMA DE GARAJE ---
+        let editVehicleId = null;
+        const USAGE_STYLES = {
+            "Uso Público": "bg-emerald-950/80 text-emerald-400 border-emerald-800",
+            "Grupo Sigilo": "bg-zinc-900/80 text-zinc-300 border-zinc-700",
+            "Operativa Antrax": "bg-green-950/80 text-green-500 border-green-900",
+            "Dealers": "bg-purple-950/80 text-purple-400 border-purple-900",
+            "Jefatura": "bg-amber-950/80 text-amber-500 border-amber-900"
+        };
+
+        function openVehicleModal(id = null) {
+            editVehicleId = id;
+            if(id) {
+                const v = vehicles.find(x => x.id === id);
+                document.getElementById('vehicle-modal-title').innerHTML = '<i class="fa-solid fa-pen text-zinc-400 mr-2"></i> Editar Vehículo';
+                document.getElementById('v-model').value = v.model;
+                document.getElementById('v-usage').value = v.usage;
+                document.getElementById('v-file').removeAttribute('required');
+                document.getElementById('v-file-optional').classList.remove('hidden');
+            } else {
+                document.getElementById('vehicle-modal-title').innerHTML = '<i class="fa-solid fa-car text-zinc-400 mr-2"></i> Añadir Vehículo';
+                document.getElementById('vehicle-form').reset();
+                document.getElementById('v-file').setAttribute('required', 'true');
+                document.getElementById('v-file-optional').classList.add('hidden');
+            }
+            document.getElementById('vehicleModal').classList.remove('hidden');
+        }
+
+        function closeVehicleModal() { document.getElementById('vehicleModal').classList.add('hidden'); }
+
+        async function saveVehicle(e) {
+            e.preventDefault();
+            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return alert("Sin permisos.");
+            
+            const model = document.getElementById('v-model').value.trim();
+            const usage = document.getElementById('v-usage').value;
+            const fileInput = document.getElementById('v-file');
+            const file = fileInput.files[0];
+
+            let imageUrl = null;
+
+            if (file) {
+                if(IMGBB_API_KEY === "AQUÍ_TU_API_KEY") return alert("Ingresa tu API Key de ImgBB en el código (Línea 390).");
+                showLoader("Subiendo imagen a la nube...");
+                try {
+                    const formData = new FormData(); formData.append("image", file);
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
+                    const data = await res.json();
+                    if(!data.success) throw new Error("Error en ImgBB");
+                    imageUrl = data.data.url;
+                } catch(err) { hideLoader(); return alert("Error al subir imagen: " + err.message); }
+            } else if (!editVehicleId) {
+                return alert("Selecciona una foto para el nuevo vehículo.");
+            }
+
+            if(editVehicleId) {
+                const i = vehicles.findIndex(x => x.id === editVehicleId);
+                vehicles[i].model = model;
+                vehicles[i].usage = usage;
+                if(imageUrl) vehicles[i].image = imageUrl;
+                logAction(`Editó el vehículo: ${model}`);
+            } else {
+                const newV = { id: Date.now(), model: model, usage: usage, image: imageUrl, addedBy: currentUser.icName || currentUser.username };
+                vehicles.push(newV);
+                logAction(`Añadió el vehículo: ${model}`);
+            }
+
+            closeVehicleModal();
+            await saveToCloud();
+        }
+
+        async function deleteVehicle(id) {
+            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return alert("Sin permisos.");
+            if(!confirm("¿Eliminar este vehículo del garaje?")) return;
+            const i = vehicles.findIndex(x => x.id === id);
+            if(i > -1) {
+                const modelName = vehicles[i].model;
+                vehicles.splice(i, 1);
+                logAction(`Eliminó el vehículo: ${modelName}`);
+                await saveToCloud();
+            }
+        }
+
+        function renderGarage() {
+            const grid = document.getElementById('garage-grid');
+            if(!grid) return; grid.innerHTML = '';
+            
+            if(!vehicles || vehicles.length === 0) {
+                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-500 py-16"><i class="fa-solid fa-warehouse text-5xl mb-3 opacity-30"></i><p class="text-sm font-bold uppercase tracking-wider">El garaje está vacío.</p></div>';
+                return;
+            }
+
+            const canEdit = ['JEFES', 'Cúpula Administrativa'].includes(currentUser.role);
+
+            vehicles.forEach(v => {
+                const badgeStyle = USAGE_STYLES[v.usage] || "bg-zinc-800 text-white border-zinc-600";
+                
+                let actionsHtml = '';
+                if(canEdit) {
+                    actionsHtml = `
+                        <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                            <button onclick="event.stopPropagation(); openVehicleModal(${v.id})" class="bg-blue-950/90 hover:bg-blue-900 border border-blue-800 text-blue-400 w-8 h-8 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="event.stopPropagation(); deleteVehicle(${v.id})" class="bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md" title="Eliminar"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    `;
+                }
+
+                grid.innerHTML += `
+                    <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/90 backdrop-blur-md shadow-lg flex flex-col interactive-card">
+                        <div class="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${v.image}', '<span class=\\'text-emerald-400 font-bold\\'>${v.model}</span> - ${v.usage}')">
+                            <img src="${v.image}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                            ${actionsHtml}
+                        </div>
+                        <div class="p-4 flex flex-col justify-between flex-1 bg-zinc-950/70 border-t border-zinc-800/50">
+                            <h3 class="text-white font-black text-lg mb-2 truncate" title="${v.model}">${v.model}</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="py-1 px-2.5 rounded text-[10px] font-bold uppercase border ${badgeStyle}">${v.usage}</span>
+                                <i class="fa-solid fa-key text-zinc-600" title="Añadido por ${v.addedBy}"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- SUBIDA DIRECTA CON IMGBB A GALERIA ---
         function openImageModal(src, caption) {
             document.getElementById('fullscreen-image').src = src;
             const captionEl = document.getElementById('fullscreen-caption');
@@ -957,12 +1139,12 @@
 
         function switchView(view) {
             if(view === 'finanzas' && (!['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role) || currentUser.isGuest)) return alert("Denegado: Solo altos mandos.");
-            ['mi-estado','miembros','galeria','finanzas','registro'].forEach(v => {
+            ['mi-estado','miembros','garaje','galeria','finanzas','registro'].forEach(v => {
                 const e = document.getElementById(`view-${v}`); if(e) { e.classList.add('hidden'); e.classList.remove('animate-view','flex'); }
                 const b = document.getElementById(`btn-nav-${v}`); if(b) b.classList.remove('bg-zinc-800/90','text-white');
             });
             const t = document.getElementById(`view-${view}`);
-            if(t) { t.classList.remove('hidden'); if(view==='mi-estado'||view==='miembros'||view==='galeria') t.classList.add('flex'); void t.offsetWidth; t.classList.add('animate-view'); }
+            if(t) { t.classList.remove('hidden'); if(view==='mi-estado'||view==='miembros'||view==='galeria'||view==='garaje') t.classList.add('flex'); void t.offsetWidth; t.classList.add('animate-view'); }
             const tb = document.getElementById(`btn-nav-${view}`); if(tb) tb.classList.add('bg-zinc-800/90','text-white');
         }
 
