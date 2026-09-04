@@ -44,7 +44,7 @@
 <body class="text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
 
     <!-- SPINNER DE CARGA GLOBAL -->
-    <div id="global-loader" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
+    <div id="global-loader" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl text-emerald-500 mb-4"></i>
         <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con GHOST Cloud...</p>
     </div>
@@ -209,7 +209,7 @@
                     </button>
                 </div>
                 
-                <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     <!-- Fotos generadas por JS -->
                 </div>
             </div>
@@ -546,7 +546,7 @@
             finally { hideLoader(); }
         }
 
-        // --- SISTEMA DE GALERÍA ---
+        // --- SISTEMA DE GALERÍA Y REACCIONES ---
         function openImageModal(src, caption) {
             document.getElementById('fullscreen-image').src = src;
             const captionEl = document.getElementById('fullscreen-caption');
@@ -583,12 +583,13 @@
                     path: path,
                     title: title,
                     uploader: currentUser.icName || currentUser.username, 
-                    date: formatDateTime() 
+                    date: formatDateTime(),
+                    reactions: {} // { "❤️": ["usuario1", "usuario2"], "🔥": ["usuario3"] }
                 };
                 
-                await db.collection("ghost_data").doc("main_state").update({ 
-                    images: firebase.firestore.FieldValue.arrayUnion(newImg) 
-                });
+                // Agregamos usando transacción o reemplazando el array completo limpiamente
+                images.unshift(newImg);
+                await db.collection("ghost_data").doc("main_state").update({ images: images });
                 
                 logAction(`Subió una foto a la galería`);
                 closeUploadModal();
@@ -597,19 +598,46 @@
             } finally { hideLoader(); }
         }
 
+        async function toggleReaction(imageId, emoji) {
+            if(currentUser.isGuest) return alert("Los invitados no pueden reaccionar.");
+            const img = images.find(x => x.id === imageId);
+            if(!img) return;
+
+            if(!img.reactions) img.reactions = {};
+            if(!img.reactions[emoji]) img.reactions[emoji] = [];
+
+            const userIdentifier = currentUser.username;
+            const index = img.reactions[emoji].indexOf(userIdentifier);
+
+            if(index > -1) {
+                // Si ya reaccionó con este emoji, lo quitamos (toggle)
+                img.reactions[emoji].splice(index, 1);
+                if(img.reactions[emoji].length === 0) delete img.reactions[emoji];
+            } else {
+                // Añadir reacción
+                img.reactions[emoji].push(userIdentifier);
+            }
+
+            try {
+                await db.collection("ghost_data").doc("main_state").update({ images: images });
+            } catch(err) {
+                alert("Error al actualizar reacción: " + err.message);
+            }
+        }
+
         async function deleteImage(id) {
             if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return alert("Sin permisos. Solo la Cúpula puede borrar fotos.");
             if(!confirm("¿Estás seguro de que quieres eliminar esta foto de la galería?")) return;
             
-            const img = images.find(x => x.id === id);
-            if(!img) return;
+            const imgIndex = images.findIndex(x => x.id === id);
+            if(imgIndex === -1) return;
+            const img = images[imgIndex];
 
             showLoader("Eliminando foto...");
             try {
                 await storage.ref(img.path).delete().catch(err => console.log("La foto no existía en Storage, pero se quitará de la DB."));
-                await db.collection("ghost_data").doc("main_state").update({ 
-                    images: firebase.firestore.FieldValue.arrayRemove(img) 
-                });
+                images.splice(imgIndex, 1);
+                await db.collection("ghost_data").doc("main_state").update({ images: images });
                 logAction(`Eliminó una foto de la galería`);
             } catch(err) { alert("Error al eliminar: " + err.message); } 
             finally { hideLoader(); }
@@ -627,29 +655,55 @@
             
             const canDelete = ['JEFES', 'Cúpula Administrativa'].includes(currentUser.role);
             const sorted = [...images].sort((a,b) => b.id - a.id);
+            const availableEmojis = ["❤️", "🔥", "👍", "😂", "💀", "👏"];
             
             sorted.forEach(img => {
-                const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl backdrop-blur-md" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
+                const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl backdrop-blur-md z-20" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
                 
                 const titleHtml = img.title ? `<p class="text-emerald-400 text-xs font-bold truncate mb-0.5" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
                 
-                // Formato seguro para el texto del modal
                 const modalTitle = img.title ? `<span class="block text-emerald-400 font-bold mb-1 text-base">${img.title}</span>` : '';
                 const modalCaption = `${modalTitle}Subido por <span class="text-white">${img.uploader}</span> el ${img.date}`;
-                
-                // Escapar comillas para la inyección JS
                 const safeCaption = modalCaption.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                // Renderizar reacciones estilo Discord
+                let reactionsHtml = '<div class="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-zinc-800/80" onclick="event.stopPropagation()">';
+                
+                availableEmojis.forEach(emoji => {
+                    const reactedUsers = (img.reactions && img.reactions[emoji]) || [];
+                    const count = reactedUsers.length;
+                    const hasReacted = reactedUsers.includes(currentUser.username);
+                    
+                    const btnClass = hasReacted 
+                        ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.2)]' 
+                        : 'bg-black/60 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200';
+
+                    reactionsHtml += `
+                        <button onclick="toggleReaction(${img.id}, '${emoji}')" class="px-2 py-1 rounded-lg border text-xs flex items-center gap-1 transition-all duration-200 ${btnClass}">
+                            <span>${emoji}</span>
+                            <span class="font-bold text-[10px]">${count > 0 ? count : ''}</span>
+                        </button>
+                    `;
+                });
+                reactionsHtml += '</div>';
                 
                 grid.innerHTML += `
-                    <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3] flex items-center justify-center cursor-pointer interactive-card shadow-lg" onclick="openImageModal('${img.url}', '${safeCaption}')">
-                        <img src="${img.url}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                            ${titleHtml}
-                            <p class="text-white text-[10px] font-bold truncate"><i class="fa-solid fa-user-tag text-zinc-400 mr-1"></i> ${img.uploader}</p>
-                            <p class="text-zinc-400 text-[9px] mt-0.5">${img.date}</p>
+                    <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/90 backdrop-blur-md shadow-lg flex flex-col interactive-card">
+                        <div class="relative aspect-[4/3] w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${img.url}', '${safeCaption}')">
+                            <img src="${img.url}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                            ${delBtn}
                         </div>
-                        ${delBtn}
+                        <div class="p-3 flex flex-col justify-between flex-1 bg-zinc-950/70">
+                            <div>
+                                ${titleHtml}
+                                <div class="flex justify-between items-center text-[10px] text-zinc-400 mt-1">
+                                    <span class="truncate max-w-[120px]" title="${img.uploader}"><i class="fa-solid fa-user-tag text-zinc-500 mr-1"></i>${img.uploader}</span>
+                                    <span>${img.date}</span>
+                                </div>
+                            </div>
+                            ${reactionsHtml}
+                        </div>
                     </div>
                 `;
             });
