@@ -273,7 +273,12 @@
                     <div>
                         <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Descuento</label>
                         <select id="f-discount" onchange="updatePaymentOptions()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
-                            <option value="0">0 Hojas</option><option value="100">100 Hojas</option><option value="200">200 Hojas</option><option value="300">300 Hojas (Sigilo)</option><option value="500">500 Hojas (Dealers)</option><option value="Exonerado">Exonerado (Jefes)</option>
+                            <option value="0">0 Hojas</option>
+                            <option value="200">200 Hojas</option>
+                            <option value="300">300 Hojas</option>
+                            <option value="400">400 Hojas (Sigilo/Antrax)</option>
+                            <option value="500">500 Hojas (Dealers)</option>
+                            <option value="Exonerado">Exonerado (Cúpula/Líderes)</option>
                         </select>
                     </div>
                     <div>
@@ -774,9 +779,18 @@
 
         function onRankFormChange() {
             const r = document.getElementById('f-rank').value, d = document.getElementById('f-discount');
-            d.value = ['JEFES','Mano Derecha','Subjefe','La Mesa Blanca','Líder de La Mesa Blanca'].includes(r) ? 'Exonerado' : r.includes('Dealers') ? '500' : r.includes('Sigilo')||r.includes('Antrax') ? '300' : '0';
+            if (['JEFES', 'Mano Derecha', 'Subjefe', 'La Mesa Blanca', 'Líder de La Mesa Blanca', 'Líder de Grupo Sigilo', 'Líder de Operativa Antrax'].includes(r)) {
+                d.value = 'Exonerado';
+            } else if (r.includes('Dealers')) {
+                d.value = '500';
+            } else if (r.includes('Sigilo') || r.includes('Antrax')) {
+                d.value = '400';
+            } else {
+                d.value = '200';
+            }
             updatePaymentOptions();
         }
+
         function calculateQuotaStatus(pay, last, ex=0, disc='0') {
             if(disc==='Exonerado') return {status:'Al día',color:'bg-amber-950 text-amber-300 border-amber-500',text:'Exonerado',weeksLate:0};
             if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ CUOTA PENDIENTE (1 sem.)',weeksLate:1};
