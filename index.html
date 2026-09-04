@@ -45,7 +45,7 @@
     <!-- SPINNER DE CARGA GLOBAL -->
     <div id="global-loader" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl text-emerald-500 mb-4"></i>
-        <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con la nube de GHOST...</p>
+        <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con GHOST Cloud...</p>
     </div>
 
     <!-- MODAL DE INICIO DE SESIÓN -->
@@ -610,16 +610,27 @@
             
             const mult = getDiscountMultiplier(m.discount);
             const sel = document.getElementById('modal-payment-method');
+            
+            const snsCount = Math.ceil(5 * mult);
+            const vintageCount = Math.ceil(4 * mult);
+            const mm9Count = Math.ceil(3 * mult);
+            const miniSmgCount = Math.ceil(1 * mult);
+            const miniSmgCash = Math.round(30000 * mult);
+            const tec9Count = Math.ceil(1 * mult);
+            const tec9Cash = Math.round(10000 * mult);
+            const microSmgCount = Math.ceil(1 * mult);
+            const chalecosCount = Math.ceil(11 * mult);
+
             sel.innerHTML = `
                 <option value="Efectivo">Efectivo ($${Math.round(150000*mult).toLocaleString('es')})</option>
                 <option value="Coca">${Math.round(1500*mult)} Hojas de Coca</option>
-                <option value="SNS">5 SNS</option>
-                <option value="Vintage">4 Vintage</option>
-                <option value="9mm">3 9mm</option>
-                <option value="MiniSMG">1 Mini SMG + $30.000</option>
-                <option value="TEC9">1 TEC-9 + $10.000</option>
-                <option value="MicroSMG">1 Micro SMG</option>
-                <option value="Chalecos">11 Chalecos</option>
+                <option value="SNS">${snsCount} SNS</option>
+                <option value="Vintage">${vintageCount} Vintage</option>
+                <option value="9mm">${mm9Count} 9mm</option>
+                <option value="MiniSMG">${miniSmgCount} Mini SMG + $${miniSmgCash.toLocaleString('es')}</option>
+                <option value="TEC9">${tec9Count} TEC-9 + $${tec9Cash.toLocaleString('es')}</option>
+                <option value="MicroSMG">${microSmgCount} Micro SMG</option>
+                <option value="Chalecos">${chalecosCount} Chalecos</option>
                 <option value="Pagado">Pagado (Antiguo)</option>
             `;
             document.getElementById('paymentModal').classList.remove('hidden');
@@ -717,11 +728,37 @@
         }
 
         function getDiscountMultiplier(d) { return d === 'Exonerado' ? 0 : (parseInt(d)||0)<=0 ? 1 : (1500-parseInt(d))/1500; }
+        
         function updatePaymentOptions() {
             const m = getDiscountMultiplier(document.getElementById('f-discount').value), s = document.getElementById('f-payment'), v = s.value;
-            s.innerHTML = `<option value="Nuevo">Nuevo</option><option value="Pendiente">Pendiente</option><option value="Efectivo">Efectivo ($${Math.round(150000*m).toLocaleString('es')})</option><option value="Coca">${Math.round(1500*m)} Coca</option><option value="SNS">5 SNS</option><option value="Vintage">4 Vintage</option><option value="9mm">3 9mm</option><option value="MiniSMG">1 MiniSMG + $30k</option><option value="TEC9">1 TEC9 + $10k</option><option value="MicroSMG">1 MicroSMG</option><option value="Chalecos">11 Chalecos</option><option value="Pagado">Pagado (Antiguo)</option>`;
+            
+            const snsCount = Math.ceil(5 * m);
+            const vintageCount = Math.ceil(4 * m);
+            const mm9Count = Math.ceil(3 * m);
+            const miniSmgCount = Math.ceil(1 * m);
+            const miniSmgCash = Math.round(30000 * m);
+            const tec9Count = Math.ceil(1 * m);
+            const tec9Cash = Math.round(10000 * m);
+            const microSmgCount = Math.ceil(1 * m);
+            const chalecosCount = Math.ceil(11 * m);
+
+            s.innerHTML = `
+                <option value="Nuevo">Nuevo</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Efectivo">Efectivo ($${Math.round(150000*m).toLocaleString('es')})</option>
+                <option value="Coca">${Math.round(1500*m)} Coca</option>
+                <option value="SNS">${snsCount} SNS</option>
+                <option value="Vintage">${vintageCount} Vintage</option>
+                <option value="9mm">${mm9Count} 9mm</option>
+                <option value="MiniSMG">${miniSmgCount} MiniSMG + $${miniSmgCash.toLocaleString('es')}</option>
+                <option value="TEC9">${tec9Count} TEC9 + $${tec9Cash.toLocaleString('es')}</option>
+                <option value="MicroSMG">${microSmgCount} MicroSMG</option>
+                <option value="Chalecos">${chalecosCount} Chalecos</option>
+                <option value="Pagado">Pagado (Antiguo)</option>
+            `;
             if([...s.options].some(o=>o.value===v)) s.value = v;
         }
+
         function onRankFormChange() {
             const r = document.getElementById('f-rank').value, d = document.getElementById('f-discount');
             d.value = ['JEFES','Mano Derecha','Subjefe','La Mesa Blanca','Líder de La Mesa Blanca'].includes(r) ? 'Exonerado' : r.includes('Dealers') ? '500' : r.includes('Sigilo')||r.includes('Antrax') ? '300' : '0';
@@ -744,7 +781,31 @@
             return {status:'Atrasado',color:'bg-red-950 text-red-400',text:`❌ ATRASADO: ${w} sem. pendiente(s)`,weeksLate:w};
         }
         function getPaymentInfo(k, d) {
-            const m = getDiscountMultiplier(d), map = { "Nuevo":{label:"Nuevo",color:"bg-teal-950 text-teal-300"},"Pendiente":{label:"Pendiente",color:"bg-red-950 text-red-400"},"Efectivo":{label:`$${Math.round(150000*m).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300"},"Coca":{label:`${Math.round(1500*m)} Coca`,color:"bg-lime-950 text-lime-300"},"SNS":{label:`5 SNS`,color:"bg-cyan-950 text-cyan-300"},"Vintage":{label:`4 Vintage`,color:"bg-blue-950 text-blue-300"},"9mm":{label:`3 9mm`,color:"bg-indigo-950 text-indigo-300"},"MiniSMG":{label:`MiniSMG`,color:"bg-purple-950 text-purple-300"},"TEC9":{label:`TEC9`,color:"bg-fuchsia-950 text-fuchsia-300"},"MicroSMG":{label:`MicroSMG`,color:"bg-rose-950 text-rose-300"},"Chalecos":{label:`11 Chalecos`,color:"bg-amber-950 text-amber-300"},"Pagado":{label:"Pagado",color:"bg-emerald-950 text-emerald-300"} };
+            const m = getDiscountMultiplier(d);
+            const snsCount = Math.ceil(5 * m);
+            const vintageCount = Math.ceil(4 * m);
+            const mm9Count = Math.ceil(3 * m);
+            const miniSmgCount = Math.ceil(1 * m);
+            const miniSmgCash = Math.round(30000 * m);
+            const tec9Count = Math.ceil(1 * m);
+            const tec9Cash = Math.round(10000 * m);
+            const microSmgCount = Math.ceil(1 * m);
+            const chalecosCount = Math.ceil(11 * m);
+
+            const map = { 
+                "Nuevo":{label:"Nuevo",color:"bg-teal-950 text-teal-300"},
+                "Pendiente":{label:"Pendiente",color:"bg-red-950 text-red-400"},
+                "Efectivo":{label:`$${Math.round(150000*m).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300"},
+                "Coca":{label:`${Math.round(1500*m)} Coca`,color:"bg-lime-950 text-lime-300"},
+                "SNS":{label:`${snsCount} SNS`,color:"bg-cyan-950 text-cyan-300"},
+                "Vintage":{label:`${vintageCount} Vintage`,color:"bg-blue-950 text-blue-300"},
+                "9mm":{label:`${mm9Count} 9mm`,color:"bg-indigo-950 text-indigo-300"},
+                "MiniSMG":{label:`${miniSmgCount} MiniSMG + $${miniSmgCash.toLocaleString('es')}`,color:"bg-purple-950 text-purple-300"},
+                "TEC9":{label:`${tec9Count} TEC9 + $${tec9Cash.toLocaleString('es')}`,color:"bg-fuchsia-950 text-fuchsia-300"},
+                "MicroSMG":{label:`${microSmgCount} MicroSMG`,color:"bg-rose-950 text-rose-300"},
+                "Chalecos":{label:`${chalecosCount} Chalecos`,color:"bg-amber-950 text-amber-300"},
+                "Pagado":{label:"Pagado",color:"bg-emerald-950 text-emerald-300"} 
+            };
             return map[k]||map["Pendiente"];
         }
         function formatStrikes(p) {
