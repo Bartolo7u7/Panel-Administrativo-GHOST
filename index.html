@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V43.0</title>
+    <title>GHOST | Panel Administrativo V44.0</title>
     <link rel="icon" type="image/jpeg" href="icono web panel de ghost.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -120,7 +120,7 @@
                 </div>
             </div>
 
-            <!-- VISTA: MIEMBROS (TABLA GENERAL Y MOBILE CARDS) -->
+            <!-- VISTA: MIEMBROS -->
             <div id="view-miembros" class="hidden h-full flex flex-col">
                 <header class="p-4 md:p-8 pb-4">
                     <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
@@ -188,9 +188,7 @@
                         </div>
 
                         <!-- Vista Mobile: Tarjetas Colapsables -->
-                        <div id="mobile-cards" class="md:hidden flex-1 overflow-y-auto bg-zinc-950/80 backdrop-blur-sm p-4 space-y-4">
-                            <!-- Inyectado dinámicamente -->
-                        </div>
+                        <div id="mobile-cards" class="md:hidden flex-1 overflow-y-auto bg-zinc-950/80 backdrop-blur-sm p-4 space-y-4"></div>
                     </div>
                 </section>
             </div>
@@ -226,7 +224,7 @@
                 <h2 class="text-3xl font-black mb-1 text-white">Registro de Actividad</h2>
                 <div class="flex flex-col sm:flex-row gap-3 mb-6 items-center">
                     <p class="text-zinc-400 text-sm flex-1">Historial de acciones (Auditoría).</p>
-                    <input type="text" id="log-search-input" placeholder="Buscar en logs..." oninput="renderRegistro()" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg p-2.5 w-full sm:w-64 interactive-input">
+                    <input type="text" id="log-search-input" placeholder="Buscar por acción, responsable o fecha..." oninput="renderRegistro()" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg p-2.5 w-full sm:w-80 interactive-input">
                 </div>
                 <div class="bg-zinc-900/85 backdrop-blur-md rounded-xl border border-zinc-800 shadow-lg overflow-hidden flex-1 flex flex-col">
                     <div class="overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
@@ -263,7 +261,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Método de Pago</label>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Método de Pago Base</label>
                         <select id="f-payment" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input"></select>
                     </div>
                     <div>
@@ -309,14 +307,32 @@
         </div>
     </div>
 
+    <!-- MODAL SELECCIÓN DE PAGO -->
+    <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-md shadow-2xl animate-modal">
+            <h3 class="text-xl font-bold text-white mb-2">Registrar Pago</h3>
+            <p id="payment-member-name" class="text-sm text-zinc-400 mb-4 pb-3 border-b border-zinc-800">Cargando...</p>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Medio / Método de Pago utilizado</label>
+                    <select id="modal-payment-method" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                        <!-- Generado por JS -->
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-3 border-t border-zinc-800">
+                <button onclick="closePaymentModal()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
+                <button onclick="confirmRegisterPayment()" class="px-4 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg font-black interactive-btn shadow-md">Confirmar Pago</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL HISTORIAL DE PAGOS -->
     <div id="historyModal" class="hidden fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
         <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-lg shadow-2xl animate-modal">
             <h3 class="text-xl font-bold text-white mb-2">Historial de Pagos</h3>
             <p id="history-name" class="text-sm text-zinc-400 mb-4 pb-4 border-b border-zinc-800">Cargando...</p>
-            <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 mb-4">
-                <!-- Generado por JS -->
-            </div>
+            <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 mb-4"></div>
             <div class="flex justify-end pt-2 border-t border-zinc-800">
                 <button onclick="closeHistoryModal()" class="px-5 py-2.5 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cerrar</button>
             </div>
@@ -329,7 +345,6 @@
             <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3"></i>
             <h3 class="text-lg font-bold text-white mb-1">Dar de Baja</h3>
             <p id="status-name" class="text-sm text-zinc-400 mb-6 border-b border-zinc-800 pb-4">Cargando...</p>
-            
             <div class="space-y-3">
                 <button onclick="confirmStatusChange('Expulsado')" class="w-full py-3 bg-orange-950 text-orange-400 border border-orange-900 rounded-lg font-bold hover:bg-orange-900 transition-colors">Expulsar (Faltas/Inactividad)</button>
                 <button onclick="confirmStatusChange('CK')" class="w-full py-3 bg-red-950 text-red-500 border border-red-900 rounded-lg font-bold hover:bg-red-900 transition-colors">Ejecutar CK (Abatido)</button>
@@ -351,7 +366,7 @@
 
         let currentUser = null; let members = []; let logs = []; let dbUnsubscribe = null;
         let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
-        let targetStatusId = null; // Para el modal de bajas
+        let targetStatusId = null; let paymentTargetId = null;
 
         function showLoader(text = "Sincronizando...") { document.getElementById('loader-text').innerText = text; document.getElementById('global-loader').classList.remove('hidden'); }
         function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
@@ -441,7 +456,6 @@
                 if (doc.exists) { const data = doc.data(); members = data.members || []; logs = data.logs || []; } 
                 else { members = []; logs = []; db.collection("ghost_data").doc("main_state").set({ members, logs }); }
                 
-                // Normalizar status
                 members.forEach(m => { if(!m.status) m.status = 'Activo'; });
 
                 renderDashboard(); renderFinanzas(); renderRegistro();
@@ -514,7 +528,7 @@
                 let actions = '<span class="text-zinc-600 text-xs">Lectura</span>';
                 if (!currentUser.isGuest && isL) {
                     actions = `<div class="flex items-center justify-end gap-3 text-lg">
-                        ${isActivo ? `<button onclick="registerPayment(${m.id})" title="Registrar Pago" class="text-emerald-500 hover:text-emerald-400 transition-transform hover:scale-125"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
+                        ${isActivo ? `<button onclick="openPaymentModal(${m.id})" title="Registrar Pago" class="text-emerald-500 hover:text-emerald-400 transition-transform hover:scale-125"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
                         <button onclick="viewHistory(${m.id})" title="Ver Pagos" class="text-blue-400 hover:text-blue-300 transition-transform hover:scale-125"><i class="fa-solid fa-clock-rotate-left"></i></button>
                         <button onclick="openModal(${m.id})" title="Editar" class="text-zinc-400 hover:text-white transition-transform hover:scale-125"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button onclick="openStatusModal(${m.id})" title="Baja / CK" class="text-zinc-600 hover:text-red-500 transition-transform hover:scale-125"><i class="fa-solid fa-skull"></i></button>
@@ -547,20 +561,55 @@
             renderMemberPortal();
         }
 
-        // --- FUNCIONES DE PAGO Y BAJAS ---
-        function registerPayment(id) {
+        // --- MODAL SELECTOR DE PAGO ---
+        function openPaymentModal(id) {
             if(!checkPermission('edit')) return;
+            paymentTargetId = id;
             const m = members.find(x => x.id === id);
-            const pI = getPaymentInfo(m.payment, m.discount);
-            if(confirm(`¿Registrar pago de ${m.name}?\n\nEntregó: ${pI.label}`)) {
-                if(!m.payHistory) m.payHistory = [];
-                m.payHistory.unshift({ date: formatDateTime(), detail: pI.label });
-                if(m.lastPaymentDate) {
-                    let d = new Date(m.lastPaymentDate + 'T00:00:00'); d.setDate(d.getDate() + 7); m.lastPaymentDate = d.toISOString().split('T')[0];
-                } else m.lastPaymentDate = new Date().toISOString().split('T')[0];
-                logAction(`Pagó Cuota: ${pI.label} (${m.name})`); saveToCloud();
-            }
+            document.getElementById('payment-member-name').innerText = `Miembro: ${m.name}`;
+            
+            const mult = getDiscountMultiplier(m.discount);
+            const sel = document.getElementById('modal-payment-method');
+            sel.innerHTML = `
+                <option value="Efectivo">Efectivo ($${Math.round(150000*mult).toLocaleString('es')})</option>
+                <option value="Coca">${Math.round(1500*mult)} Hojas de Coca</option>
+                <option value="SNS">5 SNS</option>
+                <option value="Vintage">4 Vintage</option>
+                <option value="9mm">3 9mm</option>
+                <option value="MiniSMG">1 Mini SMG + $30.000</option>
+                <option value="TEC9">1 TEC-9 + $10.000</option>
+                <option value="MicroSMG">1 Micro SMG</option>
+                <option value="Chalecos">11 Chalecos</option>
+                <option value="Pagado">Pagado (Antiguo)</option>
+            `;
+            document.getElementById('paymentModal').classList.remove('hidden');
         }
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+            paymentTargetId = null;
+        }
+        async function confirmRegisterPayment() {
+            if(!paymentTargetId) return;
+            const m = members.find(x => x.id === paymentTargetId);
+            const chosenMethod = document.getElementById('modal-payment-method').value;
+            const pI = getPaymentInfo(chosenMethod, m.discount);
+
+            if(!m.payHistory) m.payHistory = [];
+            m.payHistory.unshift({ date: formatDateTime(), detail: pI.label });
+            
+            if(m.lastPaymentDate) {
+                let d = new Date(m.lastPaymentDate + 'T00:00:00'); 
+                d.setDate(d.getDate() + 7); 
+                m.lastPaymentDate = d.toISOString().split('T')[0];
+            } else {
+                m.lastPaymentDate = new Date().toISOString().split('T')[0];
+            }
+
+            logAction(`Pagó Cuota con [${chosenMethod}]: ${pI.label} (${m.name})`);
+            closePaymentModal();
+            await saveToCloud();
+        }
+
         function viewHistory(id) {
             const m = members.find(x => x.id === id);
             document.getElementById('history-name').innerText = m.name;
@@ -599,7 +648,6 @@
             logAction("Exportó CSV");
         }
 
-        // --- RESTO DE FUNCIONALIDADES (MODAL, FORMULARIO, LOGS, FINANZAS) ---
         function renderMemberPortal() {
             const pn = document.getElementById('portal-name'), pd = document.getElementById('portal-discord'), pc = document.getElementById('portal-data-container');
             if(!pn) return; pd.innerText = "@" + currentUser.username;
@@ -609,7 +657,7 @@
             pc.innerHTML = `
                 ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950 border border-red-900 p-2 text-center rounded text-red-500 font-black mb-3">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS}">${f.rank}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Pago</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Pago Base</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color}">${q.text}</span></div>
                 <div class="flex justify-between items-center pt-1"><span class="text-xs font-bold text-zinc-400 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400">${formatStrikes(f.strikes||0)}</span></div>
             `;
@@ -704,7 +752,7 @@
         function renderRegistro() { 
             const tb = document.getElementById('logs-table-body'), term = (document.getElementById('log-search-input')?.value||'').toLowerCase();
             if(!tb) return; tb.innerHTML = ''; 
-            logs.filter(l => l.action.toLowerCase().includes(term) || l.role.toLowerCase().includes(term)).forEach(l => { 
+            logs.filter(l => l.action.toLowerCase().includes(term) || l.role.toLowerCase().includes(term) || l.date.toLowerCase().includes(term)).forEach(l => { 
                 tb.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400 whitespace-nowrap">${l.date}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-zinc-300 min-w-[250px]">${l.action}</td></tr>`; 
             }); 
         }
