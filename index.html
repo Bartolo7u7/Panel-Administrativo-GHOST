@@ -271,7 +271,7 @@
     <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-xl flex items-center justify-center z-[100] transition-opacity duration-300 p-4" onclick="closeImageModal()">
         <button class="absolute top-4 right-6 text-white text-3xl hover:text-red-500 transition-colors cursor-pointer" onclick="closeImageModal()"><i class="fa-solid fa-xmark"></i></button>
         <img id="fullscreen-image" src="" alt="Fullscreen" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl border border-zinc-800 object-contain" onclick="event.stopPropagation()">
-        <div id="fullscreen-caption" class="absolute bottom-6 bg-black/80 px-6 py-2 rounded-full border border-zinc-700 text-zinc-300 text-sm font-semibold pointer-events-none hidden"></div>
+        <div id="fullscreen-caption" class="absolute bottom-6 bg-black/80 px-6 py-2.5 rounded-xl border border-zinc-700 text-zinc-300 text-sm font-semibold pointer-events-none hidden max-w-2xl text-center shadow-2xl backdrop-blur-md"></div>
     </div>
 
     <!-- MODAL PARA SUBIR FOTO A GALERÍA -->
@@ -281,6 +281,11 @@
             <p class="text-sm text-zinc-400 mb-6 pb-3 border-b border-zinc-800">Selecciona una imagen de tu dispositivo. Todos los miembros podrán verla.</p>
             <form onsubmit="uploadImage(event)" class="space-y-4">
                 <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Título / Descripción (Opcional)</label>
+                    <input type="text" id="gallery-title" placeholder="Ej: Operativo en la zona norte..." class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1 mt-2">Archivo de Imagen</label>
                     <input type="file" id="gallery-file" accept="image/png, image/jpeg, image/webp" required class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 interactive-btn cursor-pointer bg-black rounded-lg border border-zinc-800">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-zinc-800 mt-6">
@@ -498,7 +503,6 @@
             if(currentUser.role === 'JEFES') document.getElementById('btn-nav-registro').classList.replace('hidden', 'flex');
             document.getElementById('btn-nav-finanzas').classList.replace('hidden', 'flex');
 
-            // Habilitar botón de subir fotos si no es invitado
             if(!currentUser.isGuest) document.getElementById('btn-upload-photo').classList.remove('hidden');
             
             loadDatabase();
@@ -546,19 +550,24 @@
         function openImageModal(src, caption) {
             document.getElementById('fullscreen-image').src = src;
             const captionEl = document.getElementById('fullscreen-caption');
-            if(caption) { captionEl.innerText = caption; captionEl.classList.remove('hidden'); } 
+            if(caption) { captionEl.innerHTML = caption; captionEl.classList.remove('hidden'); } 
             else { captionEl.classList.add('hidden'); }
             document.getElementById('imageModal').classList.remove('hidden');
         }
         function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
         
         function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
-        function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); document.getElementById('gallery-file').value = ''; }
+        function closeUploadModal() { 
+            document.getElementById('uploadModal').classList.add('hidden'); 
+            document.getElementById('gallery-file').value = ''; 
+            document.getElementById('gallery-title').value = ''; 
+        }
 
         async function uploadImage(e) {
             e.preventDefault();
             if(currentUser.isGuest) return alert("Los invitados no pueden subir fotos.");
             const file = document.getElementById('gallery-file').files[0];
+            const title = document.getElementById('gallery-title').value.trim();
             if(!file) return;
             
             showLoader("Subiendo a la nube de GHOST...");
@@ -571,12 +580,12 @@
                 const newImg = { 
                     id: Date.now(), 
                     url: url, 
-                    path: path, 
+                    path: path,
+                    title: title,
                     uploader: currentUser.icName || currentUser.username, 
                     date: formatDateTime() 
                 };
                 
-                // Usamos arrayUnion para evitar colisiones si suben varios a la vez
                 await db.collection("ghost_data").doc("main_state").update({ 
                     images: firebase.firestore.FieldValue.arrayUnion(newImg) 
                 });
@@ -597,14 +606,10 @@
 
             showLoader("Eliminando foto...");
             try {
-                // Borrar archivo físico de Storage
                 await storage.ref(img.path).delete().catch(err => console.log("La foto no existía en Storage, pero se quitará de la DB."));
-                
-                // Remover del Array de Firestore
                 await db.collection("ghost_data").doc("main_state").update({ 
                     images: firebase.firestore.FieldValue.arrayRemove(img) 
                 });
-                
                 logAction(`Eliminó una foto de la galería`);
             } catch(err) { alert("Error al eliminar: " + err.message); } 
             finally { hideLoader(); }
@@ -621,19 +626,27 @@
             }
             
             const canDelete = ['JEFES', 'Cúpula Administrativa'].includes(currentUser.role);
-            
-            // Ordenar de más reciente a más antiguo
             const sorted = [...images].sort((a,b) => b.id - a.id);
             
             sorted.forEach(img => {
                 const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl backdrop-blur-md" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
                 
+                const titleHtml = img.title ? `<p class="text-emerald-400 text-xs font-bold truncate mb-0.5" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
+                
+                // Formato seguro para el texto del modal
+                const modalTitle = img.title ? `<span class="block text-emerald-400 font-bold mb-1 text-base">${img.title}</span>` : '';
+                const modalCaption = `${modalTitle}Subido por <span class="text-white">${img.uploader}</span> el ${img.date}`;
+                
+                // Escapar comillas para la inyección JS
+                const safeCaption = modalCaption.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                
                 grid.innerHTML += `
-                    <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3] flex items-center justify-center cursor-pointer interactive-card shadow-lg" onclick="openImageModal('${img.url}', 'Subido por ${img.uploader} el ${img.date}')">
+                    <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3] flex items-center justify-center cursor-pointer interactive-card shadow-lg" onclick="openImageModal('${img.url}', '${safeCaption}')">
                         <img src="${img.url}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                            <p class="text-white text-xs font-bold truncate"><i class="fa-solid fa-user-tag text-zinc-400 mr-1 text-[10px]"></i> ${img.uploader}</p>
+                            ${titleHtml}
+                            <p class="text-white text-[10px] font-bold truncate"><i class="fa-solid fa-user-tag text-zinc-400 mr-1"></i> ${img.uploader}</p>
                             <p class="text-zinc-400 text-[9px] mt-0.5">${img.date}</p>
                         </div>
                         ${delBtn}
