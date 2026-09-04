@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V45.0</title>
+    <title>GHOST | Panel Administrativo V46.0</title>
     <link rel="icon" type="image/jpeg" href="icono web panel de ghost.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -491,7 +491,8 @@
                 const s2 = rF === "" || m.rank === rF;
                 const str = m.strikes || 0;
                 const s3 = sF === 'clean' ? str === 0 : (sF === 'has_strikes' ? str > 0 : true);
-                const s4 = stF === "" || (m.status || 'Activo') === stF;
+                const mStatus = m.status || 'Activo';
+                const s4 = stF === "" || mStatus.toLowerCase() === stF.toLowerCase();
                 return s1 && s2 && s3 && s4;
             });
 
@@ -561,7 +562,7 @@
             renderMemberPortal();
         }
 
-        // --- MODAL SELECTOR DE PAGO CORREGIDO ---
+        // --- MODAL SELECCIÓN DE PAGO ---
         function openPaymentModal(id) {
             if(!checkPermission('edit')) return;
             paymentTargetId = id;
@@ -597,7 +598,6 @@
             if(!m.payHistory) m.payHistory = [];
             m.payHistory.unshift({ date: formatDateTime(), detail: `${chosenMethod}: ${pI.label}` });
             
-            // Actualizar método de pago activo y avanzar fecha
             m.payment = chosenMethod;
             if(m.lastPaymentDate) {
                 let d = new Date(m.lastPaymentDate + 'T00:00:00'); 
@@ -692,7 +692,12 @@
             if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ CUOTA PENDIENTE (1 sem.)',weeksLate:1};
             if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400',text:'Sin Fecha Base',weeksLate:0};
             const l=new Date(last+'T00:00:00'), n=new Date();
-            if(pay==='Nuevo') { const f=new Date(l); f.setDate(f.getDate()+7); f.setHours(23,59,59); return n<=f ? {status:'Libre',color:'bg-teal-950 text-teal-300',text:`Libre`,weeksLate:0} : {status:'Pendiente',color:'bg-red-950 text-red-400',text:'⚠️ LIBRE EXPIRADO (1 sem.)',weeksLate:1}; }
+            if(pay==='Nuevo') { 
+                const f=new Date(l); 
+                f.setDate(f.getDate()+7); 
+                f.setHours(23,59,59); 
+                return n<=f ? {status:'Gracia',color:'bg-teal-950 text-teal-300 border-teal-500',text:'✨ 1 semana de gracia (Nuevo)',weeksLate:0} : {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ GRACIA EXPIRADA (1 sem.)',weeksLate:1}; 
+            }
             const sun=new Date(l); sun.setDate(sun.getDate()+(l.getDay()===0?0:7-l.getDay())+(ex*7)); sun.setHours(23,59,59);
             if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400',text:`Al día (Dom ${formatDate(sun.toISOString())})`,weeksLate:0};
             const w = 1+Math.floor((n-sun)/(86400000*7)); 
