@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHOST | Panel Administrativo V42.0</title>
+    <title>GHOST | Panel Administrativo V43.0</title>
     <link rel="icon" type="image/jpeg" href="icono web panel de ghost.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,25 +18,15 @@
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
 
-        /* Fondo personalizado con la imagen de GHOST */
         body {
             background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), url('fondo panel de ghost.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
+            background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;
         }
 
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .animate-modal { animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        @keyframes viewFadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes viewFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .animate-view { animation: viewFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         .interactive-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background-color: rgba(24, 24, 27, 0.85); backdrop-filter: blur(8px); }
@@ -52,8 +42,14 @@
 </head>
 <body class="text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
 
-    <!-- MODAL DE INICIO DE SESIÓN SIMPLIFICADO -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
+    <!-- SPINNER DE CARGA GLOBAL -->
+    <div id="global-loader" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-emerald-500 mb-4"></i>
+        <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con GHOST Cloud...</p>
+    </div>
+
+    <!-- MODAL DE INICIO DE SESIÓN -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
         <div class="bg-zinc-900/90 backdrop-blur-xl p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal">
             <div onclick="openImageModal()" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
                 <img src="icono web panel de ghost.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
@@ -65,13 +61,7 @@
                 <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3.5 px-4 rounded-lg interactive-btn flex items-center justify-center gap-3 shadow-lg uppercase tracking-wider text-xs">
                     <i class="fa-brands fa-discord text-lg"></i> Iniciar Sesión con Discord
                 </button>
-                
-                <div class="relative flex py-2 items-center">
-                    <div class="flex-grow border-t border-zinc-800"></div>
-                    <span class="flex-shrink mx-4 text-zinc-500 text-xs uppercase font-bold">O</span>
-                    <div class="flex-grow border-t border-zinc-800"></div>
-                </div>
-
+                <div class="relative flex py-2 items-center"><div class="flex-grow border-t border-zinc-800"></div><span class="flex-shrink mx-4 text-zinc-500 text-xs uppercase font-bold">O</span><div class="flex-grow border-t border-zinc-800"></div></div>
                 <button onclick="loginAsGuest()" class="w-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 font-semibold py-3 rounded-lg interactive-btn text-xs uppercase tracking-wider border border-zinc-700">
                     Continuar como Invitado (Modo Lectura)
                 </button>
@@ -81,11 +71,10 @@
 
     <!-- CONTENEDOR PRINCIPAL -->
     <div class="flex h-screen overflow-hidden flex-col md:flex-row">
-
         <!-- BARRA LATERAL -->
         <aside class="w-full md:w-72 bg-zinc-950/90 backdrop-blur-md border-b md:border-b-0 md:border-r border-zinc-800 flex flex-col z-10 relative shadow-2xl">
             <div class="p-4 md:p-6 text-center border-b border-zinc-800 flex flex-col items-center">
-                <div onclick="openImageModal()" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-zinc-700 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-3 bg-black flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-6 cursor-pointer" title="Click para ver en grande">
+                <div onclick="openImageModal()" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-zinc-700 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-3 bg-black flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-6 cursor-pointer">
                     <img src="icono web panel de ghost.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
                 </div>
                 <h1 class="text-xl font-black text-white tracking-widest uppercase">GHOST</h1>
@@ -109,7 +98,6 @@
                     <i class="fa-solid fa-clipboard-list text-zinc-400"></i> <span class="hidden md:inline">Logs</span>
                 </button>
             </nav>
-            
             <div class="p-2 md:p-4 border-t border-zinc-800 flex md:flex-col gap-2">
                 <button onclick="logout()" class="flex-1 flex items-center justify-center gap-2 text-zinc-300 hover:text-white hover:bg-zinc-900/80 text-xs py-2.5 rounded border border-zinc-700 interactive-btn">
                     <i class="fa-solid fa-right-from-bracket"></i> Cambiar Cuenta
@@ -128,14 +116,11 @@
                     </div>
                     <h2 class="text-2xl font-black text-white uppercase tracking-wider mb-1" id="portal-name">Cargando...</h2>
                     <p class="text-xs text-zinc-400 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
-                    
-                    <div id="portal-data-container" class="space-y-4 text-left bg-zinc-950/80 p-5 rounded-xl border border-zinc-800 shadow-inner">
-                        <!-- Inyectado dinámicamente -->
-                    </div>
+                    <div id="portal-data-container" class="space-y-4 text-left bg-zinc-950/80 p-5 rounded-xl border border-zinc-800 shadow-inner"></div>
                 </div>
             </div>
 
-            <!-- VISTA: MIEMBROS (TABLA GENERAL) -->
+            <!-- VISTA: MIEMBROS (TABLA GENERAL Y MOBILE CARDS) -->
             <div id="view-miembros" class="hidden h-full flex flex-col">
                 <header class="p-4 md:p-8 pb-4">
                     <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
@@ -143,7 +128,7 @@
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
                         <div class="bg-zinc-900/85 backdrop-blur-md p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Total Miembros</div>
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Activos</div>
                             <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
                             <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-users"></i></div>
                         </div>
@@ -153,7 +138,7 @@
                             <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-clock"></i></div>
                         </div>
                         <div class="bg-zinc-900/85 backdrop-blur-md p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación Total (Eq.)</div>
+                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación (Activos)</div>
                             <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
                             <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-vault"></i></div>
                         </div>
@@ -162,53 +147,49 @@
 
                 <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
                     <div class="bg-zinc-900/85 backdrop-blur-md rounded-xl border border-zinc-800 shadow-lg flex-1 flex flex-col overflow-hidden">
+                        <!-- Filtros -->
                         <div class="p-4 border-b border-zinc-800 flex flex-wrap gap-3 justify-between items-center bg-zinc-900/60">
-                            <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
-                                <div class="relative w-full md:w-auto">
+                            <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
+                                <div class="relative w-full sm:w-auto">
                                     <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
-                                    <input type="text" id="search-input" placeholder="Buscar nombre o Discord..." class="bg-black/80 border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full md:w-64 interactive-input">
+                                    <input type="text" id="search-input" placeholder="Buscar nombre..." class="bg-black/80 border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full sm:w-48 interactive-input">
                                 </div>
-                                <select id="rank-filter" onchange="renderDashboard()" class="bg-black/80 border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
-                                    <option value="">Rango (Todos)</option>
-                                    <option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option>
-                                    <option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option>
-                                    <option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option>
-                                    <option>Líder de Operativa Antrax</option><option>Operativa Antrax</option>
-                                    <option>Líder de Dealers</option><option>Dealers</option>
-                                    <option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
+                                <select id="status-filter" onchange="renderDashboard()" class="bg-black/80 border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold text-emerald-400">
+                                    <option value="Activo">Estado: Activos</option>
+                                    <option value="Expulsado" class="text-orange-400">Estado: Expulsados</option>
+                                    <option value="CK" class="text-red-500">Estado: Abatidos (CK)</option>
+                                    <option value="" class="text-zinc-300">Todos (Histórico)</option>
                                 </select>
-                                <select id="strike-filter" onchange="renderDashboard()" class="bg-black/80 border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 md:flex-none interactive-input">
-                                    <option value="">Faltas (Todas)</option>
-                                    <option value="clean">Sin Faltas</option>
-                                    <option value="has_strikes">Con Faltas</option>
+                                <select id="rank-filter" onchange="renderDashboard()" class="bg-black/80 border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input">
+                                    <option value="">Rango (Todos)</option><option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option><option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option><option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option><option>Líder de Operativa Antrax</option><option>Operativa Antrax</option><option>Líder de Dealers</option><option>Dealers</option><option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
                                 </select>
                             </div>
-                            <div class="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
-                                <button onclick="exportToCSV()" class="flex-1 md:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow">
-                                    <i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar
-                                </button>
-                                <button onclick="openModal()" class="flex-1 md:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md">
-                                    <i class="fa-solid fa-user-plus"></i> Añadir
-                                </button>
+                            <div class="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                                <button onclick="exportToCSV()" class="flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow"><i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar</button>
+                                <button onclick="openModal()" class="flex-1 sm:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md"><i class="fa-solid fa-user-plus"></i> Añadir</button>
                             </div>
                         </div>
                         
-                        <div class="overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
+                        <!-- Vista Desktop: Tabla -->
+                        <div class="hidden md:block overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
                             <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
                                 <thead class="text-xs text-zinc-300 uppercase bg-zinc-900/90 border-b border-zinc-800 sticky top-0">
                                     <tr>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
                                         <th class="px-6 py-4">Discord</th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('strikes')">Faltas <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-strikes"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
+                                        <th class="px-6 py-4">Faltas</th>
                                         <th class="px-6 py-4 text-right">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-body">
-                                    <!-- Generado por JS -->
-                                </tbody>
+                                <tbody id="table-body"></tbody>
                             </table>
+                        </div>
+
+                        <!-- Vista Mobile: Tarjetas Colapsables -->
+                        <div id="mobile-cards" class="md:hidden flex-1 overflow-y-auto bg-zinc-950/80 backdrop-blur-sm p-4 space-y-4">
+                            <!-- Inyectado dinámicamente -->
                         </div>
                     </div>
                 </section>
@@ -217,41 +198,36 @@
             <!-- VISTA: FINANZAS -->
             <div id="view-finanzas" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <h2 class="text-3xl font-black mb-1 text-white">Desglose Financiero</h2>
-                <p class="text-zinc-400 mb-8 text-sm">Inventario real y capital recaudado.</p>
-                
+                <p class="text-zinc-400 mb-8 text-sm">Inventario real y capital recaudado (Solo miembros activos).</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div class="bg-emerald-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-emerald-500 shadow-lg flex items-center justify-between interactive-card">
-                        <div>
-                            <div class="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">Efectivo Líquido Total</div>
-                            <div id="fin-efectivo" class="text-4xl md:text-5xl font-black text-white">$0</div>
-                        </div>
+                        <div><div class="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">Efectivo Líquido Total</div><div id="fin-efectivo" class="text-4xl md:text-5xl font-black text-white">$0</div></div>
                         <i class="fa-solid fa-sack-dollar text-5xl md:text-6xl text-emerald-500/60"></i>
                     </div>
                     <div class="bg-lime-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-lime-500 shadow-lg flex items-center justify-between interactive-card">
-                        <div>
-                            <div class="text-lime-300 text-xs font-bold uppercase tracking-wider mb-2">Hojas de Coca</div>
-                            <div id="fin-coca" class="text-4xl md:text-5xl font-black text-white">0</div>
-                        </div>
+                        <div><div class="text-lime-300 text-xs font-bold uppercase tracking-wider mb-2">Hojas de Coca</div><div id="fin-coca" class="text-4xl md:text-5xl font-black text-white">0</div></div>
                         <i class="fa-solid fa-leaf text-5xl md:text-6xl text-lime-500/60"></i>
                     </div>
                 </div>
-
                 <h3 class="text-lg font-bold text-zinc-300 mb-4 border-b border-zinc-800 pb-2 flex items-center gap-2"><i class="fa-solid fa-gun text-white"></i> Arsenal y Equipamiento</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-cyan-950/85 backdrop-blur-md p-4 rounded-lg border border-cyan-500 text-center shadow-lg interactive-card"><div class="text-cyan-300 text-xs font-bold uppercase">Pistolas SNS</div><div id="fin-sns" class="text-2xl font-bold text-white mt-1">0</div></div>
-                    <div class="bg-blue-950/85 backdrop-blur-md p-4 rounded-lg border border-blue-500 text-center shadow-lg interactive-card"><div class="text-blue-300 text-xs font-bold uppercase">Pistolas Vintage</div><div id="fin-vintage" class="text-2xl font-bold text-white mt-1">0</div></div>
-                    <div class="bg-indigo-950/85 backdrop-blur-md p-4 rounded-lg border border-indigo-500 text-center shadow-lg interactive-card"><div class="text-indigo-300 text-xs font-bold uppercase">Pistolas 9mm</div><div id="fin-9mm" class="text-2xl font-bold text-white mt-1">0</div></div>
-                    <div class="bg-purple-950/85 backdrop-blur-md p-4 rounded-lg border border-purple-500 text-center shadow-lg interactive-card"><div class="text-purple-300 text-xs font-bold uppercase">Mini SMG</div><div id="fin-minismg" class="text-2xl font-bold text-white mt-1">0</div></div>
-                    <div class="bg-fuchsia-950/85 backdrop-blur-md p-4 rounded-lg border border-fuchsia-500 text-center shadow-lg interactive-card"><div class="text-fuchsia-300 text-xs font-bold uppercase">TEC-9</div><div id="fin-tec9" class="text-2xl font-bold text-white mt-1">0</div></div>
-                    <div class="bg-rose-950/85 backdrop-blur-md p-4 rounded-lg border border-rose-500 text-center shadow-lg interactive-card"><div class="text-rose-300 text-xs font-bold uppercase">Micro SMG</div><div id="fin-microsmg" class="text-2xl font-bold text-white mt-1">0</div></div>
-                    <div class="bg-amber-950/85 backdrop-blur-md p-4 rounded-lg border border-amber-500 text-center col-span-2 shadow-lg interactive-card"><div class="text-amber-300 text-xs font-bold uppercase">Chalecos</div><div id="fin-chalecos" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-cyan-950/85 backdrop-blur-md p-4 rounded-lg border border-cyan-500 text-center interactive-card"><div class="text-cyan-300 text-xs font-bold uppercase">Pistolas SNS</div><div id="fin-sns" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-blue-950/85 backdrop-blur-md p-4 rounded-lg border border-blue-500 text-center interactive-card"><div class="text-blue-300 text-xs font-bold uppercase">Vintage</div><div id="fin-vintage" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-indigo-950/85 backdrop-blur-md p-4 rounded-lg border border-indigo-500 text-center interactive-card"><div class="text-indigo-300 text-xs font-bold uppercase">Pistolas 9mm</div><div id="fin-9mm" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-purple-950/85 backdrop-blur-md p-4 rounded-lg border border-purple-500 text-center interactive-card"><div class="text-purple-300 text-xs font-bold uppercase">Mini SMG</div><div id="fin-minismg" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-fuchsia-950/85 backdrop-blur-md p-4 rounded-lg border border-fuchsia-500 text-center interactive-card"><div class="text-fuchsia-300 text-xs font-bold uppercase">TEC-9</div><div id="fin-tec9" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-rose-950/85 backdrop-blur-md p-4 rounded-lg border border-rose-500 text-center interactive-card"><div class="text-rose-300 text-xs font-bold uppercase">Micro SMG</div><div id="fin-microsmg" class="text-2xl font-bold text-white mt-1">0</div></div>
+                    <div class="bg-amber-950/85 backdrop-blur-md p-4 rounded-lg border border-amber-500 text-center col-span-2 interactive-card"><div class="text-amber-300 text-xs font-bold uppercase">Chalecos</div><div id="fin-chalecos" class="text-2xl font-bold text-white mt-1">0</div></div>
                 </div>
             </div>
 
             <!-- VISTA: REGISTRO -->
             <div id="view-registro" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <h2 class="text-3xl font-black mb-1 text-white">Registro de Actividad</h2>
-                <p class="text-zinc-400 mb-8 text-sm">Historial de acciones (Auditoría).</p>
+                <div class="flex flex-col sm:flex-row gap-3 mb-6 items-center">
+                    <p class="text-zinc-400 text-sm flex-1">Historial de acciones (Auditoría).</p>
+                    <input type="text" id="log-search-input" placeholder="Buscar en logs..." oninput="renderRegistro()" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg p-2.5 w-full sm:w-64 interactive-input">
+                </div>
                 <div class="bg-zinc-900/85 backdrop-blur-md rounded-xl border border-zinc-800 shadow-lg overflow-hidden flex-1 flex flex-col">
                     <div class="overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
                         <table class="w-full min-w-[600px] text-sm text-left text-zinc-400">
@@ -270,19 +246,9 @@
         </main>
     </div>
 
-    <!-- MODAL DE IMAGEN GRANDE (LIGHTBOX) -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300 cursor-pointer" onclick="closeImageModal()">
-        <div class="relative p-2 max-w-4xl max-h-[90vh] flex items-center justify-center" onclick="event.stopPropagation()">
-            <img src="icono web panel de ghost.jpg" alt="GHOST Logo Grande" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-zinc-700 shadow-2xl animate-modal">
-            <button onclick="closeImageModal()" class="absolute -top-4 -right-4 text-white bg-zinc-800 hover:bg-red-600 rounded-full w-10 h-10 flex items-center justify-center font-bold transition-all shadow-lg border border-zinc-700 hover:rotate-90">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-    </div>
-
     <!-- MODAL DE MIEMBRO (Agregar/Editar) -->
     <div id="memberModal" class="hidden fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-800 w-full max-w-2xl shadow-2xl animate-modal overflow-y-auto max-h-screen">
+        <div class="bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-800 w-full max-w-2xl shadow-2xl animate-modal overflow-y-auto max-h-[90vh]">
             <h3 id="modal-title" class="text-xl font-bold text-white mb-6 border-b border-zinc-800 pb-2">Añadir Miembro</h3>
             <form id="member-form" class="space-y-4 md:space-y-5">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,533 +309,405 @@
         </div>
     </div>
 
-    <!-- LOGICA DE AUTENTICACIÓN Y SINCRONIZACIÓN -->
+    <!-- MODAL HISTORIAL DE PAGOS -->
+    <div id="historyModal" class="hidden fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-lg shadow-2xl animate-modal">
+            <h3 class="text-xl font-bold text-white mb-2">Historial de Pagos</h3>
+            <p id="history-name" class="text-sm text-zinc-400 mb-4 pb-4 border-b border-zinc-800">Cargando...</p>
+            <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 mb-4">
+                <!-- Generado por JS -->
+            </div>
+            <div class="flex justify-end pt-2 border-t border-zinc-800">
+                <button onclick="closeHistoryModal()" class="px-5 py-2.5 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CAMBIO ESTADO (BAJAS/CK) -->
+    <div id="statusModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-sm shadow-2xl animate-modal text-center">
+            <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3"></i>
+            <h3 class="text-lg font-bold text-white mb-1">Dar de Baja</h3>
+            <p id="status-name" class="text-sm text-zinc-400 mb-6 border-b border-zinc-800 pb-4">Cargando...</p>
+            
+            <div class="space-y-3">
+                <button onclick="confirmStatusChange('Expulsado')" class="w-full py-3 bg-orange-950 text-orange-400 border border-orange-900 rounded-lg font-bold hover:bg-orange-900 transition-colors">Expulsar (Faltas/Inactividad)</button>
+                <button onclick="confirmStatusChange('CK')" class="w-full py-3 bg-red-950 text-red-500 border border-red-900 rounded-lg font-bold hover:bg-red-900 transition-colors">Ejecutar CK (Abatido)</button>
+                <button onclick="confirmStatusChange('Activo')" class="w-full py-3 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded-lg font-bold hover:bg-emerald-900 transition-colors hidden" id="btn-reactivate">Reactivar Miembro</button>
+                <button onclick="closeStatusModal()" class="w-full py-3 bg-zinc-800 text-white rounded-lg font-semibold hover:bg-zinc-700 transition-colors mt-4">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo",
-            authDomain: "panel-administrativo-de-ghost.firebaseapp.com",
-            projectId: "panel-administrativo-de-ghost",
-            storageBucket: "panel-administrativo-de-ghost.firebasestorage.app",
-            messagingSenderId: "80093895927",
-            appId: "1:80093895927:web:824ac7131336e1f130c7f2"
+            apiKey: "AIzaSyCjIchZ_U343LIxphqkIi_Pu5UDNZ9EBqo", authDomain: "panel-administrativo-de-ghost.firebaseapp.com", projectId: "panel-administrativo-de-ghost", storageBucket: "panel-administrativo-de-ghost.firebasestorage.app", messagingSenderId: "80093895927", appId: "1:80093895927:web:824ac7131336e1f130c7f2"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ⚠️ CONFIGURACIÓN DE DISCORD
-        const DISCORD_CLIENT_ID = "1544988442050560050";
-        const DISCORD_GUILD_ID = "1541892950571749396";
+        const DISCORD_CLIENT_ID = "1544988442050560050"; const DISCORD_GUILD_ID = "1541892950571749396";
+        const ROLE_IDS_JEFES = ["1542005912544350260"]; const ROLE_IDS_CUPULA = ["1542007539447763055", "1542006640876978257"]; const ROLE_IDS_MESABLANCA = ["1542008676577972365", "1542008472978329712"];
 
-        // IDs de tus roles en Discord
-        const ROLE_IDS_JEFES = ["1542005912544350260"];
-        const ROLE_IDS_CUPULA = ["1542007539447763055", "1542006640876978257"];
-        const ROLE_IDS_MESABLANCA = ["1542008676577972365", "1542008472978329712"];
+        let currentUser = null; let members = []; let logs = []; let dbUnsubscribe = null;
+        let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
+        let targetStatusId = null; // Para el modal de bajas
 
-        let currentUser = null; 
-        let members = []; let logs = []; let dbUnsubscribe = null;
-        let sortCol = 'name'; let sortAsc = true;
-        let isFirstLoad = true;
+        function showLoader(text = "Sincronizando...") { document.getElementById('loader-text').innerText = text; document.getElementById('global-loader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
 
-        // --- LOGIN CON DISCORD ---
         function loginWithDiscord() {
-            if(DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ" || !DISCORD_CLIENT_ID) {
-                alert("Configura tu Client ID real de Discord en el código.");
-                return;
-            }
-            const redirectUri = window.location.origin + window.location.pathname;
-            const scopes = encodeURIComponent("identify guilds guilds.members.read");
-            const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scopes}`;
-            window.location.href = discordAuthUrl;
+            if(!DISCORD_CLIENT_ID || DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ") return alert("Configura tu Client ID de Discord.");
+            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}&response_type=token&scope=${encodeURIComponent("identify guilds guilds.members.read")}`;
         }
-
         function loginAsGuest() {
             currentUser = { username: "Invitado", icName: "Invitado", role: "Invitados", isGuest: true };
-            localStorage.setItem('ghost_session', JSON.stringify(currentUser));
-            initApp();
+            localStorage.setItem('ghost_session', JSON.stringify(currentUser)); initApp();
         }
 
-        // VERIFICAR SESIÓN Y SINCRONIZAR AL CARGAR LA PÁGINA (PERSISTENTE)
         window.addEventListener('DOMContentLoaded', async () => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
 
             if (accessToken) {
+                showLoader("Autenticando Discord...");
                 window.history.replaceState({}, document.title, window.location.pathname);
                 try {
-                    // 1. Obtener perfil de Discord
-                    const userRes = await fetch('https://discord.com/api/users/@me', {
-                        headers: { authorization: `Bearer ${accessToken}` }
-                    });
+                    const userRes = await fetch('https://discord.com/api/users/@me', { headers: { authorization: `Bearer ${accessToken}` } });
                     const userData = await userRes.json();
                     const discordTag = (userData.username || "").toLowerCase().trim();
                     const globalName = (userData.global_name || "").toLowerCase().trim();
 
-                    // 2. BUSCAR COINCIDENCIA DE NOMBRE IC EN FIRESTORE
                     let matchedICName = null;
                     try {
-                        const mainStateDoc = await db.collection('ghost_data').doc('main_state').get();
-                        if (mainStateDoc.exists) {
-                            const data = mainStateDoc.data();
-                            const mems = data.members || [];
-                            
-                            const foundMember = mems.find(m => {
-                                const mDisc = (m.discord || "").toLowerCase().replace('@', '').trim();
-                                return mDisc === discordTag || 
-                                       discordTag.includes(mDisc) || 
-                                       mDisc.includes(discordTag) ||
-                                       (globalName && mDisc.includes(globalName));
+                        const doc = await db.collection('ghost_data').doc('main_state').get();
+                        if (doc.exists) {
+                            const found = (doc.data().members || []).find(m => {
+                                const md = (m.discord || "").toLowerCase().replace('@', '').trim();
+                                return md === discordTag || discordTag.includes(md) || md.includes(discordTag) || (globalName && md.includes(globalName));
                             });
-
-                            if (foundMember) {
-                                matchedICName = foundMember.name;
-                            }
+                            if(found) matchedICName = found.name;
                         }
-                    } catch (err) {
-                        console.warn("Error al buscar el Nombre IC en la base de datos:", err);
-                    }
+                    } catch (e) {}
 
-                    let assignedRole = 'Miembro';
-                    let specialTitle = null;
-
-                    // 3. Verificar roles en el servidor de Discord
+                    let role = 'Miembro', title = null;
                     if (DISCORD_GUILD_ID) {
                         try {
-                            const memberRes = await fetch(`https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`, {
-                                headers: { authorization: `Bearer ${accessToken}` }
-                            });
+                            const memberRes = await fetch(`https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`, { headers: { authorization: `Bearer ${accessToken}` } });
                             if (memberRes.ok) {
-                                const memberData = await memberRes.json();
-                                const userRoles = memberData.roles || [];
-                                const hasAnyRole = (roleArray) => roleArray.some(roleId => userRoles.includes(roleId));
-
-                                const displayName = matchedICName || userData.global_name || userData.username;
-
-                                if (hasAnyRole(ROLE_IDS_JEFES)) {
-                                    assignedRole = 'JEFES';
-                                    specialTitle = `${displayName} (Jefe)`;
-                                } else if (hasAnyRole(ROLE_IDS_CUPULA)) {
-                                    assignedRole = 'Cúpula Administrativa';
-                                    specialTitle = `${displayName} (Cúpula)`;
-                                } else if (hasAnyRole(ROLE_IDS_MESABLANCA)) {
-                                    assignedRole = 'La Mesa Blanca';
-                                    specialTitle = `${displayName} (Mesa Blanca)`;
-                                }
+                                const roles = (await memberRes.json()).roles || [];
+                                const has = (arr) => arr.some(id => roles.includes(id));
+                                const dName = matchedICName || userData.global_name || userData.username;
+                                if(has(ROLE_IDS_JEFES)) { role = 'JEFES'; title = `${dName} (Jefe)`; }
+                                else if(has(ROLE_IDS_CUPULA)) { role = 'Cúpula Administrativa'; title = `${dName} (Cúpula)`; }
+                                else if(has(ROLE_IDS_MESABLANCA)) { role = 'La Mesa Blanca'; title = `${dName} (Mesa Blanca)`; }
                             }
-                        } catch (e) {
-                            console.warn("No se pudieron verificar los roles del servidor de Discord:", e);
-                        }
+                        } catch (e) {}
                     }
-
-                    currentUser = {
-                        username: userData.username,
-                        icName: matchedICName || userData.global_name || userData.username,
-                        role: assignedRole,
-                        specialTitle: specialTitle || (matchedICName ? `${matchedICName} (${assignedRole})` : null),
-                        isGuest: false
-                    };
-
+                    currentUser = { username: userData.username, icName: matchedICName || userData.global_name || userData.username, role: role, specialTitle: title || (matchedICName ? `${matchedICName} (${role})` : null), isGuest: false };
                     localStorage.setItem('ghost_session', JSON.stringify(currentUser));
                     initApp();
-                } catch (err) {
-                    console.error("Error al autenticar con Discord:", err);
-                    alert("No se pudo verificar la cuenta de Discord.");
-                }
+                } catch (err) { hideLoader(); alert("Error al verificar Discord."); }
             } else {
                 const saved = localStorage.getItem('ghost_session');
-                if (saved) {
-                    currentUser = JSON.parse(saved);
-                    initApp();
-                } else {
-                    document.getElementById('loginModal').classList.remove('hidden');
-                }
+                if (saved) { currentUser = JSON.parse(saved); initApp(); } else { document.getElementById('loginModal').classList.remove('hidden'); hideLoader(); }
             }
         });
 
-        function logout() {
-            localStorage.removeItem('ghost_session');
-            location.reload();
-        }
+        function logout() { localStorage.removeItem('ghost_session'); location.reload(); }
 
         function initApp() {
             document.getElementById('loginModal').classList.add('hidden');
-            applyPermissions();
+            let bText = currentUser.specialTitle || currentUser.icName || currentUser.username;
+            if(currentUser.isGuest) bText = "Invitado (Lectura)";
+            document.getElementById('current-role-badge').innerText = bText;
+            
+            const isL = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+            if(currentUser.role === 'JEFES') document.getElementById('btn-nav-registro').classList.replace('hidden', 'flex');
+            document.getElementById('btn-nav-finanzas').classList.replace('hidden', 'flex');
+            
             loadDatabase();
         }
 
-        function applyPermissions() {
-            let badgeText = currentUser.icName || currentUser.username;
-            if (currentUser.specialTitle) badgeText = currentUser.specialTitle;
-            else if (currentUser.isGuest) badgeText = "Invitado (Lectura)";
-
-            document.getElementById('current-role-badge').innerText = badgeText;
-            
-            const bReg = document.getElementById('btn-nav-registro'); 
-            const bFin = document.getElementById('btn-nav-finanzas');
-            const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-
-            if (currentUser.role === 'JEFES') { 
-                bReg.classList.replace('hidden', 'flex'); 
-            } else { 
-                bReg.classList.replace('flex', 'hidden'); 
-            }
-
-            bFin.classList.replace('hidden', 'flex');
-        }
-
-        function checkPermission(actionType) {
-            if (currentUser.isGuest || currentUser.role === 'Invitados' || currentUser.role === 'Miembro') { 
-                alert("Sin permisos para realizar esta acción administrativa."); 
-                return false; 
-            }
-            if (currentUser.role === 'La Mesa Blanca' && actionType === 'delete') { 
-                alert("Sin permisos de eliminación."); 
-                return false; 
-            }
+        function checkPermission(action) {
+            if (currentUser.isGuest || ['Invitados','Miembro'].includes(currentUser.role)) { alert("Sin permisos."); return false; }
+            if (currentUser.role === 'La Mesa Blanca' && action === 'delete') { alert("Sin permisos para bajas."); return false; }
             return true;
         }
 
         function loadDatabase() {
+            showLoader("Descargando base de datos...");
             dbUnsubscribe = db.collection("ghost_data").doc("main_state").onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data(); members = data.members || []; logs = data.logs || [];
-                } else {
-                    members = []; logs = [];
-                    db.collection("ghost_data").doc("main_state").set({ members, logs });
-                }
+                if (doc.exists) { const data = doc.data(); members = data.members || []; logs = data.logs || []; } 
+                else { members = []; logs = []; db.collection("ghost_data").doc("main_state").set({ members, logs }); }
                 
-                renderDashboard(); 
-                renderFinanzas(); 
-                renderRegistro();
+                // Normalizar status
+                members.forEach(m => { if(!m.status) m.status = 'Activo'; });
 
+                renderDashboard(); renderFinanzas(); renderRegistro();
                 if (isFirstLoad) {
-                    const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-                    if (!isLeadership && !currentUser.isGuest) {
-                        switchView('mi-estado');
-                    } else {
-                        switchView('miembros');
-                    }
                     isFirstLoad = false;
+                    const isL = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+                    switchView(isL || currentUser.isGuest ? 'miembros' : 'mi-estado');
+                    hideLoader();
                 }
             });
         }
 
-        function saveToCloud() { 
-            db.collection("ghost_data").doc("main_state").set({ members, logs })
-            .catch(err => {
-                console.error("Error detallado:", err);
-                alert("Error al guardar: " + err.message);
-            }); 
+        async function saveToCloud() { 
+            showLoader("Guardando en la nube...");
+            try { await db.collection("ghost_data").doc("main_state").set({ members, logs }); } 
+            catch (err) { alert("Error al guardar: " + err.message); } 
+            finally { hideLoader(); }
         }
 
-        const RANK_STYLES = {
-            "JEFES": "bg-red-950 text-red-500 border-red-900 font-black", "Mano Derecha": "bg-amber-950 text-orange-500 border-amber-900 font-bold",
-            "Subjefe": "bg-yellow-950 text-yellow-400 border-yellow-900 font-bold", "Líder de La Mesa Blanca": "bg-zinc-800 text-white border-zinc-600 font-bold",
-            "Líder de Grupo Sigilo": "bg-zinc-900 text-zinc-300 border-zinc-700 font-bold", "Líder de Operativa Antrax": "bg-green-950 text-green-400 border-green-900 font-bold",
-            "Líder de Dealers": "bg-purple-950 text-purple-400 border-purple-900 font-bold", "La Mesa Blanca": "bg-zinc-900 text-white border-zinc-700",
-            "Grupo Sigilo": "bg-zinc-950 text-zinc-400 border-zinc-800", "Operativa Antrax": "bg-green-950 text-green-500 border-green-900",
-            "Dealers": "bg-purple-950 text-purple-500 border-purple-900", "GHOST": "bg-teal-950 text-teal-300 border-teal-900",
-            "Soldado": "bg-slate-900 text-slate-300 border-slate-700", "Novato": "bg-cyan-950 text-cyan-400 border-cyan-900", "Recolector": "bg-emerald-950 text-emerald-500 border-emerald-900"
-        };
+        const RANK_STYLES = { "JEFES": "bg-red-950 text-red-500 border-red-900", "Mano Derecha": "bg-amber-950 text-orange-500 border-amber-900", "Subjefe": "bg-yellow-950 text-yellow-400 border-yellow-900", "Líder de La Mesa Blanca": "bg-zinc-800 text-white border-zinc-600", "Líder de Grupo Sigilo": "bg-zinc-900 text-zinc-300 border-zinc-700", "Líder de Operativa Antrax": "bg-green-950 text-green-400 border-green-900", "Líder de Dealers": "bg-purple-950 text-purple-400 border-purple-900", "La Mesa Blanca": "bg-zinc-900 text-white border-zinc-700", "Grupo Sigilo": "bg-zinc-950 text-zinc-400 border-zinc-800", "Operativa Antrax": "bg-green-950 text-green-500 border-green-900", "Dealers": "bg-purple-950 text-purple-500 border-purple-900", "GHOST": "bg-teal-950 text-teal-300 border-teal-900", "Soldado": "bg-slate-900 text-slate-300 border-slate-700", "Novato": "bg-cyan-950 text-cyan-400 border-cyan-900", "Recolector": "bg-emerald-950 text-emerald-500 border-emerald-900" };
         const RANK_HIERARCHY = { "JEFES": 1, "Mano Derecha": 2, "Subjefe": 3, "Líder de La Mesa Blanca": 4, "La Mesa Blanca": 5, "Líder de Grupo Sigilo": 6, "Grupo Sigilo": 7, "Líder de Operativa Antrax": 8, "Operativa Antrax": 9, "Líder de Dealers": 10, "Dealers": 11, "GHOST": 12, "Soldado": 13, "Novato": 14, "Recolector": 15 };
 
-        function changeSort(column) {
-            if (sortCol === column) { sortAsc = !sortAsc; } else { sortCol = column; sortAsc = true; }
-            ['name', 'rank', 'quota', 'strikes'].forEach(c => {
-                const icon = document.getElementById(`sort-icon-${c}`);
-                if(icon) icon.className = `fa-solid ml-1 text-zinc-600 ${c === sortCol ? (sortAsc ? 'fa-sort-up text-white' : 'fa-sort-down text-white') : 'fa-sort'}`;
-            });
-            renderDashboard();
-        }
-
-        function exportToCSV() {
-            if (currentUser.isGuest || currentUser.role === 'Miembro') return alert("Sin permisos para exportar.");
-            let csv = "data:text/csv;charset=utf-8,\uFEFF";
-            csv += "Nombre IC,Discord,Rango,Metodo de Pago,Estado Cuota,Descuento,Faltas Acumuladas\n";
-            members.forEach(m => {
-                const info = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
-                const desc = m.discount === 'Exonerado' ? 'Exonerado' : m.discount + ' Hojas';
-                csv += `"${m.name}","${m.discord}","${m.rank}","${m.payment}","${info.status}","${desc}","${m.strikes||0}"\n`;
-            });
-            const link = document.createElement("a"); link.href = encodeURI(csv); link.download = `GHOST_Reporte_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            logAction("Exportó la base de datos a Excel (CSV)");
-        }
+        function changeSort(col) { sortCol === col ? sortAsc = !sortAsc : (sortCol = col, sortAsc = true); renderDashboard(); }
 
         function renderDashboard() {
-            renderLeadershipTable();
-            renderMemberPortal();
-        }
-
-        function renderLeadershipTable() {
-            const tbody = document.getElementById('table-body'); if(!tbody) return; tbody.innerHTML = ''; 
-            const term = document.getElementById('search-input')?.value.toLowerCase() || '';
-            const rFilter = document.getElementById('rank-filter')?.value || '';
-            const sFilter = document.getElementById('strike-filter')?.value || '';
+            const term = (document.getElementById('search-input')?.value || '').toLowerCase();
+            const rF = document.getElementById('rank-filter')?.value || '';
+            const sF = document.getElementById('strike-filter')?.value || '';
+            const stF = document.getElementById('status-filter')?.value || 'Activo';
 
             let filtered = members.filter(m => {
-                const mSearch = m.name.toLowerCase().includes(term) || m.discord.toLowerCase().includes(term);
-                const mRank = rFilter === "" || m.rank === rFilter;
+                const s1 = m.name.toLowerCase().includes(term) || (m.discord||'').toLowerCase().includes(term);
+                const s2 = rF === "" || m.rank === rF;
                 const str = m.strikes || 0;
-                const mStr = sFilter === 'clean' ? str === 0 : (sFilter === 'has_strikes' ? str > 0 : true);
-                return mSearch && mRank && mStr;
+                const s3 = sF === 'clean' ? str === 0 : (sF === 'has_strikes' ? str > 0 : true);
+                const s4 = stF === "" || (m.status || 'Activo') === stF;
+                return s1 && s2 && s3 && s4;
             });
 
             filtered.sort((a, b) => {
-                let vA, vB;
-                if (sortCol === 'name') { vA = a.name.toLowerCase(); vB = b.name.toLowerCase(); }
-                if (sortCol === 'rank') { vA = RANK_HIERARCHY[a.rank] || 99; vB = RANK_HIERARCHY[b.rank] || 99; }
-                if (sortCol === 'quota') { vA = calculateQuotaStatus(a.payment, a.lastPaymentDate, a.extraWeeks, a.discount).weeksLate; vB = calculateQuotaStatus(b.payment, b.lastPaymentDate, b.extraWeeks, b.discount).weeksLate; }
-                if (sortCol === 'strikes') { vA = a.strikes || 0; vB = b.strikes || 0; }
-                if (vA < vB) return sortAsc ? -1 : 1;
-                if (vA > vB) return sortAsc ? 1 : -1;
-                return 0;
+                let vA = sortCol==='name' ? a.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[a.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(a.payment, a.lastPaymentDate, a.extraWeeks, a.discount).weeksLate : a.strikes||0;
+                let vB = sortCol==='name' ? b.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[b.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(b.payment, b.lastPaymentDate, b.extraWeeks, b.discount).weeksLate : b.strikes||0;
+                return vA < vB ? (sortAsc ? -1 : 1) : vA > vB ? (sortAsc ? 1 : -1) : 0;
             });
 
-            const statTotal = document.getElementById('stat-total');
-            if(statTotal) statTotal.innerText = members.length;
-            
-            let atrasados = 0; let totalMoney = 0;
-            members.forEach(m => {
-                const info = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
-                if (info.status === 'Pendiente' || info.status === 'Atrasado') atrasados++;
-                if (info.status === 'Al día' && m.discount !== 'Exonerado') totalMoney += 150000 * getDiscountMultiplier(m.discount);
+            const activos = members.filter(m => (m.status || 'Activo') === 'Activo');
+            document.getElementById('stat-total').innerText = activos.length;
+            let atrasados = 0, totalMoney = 0;
+            activos.forEach(m => {
+                const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                if (i.status === 'Pendiente' || i.status === 'Atrasado') atrasados++;
+                if (i.status === 'Al día' && m.discount !== 'Exonerado') totalMoney += 150000 * getDiscountMultiplier(m.discount);
             });
-            const statPending = document.getElementById('stat-pending');
-            const statMoney = document.getElementById('stat-money');
-            if(statPending) statPending.innerText = atrasados; 
-            if(statMoney) statMoney.innerText = "$" + Math.round(totalMoney).toLocaleString('es-ES');
+            document.getElementById('stat-pending').innerText = atrasados; document.getElementById('stat-money').innerText = "$" + Math.round(totalMoney).toLocaleString('es-ES');
+
+            const tbody = document.getElementById('table-body'); tbody.innerHTML = '';
+            const mContainer = document.getElementById('mobile-cards'); mContainer.innerHTML = '';
+            const isL = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
 
             filtered.forEach(m => {
-                const rStyle = RANK_STYLES[m.rank] || "bg-slate-900 text-slate-300 border-slate-700";
+                const rS = RANK_STYLES[m.rank] || "bg-slate-900 text-slate-300 border-slate-700";
+                const qI = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                const pI = getPaymentInfo(m.payment || "Pendiente", m.discount || '0');
+                const isActivo = m.status === 'Activo' || !m.status;
+                const statBadge = isActivo ? '' : `<span class="ml-2 py-0.5 px-2 rounded text-[10px] font-black uppercase ${m.status==='CK'?'bg-red-950 text-red-500 border border-red-900':'bg-orange-950 text-orange-400 border border-orange-900'}">${m.status}</span>`;
+
+                let qHtml = currentUser.isGuest ? '<span class="text-zinc-500 text-xs"><i class="fa-solid fa-lock"></i></span>' : `<div class="mb-1 text-[10px]"><span class="py-1 px-2 rounded border ${pI.color}">${pI.label}</span></div><div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${m.extraWeeks>0?' (+'+m.extraWeeks+')':''}</div><span class="py-0.5 px-2 rounded text-[10px] font-bold border ${qI.color}">${qI.text}</span>`;
+                let sHtml = currentUser.isGuest ? '<span class="text-zinc-500 text-xs"><i class="fa-solid fa-lock"></i></span>' : formatStrikes(m.strikes);
                 
-                let quotaHtml = "";
-                let strikesHtml = "";
-
-                if (currentUser.isGuest) {
-                    quotaHtml = '<span class="text-zinc-500 italic text-xs"><i class="fa-solid fa-lock"></i> Inicia sesión</span>';
-                    strikesHtml = '<span class="text-zinc-500 italic text-xs"><i class="fa-solid fa-lock"></i> Privado</span>';
-                } else {
-                    const qInfo = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
-                    const payInfo = getPaymentInfo(m.payment || "Pendiente", m.discount || '0');
-                    const dLabel = m.discount && m.discount !== '0' ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-purple-950 text-purple-300 border font-bold">Desc: ${m.discount}</span>` : '';
-                    const eText = (m.extraWeeks > 0) ? ` (+${m.extraWeeks})` : '';
-
-                    quotaHtml = `
-                        <div class="mb-1 flex items-center flex-wrap gap-1"><span class="py-1 px-2.5 rounded text-[10px] border ${payInfo.color}">${payInfo.label}</span>${dLabel}</div>
-                        <div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${eText}</div>
-                        <span class="inline-block py-0.5 px-2 rounded text-[10px] font-bold border ${qInfo.color}">${qInfo.text}</span>
-                    `;
-
-                    strikesHtml = formatStrikes(m.strikes);
+                let actions = '<span class="text-zinc-600 text-xs">Lectura</span>';
+                if (!currentUser.isGuest && isL) {
+                    actions = `<div class="flex items-center justify-end gap-3 text-lg">
+                        ${isActivo ? `<button onclick="registerPayment(${m.id})" title="Registrar Pago" class="text-emerald-500 hover:text-emerald-400 transition-transform hover:scale-125"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
+                        <button onclick="viewHistory(${m.id})" title="Ver Pagos" class="text-blue-400 hover:text-blue-300 transition-transform hover:scale-125"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button onclick="openModal(${m.id})" title="Editar" class="text-zinc-400 hover:text-white transition-transform hover:scale-125"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="openStatusModal(${m.id})" title="Baja / CK" class="text-zinc-600 hover:text-red-500 transition-transform hover:scale-125"><i class="fa-solid fa-skull"></i></button>
+                    </div>`;
                 }
 
-                const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-                const actionsHtml = (!currentUser.isGuest && isLeadership) ? `
-                    <button onclick="openModal(${m.id})" class="text-zinc-400 hover:text-white transition-all transform hover:scale-125 mr-3"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button onclick="deleteMember(${m.id})" class="text-red-500 hover:text-red-400 transition-all transform hover:scale-125"><i class="fa-solid fa-trash"></i></button>
-                ` : '<span class="text-zinc-600 text-xs">Lectura</span>';
+                // Desktop Row
+                tbody.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800 hover:bg-zinc-900/80 transition-colors"><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${m.name}${statBadge}</td><td class="px-6 py-4 whitespace-nowrap text-xs"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i>${m.discord}</td><td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS}">${m.rank}</span></td><td class="px-6 py-4 min-w-[200px]">${qHtml}</td><td class="px-6 py-4 text-xs min-w-[150px]">${sHtml}</td><td class="px-6 py-4">${actions}</td></tr>`;
 
-                tbody.innerHTML += `
-                    <tr class="bg-zinc-950/40 border-b border-zinc-800 hover:bg-zinc-900/80 transition-colors duration-150">
-                        <td class="px-6 py-4 font-bold text-white whitespace-nowrap">${m.name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap"><i class="fa-brands fa-discord text-zinc-400 mr-1"></i> ${m.discord}</td>
-                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-xs border font-semibold ${rStyle}">${m.rank}</span></td>
-                        <td class="px-6 py-4 min-w-[250px]">${quotaHtml}</td>
-                        <td class="px-6 py-4 text-xs min-w-[150px]">${strikesHtml}</td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">${actionsHtml}</td>
-                    </tr>`;
+                // Mobile Card
+                mContainer.innerHTML += `
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-lg">
+                        <div class="flex justify-between items-start mb-3 border-b border-zinc-800 pb-3">
+                            <div><h4 class="font-black text-white text-lg">${m.name}${statBadge}</h4><p class="text-xs text-zinc-400 mt-1"><i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}</p></div>
+                            <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS}">${m.rank}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+                            <div class="bg-black/50 p-2 rounded border border-zinc-800">
+                                <p class="text-zinc-500 font-bold uppercase mb-1 text-[9px]">Cuota</p>
+                                ${qHtml}
+                            </div>
+                            <div class="bg-black/50 p-2 rounded border border-zinc-800">
+                                <p class="text-zinc-500 font-bold uppercase mb-1 text-[9px]">Faltas</p>
+                                <div class="mt-1">${sHtml}</div>
+                            </div>
+                        </div>
+                        <div class="bg-black/40 p-2 rounded flex justify-around items-center border border-zinc-800">${actions}</div>
+                    </div>`;
             });
+            renderMemberPortal();
         }
 
-        function renderMemberPortal() {
-            const portalName = document.getElementById('portal-name');
-            const portalDiscord = document.getElementById('portal-discord');
-            const portalData = document.getElementById('portal-data-container');
-            if(!portalName) return;
-
-            portalDiscord.innerText = "@" + currentUser.username;
-            
-            const found = members.find(m => {
-                const mDisc = (m.discord || "").toLowerCase().replace('@', '').trim();
-                const uTag = currentUser.username.toLowerCase();
-                const ic = (currentUser.icName || "").toLowerCase();
-                return mDisc === uTag || m.name.toLowerCase() === ic;
-            });
-
-            if (!found) {
-                portalName.innerText = currentUser.icName || currentUser.username;
-                portalData.innerHTML = `
-                    <div class="text-center py-6">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3"></i>
-                        <p class="text-sm text-zinc-300 font-bold mb-1">Perfil no vinculado o no registrado</p>
-                        <p class="text-xs text-zinc-500">Tu cuenta de Discord está conectada correctamente, pero aún no tienes un registro de miembro creado en el sistema. Contacta a un superior para que te dé de alta.</p>
-                    </div>
-                `;
-                return;
+        // --- FUNCIONES DE PAGO Y BAJAS ---
+        function registerPayment(id) {
+            if(!checkPermission('edit')) return;
+            const m = members.find(x => x.id === id);
+            const pI = getPaymentInfo(m.payment, m.discount);
+            if(confirm(`¿Registrar pago de ${m.name}?\n\nEntregó: ${pI.label}`)) {
+                if(!m.payHistory) m.payHistory = [];
+                m.payHistory.unshift({ date: formatDateTime(), detail: pI.label });
+                if(m.lastPaymentDate) {
+                    let d = new Date(m.lastPaymentDate + 'T00:00:00'); d.setDate(d.getDate() + 7); m.lastPaymentDate = d.toISOString().split('T')[0];
+                } else m.lastPaymentDate = new Date().toISOString().split('T')[0];
+                logAction(`Pagó Cuota: ${pI.label} (${m.name})`); saveToCloud();
             }
+        }
+        function viewHistory(id) {
+            const m = members.find(x => x.id === id);
+            document.getElementById('history-name').innerText = m.name;
+            const hl = document.getElementById('history-list'); hl.innerHTML = '';
+            if(!m.payHistory || m.payHistory.length === 0) hl.innerHTML = '<p class="text-zinc-500 text-sm italic">No hay pagos registrados.</p>';
+            else m.payHistory.forEach(h => hl.innerHTML += `<div class="bg-zinc-950 p-3 rounded border border-zinc-800 text-sm flex justify-between items-center"><span class="font-bold text-emerald-400">${h.detail}</span><span class="text-zinc-500 text-xs">${h.date}</span></div>`);
+            document.getElementById('historyModal').classList.remove('hidden');
+        }
+        function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
+        
+        function openStatusModal(id) {
+            if(!checkPermission('delete')) return;
+            targetStatusId = id; const m = members.find(x => x.id === id);
+            document.getElementById('status-name').innerText = m.name;
+            document.getElementById('btn-reactivate').classList.toggle('hidden', m.status === 'Activo' || !m.status);
+            document.getElementById('statusModal').classList.remove('hidden');
+        }
+        function closeStatusModal() { document.getElementById('statusModal').classList.add('hidden'); targetStatusId = null; }
+        function confirmStatusChange(newStatus) {
+            if(!targetStatusId) return; const m = members.find(x => x.id === targetStatusId);
+            if(confirm(`¿Confirmar que ${m.name} pasará a estado: ${newStatus}?`)) {
+                m.status = newStatus; logAction(`Cambió estado a [${newStatus}] para ${m.name}`);
+                saveToCloud(); closeStatusModal();
+            }
+        }
 
-            portalName.innerText = found.name;
-            const rStyle = RANK_STYLES[found.rank] || "bg-slate-900 text-slate-300 border-slate-700";
-            const qInfo = calculateQuotaStatus(found.payment, found.lastPaymentDate, found.extraWeeks, found.discount);
-            const payInfo = getPaymentInfo(found.payment || "Pendiente", found.discount || '0');
-            const descText = found.discount && found.discount !== '0' ? found.discount : 'Ninguno';
-            const strikesText = formatStrikes(found.strikes || 0);
+        function exportToCSV() {
+            if(currentUser.isGuest || currentUser.role === 'Miembro') return alert("Sin permisos.");
+            let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas\n";
+            members.forEach(m => {
+                const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                csv += `"${m.name}","${m.discord}","${m.rank}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}"\n`;
+            });
+            const l = document.createElement("a"); l.href = encodeURI(csv); l.download = `GHOST_Reporte.csv`;
+            document.body.appendChild(l); l.click(); document.body.removeChild(l);
+            logAction("Exportó CSV");
+        }
 
-            portalData.innerHTML = `
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-                    <span class="text-xs uppercase font-bold text-zinc-400">Rango / Jerarquía</span>
-                    <span class="py-1 px-3 rounded text-xs border font-semibold ${rStyle}">${found.rank}</span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-                    <span class="text-xs uppercase font-bold text-zinc-400">Método de Pago</span>
-                    <span class="py-1 px-2.5 rounded text-xs border ${payInfo.color}">${payInfo.label}</span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-                    <span class="text-xs uppercase font-bold text-zinc-400">Descuento Asignado</span>
-                    <span class="text-xs font-bold text-purple-300">${descText}</span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-                    <span class="text-xs uppercase font-bold text-zinc-400">Estado de Cuota</span>
-                    <span class="py-1 px-2.5 rounded text-xs font-bold border ${qInfo.color}">${qInfo.text}</span>
-                </div>
-                <div class="flex justify-between items-center pt-1">
-                    <span class="text-xs uppercase font-bold text-zinc-400">Faltas Acumuladas</span>
-                    <span class="text-xs font-bold text-amber-400">${strikesText}</span>
-                </div>
+        // --- RESTO DE FUNCIONALIDADES (MODAL, FORMULARIO, LOGS, FINANZAS) ---
+        function renderMemberPortal() {
+            const pn = document.getElementById('portal-name'), pd = document.getElementById('portal-discord'), pc = document.getElementById('portal-data-container');
+            if(!pn) return; pd.innerText = "@" + currentUser.username;
+            const f = members.find(m => { const md = (m.discord||'').toLowerCase().replace('@','').trim(); return md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName||'').toLowerCase(); });
+            if(!f) { pn.innerText = currentUser.icName || currentUser.username; pc.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3"></i><p class="text-sm text-zinc-300 font-bold">Perfil no vinculado</p></div>`; return; }
+            pn.innerText = f.name; const rS = RANK_STYLES[f.rank] || "bg-slate-900 border-slate-700"; const q = calculateQuotaStatus(f.payment, f.lastPaymentDate, f.extraWeeks, f.discount); const p = getPaymentInfo(f.payment, f.discount);
+            pc.innerHTML = `
+                ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950 border border-red-900 p-2 text-center rounded text-red-500 font-black mb-3">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS}">${f.rank}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Pago</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color}">${q.text}</span></div>
+                <div class="flex justify-between items-center pt-1"><span class="text-xs font-bold text-zinc-400 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400">${formatStrikes(f.strikes||0)}</span></div>
             `;
         }
 
         function switchView(view) {
-            const isLeadership = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-            
-            if(view === 'finanzas' && (!isLeadership || currentUser.isGuest)) {
-                alert("Acceso denegado: El apartado de Finanzas es exclusivo para altos mandos.");
-                return;
-            }
-
-            ['mi-estado','miembros','finanzas','registro'].forEach(v => { 
-                const el = document.getElementById(`view-${v}`);
-                if(el) {
-                    el.classList.add('hidden'); 
-                    el.classList.remove('animate-view');
-                    if(v === 'mi-estado') el.classList.remove('flex');
-                    if(v === 'miembros') el.classList.remove('flex');
-                }
-                const btnNav = document.getElementById(`btn-nav-${v}`);
-                if(btnNav) btnNav.classList.remove('bg-zinc-800','text-white'); 
+            if(view === 'finanzas' && (!['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role) || currentUser.isGuest)) return alert("Denegado: Solo altos mandos.");
+            ['mi-estado','miembros','finanzas','registro'].forEach(v => {
+                const e = document.getElementById(`view-${v}`); if(e) { e.classList.add('hidden'); e.classList.remove('animate-view','flex'); }
+                const b = document.getElementById(`btn-nav-${v}`); if(b) b.classList.remove('bg-zinc-800/90','text-white');
             });
-
-            const targetView = document.getElementById(`view-${view}`);
-            if(targetView) {
-                targetView.classList.remove('hidden');
-                
-                if(view === 'mi-estado') targetView.classList.add('flex');
-                if(view === 'miembros') targetView.classList.add('flex');
-
-                void targetView.offsetWidth; 
-                targetView.classList.add('animate-view');
-            }
-
-            const targetBtn = document.getElementById(`btn-nav-${view}`);
-            if(targetBtn) targetBtn.classList.add('bg-zinc-800','text-white');
-            
-            if(view === 'finanzas') renderFinanzas(); 
-            if(view === 'registro') renderRegistro();
+            const t = document.getElementById(`view-${view}`);
+            if(t) { t.classList.remove('hidden'); if(view==='mi-estado'||view==='miembros') t.classList.add('flex'); void t.offsetWidth; t.classList.add('animate-view'); }
+            const tb = document.getElementById(`btn-nav-${view}`); if(tb) tb.classList.add('bg-zinc-800/90','text-white');
         }
 
-        function getDiscountMultiplier(disc) { if(disc === 'Exonerado') return 0; let d = parseInt(disc)||0; return d<=0 ? 1 : (1500-d)/1500; }
+        function getDiscountMultiplier(d) { return d === 'Exonerado' ? 0 : (parseInt(d)||0)<=0 ? 1 : (1500-parseInt(d))/1500; }
         function updatePaymentOptions() {
-            const mult = getDiscountMultiplier(document.getElementById('f-discount').value);
-            const sel = document.getElementById('f-payment'); const val = sel.value;
-            sel.innerHTML = `<option value="Nuevo">Nuevo (1 Sem. Libre)</option><option value="Pendiente">Pendiente</option><option value="Efectivo">Efectivo ($${Math.round(150000*mult).toLocaleString('es')})</option><option value="Coca">${Math.round(1500*mult)} Hojas de Coca</option><option value="SNS">5 SNS</option><option value="Vintage">4 Vintage</option><option value="9mm">3 9mm</option><option value="MiniSMG">1 Mini SMG + $30.000</option><option value="TEC9">1 TEC-9 + $10.000</option><option value="MicroSMG">1 Micro SMG</option><option value="Chalecos">11 Chalecos</option><option value="Pagado">Pagado (Antiguo)</option>`;
-            if([...sel.options].some(o=>o.value===val)) sel.value = val;
+            const m = getDiscountMultiplier(document.getElementById('f-discount').value), s = document.getElementById('f-payment'), v = s.value;
+            s.innerHTML = `<option value="Nuevo">Nuevo</option><option value="Pendiente">Pendiente</option><option value="Efectivo">Efectivo ($${Math.round(150000*m).toLocaleString('es')})</option><option value="Coca">${Math.round(1500*m)} Coca</option><option value="SNS">5 SNS</option><option value="Vintage">4 Vintage</option><option value="9mm">3 9mm</option><option value="MiniSMG">1 MiniSMG + $30k</option><option value="TEC9">1 TEC9 + $10k</option><option value="MicroSMG">1 MicroSMG</option><option value="Chalecos">11 Chalecos</option><option value="Pagado">Pagado (Antiguo)</option>`;
+            if([...s.options].some(o=>o.value===v)) s.value = v;
         }
         function onRankFormChange() {
             const r = document.getElementById('f-rank').value, d = document.getElementById('f-discount');
-            if(['JEFES','Mano Derecha','Subjefe','La Mesa Blanca','Líder de La Mesa Blanca'].includes(r)) d.value = 'Exonerado';
-            else if(r.includes('Dealers')) d.value = '500'; else if(r.includes('Sigilo')||r.includes('Antrax')) d.value = '300'; else d.value = '0';
+            d.value = ['JEFES','Mano Derecha','Subjefe','La Mesa Blanca','Líder de La Mesa Blanca'].includes(r) ? 'Exonerado' : r.includes('Dealers') ? '500' : r.includes('Sigilo')||r.includes('Antrax') ? '300' : '0';
             updatePaymentOptions();
         }
-        function calculateQuotaStatus(pay, lastDate, ex = 0, disc = '0') {
-            if(disc === 'Exonerado') return { status: 'Al día', color: 'bg-amber-950 text-amber-300 border-amber-500', text: 'Exonerado', weeksLate: 0 };
-            if(!pay || pay === 'Pendiente') return { status: 'Pendiente', color: 'bg-red-950 text-red-400 border-red-800', text: 'Pendiente', weeksLate: 1 };
-            if(!lastDate) return { status: 'Sin Fecha', color: 'bg-yellow-950 text-yellow-400', text: 'No Data', weeksLate: 0 };
-            const l = new Date(lastDate+'T00:00:00'), n = new Date();
-            if(pay === 'Nuevo') {
-                const f = new Date(l); f.setDate(f.getDate()+7); f.setHours(23,59,59);
-                return n<=f ? {status:'Libre', color:'bg-teal-950 text-teal-300', text:`Libre (${formatDate(f.toISOString())})`, weeksLate:0} : {status:'Pendiente', color:'bg-red-950 text-red-400', text:'Libre Expirado', weeksLate:1};
-            }
-            const dToSun = l.getDay() === 0 ? 0 : 7 - l.getDay();
-            const sun = new Date(l); sun.setDate(sun.getDate() + dToSun + (ex*7)); sun.setHours(23,59,59);
-            if(n<=sun) return {status:'Al día', color: 'bg-emerald-950 text-emerald-400', text:`Límite: Dom ${formatDate(sun.toISOString())}`, weeksLate:0};
-            const wks = 1 + Math.floor((n-sun)/(1000*60*60*24*7));
-            return {status:'Atrasado', color:'bg-red-950 text-red-400', text:`${wks} cuota(s) pendiente(s)`, weeksLate:wks};
+        function calculateQuotaStatus(pay, last, ex=0, disc='0') {
+            if(disc==='Exonerado') return {status:'Al día',color:'bg-amber-950 text-amber-300 border-amber-500',text:'Exonerado',weeksLate:0};
+            if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'Pendiente',weeksLate:1};
+            if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400',text:'No Data',weeksLate:0};
+            const l=new Date(last+'T00:00:00'), n=new Date();
+            if(pay==='Nuevo') { const f=new Date(l); f.setDate(f.getDate()+7); f.setHours(23,59,59); return n<=f ? {status:'Libre',color:'bg-teal-950 text-teal-300',text:`Libre`,weeksLate:0} : {status:'Pendiente',color:'bg-red-950 text-red-400',text:'Expirado',weeksLate:1}; }
+            const sun=new Date(l); sun.setDate(sun.getDate()+(l.getDay()===0?0:7-l.getDay())+(ex*7)); sun.setHours(23,59,59);
+            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400',text:`Límite: ${formatDate(sun.toISOString())}`,weeksLate:0};
+            const w = 1+Math.floor((n-sun)/(86400000*7)); return {status:'Atrasado',color:'bg-red-950 text-red-400',text:`${w} atrasada(s)`,weeksLate:w};
         }
         function getPaymentInfo(k, d) {
-            const m = getDiscountMultiplier(d);
-            const map = { "Nuevo": { label: "Nuevo", color: "bg-teal-950 text-teal-300" }, "Pendiente": { label: "Pendiente", color: "bg-red-950 text-red-400" }, "Efectivo": { label: `$${Math.round(150000*m).toLocaleString('es')}`, color: "bg-emerald-950 text-emerald-300" }, "Coca": { label: `${Math.round(1500*m)} Coca`, color: "bg-lime-950 text-lime-300" }, "SNS": { label: `${Math.ceil(5*m)} SNS`, color: "bg-cyan-950 text-cyan-300" }, "Vintage": { label: `${Math.ceil(4*m)} Vintage`, color: "bg-blue-950 text-blue-300" }, "9mm": { label: `${Math.ceil(3*m)} 9mm`, color: "bg-indigo-950 text-indigo-300" }, "MiniSMG": { label: `${Math.ceil(1*m)} MiniSMG+$${Math.round(30000*m)/1000}k`, color: "bg-purple-950 text-purple-300" }, "TEC9": { label: `${Math.ceil(1*m)} TEC9+$${Math.round(10000*m)/1000}k`, color: "bg-fuchsia-950 text-fuchsia-300" }, "MicroSMG": { label: `${Math.ceil(1*m)} MicroSMG`, color: "bg-rose-950 text-rose-300" }, "Chalecos": { label: `${Math.ceil(11*m)} Chalecos`, color: "bg-amber-950 text-amber-300" }, "Pagado": { label: "Pagado", color: "bg-emerald-950 text-emerald-300" } };
+            const m = getDiscountMultiplier(d), map = { "Nuevo":{label:"Nuevo",color:"bg-teal-950 text-teal-300"},"Pendiente":{label:"Pendiente",color:"bg-red-950 text-red-400"},"Efectivo":{label:`$${Math.round(150000*m).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300"},"Coca":{label:`${Math.round(1500*m)} Coca`,color:"bg-lime-950 text-lime-300"},"SNS":{label:`5 SNS`,color:"bg-cyan-950 text-cyan-300"},"Vintage":{label:`4 Vintage`,color:"bg-blue-950 text-blue-300"},"9mm":{label:`3 9mm`,color:"bg-indigo-950 text-indigo-300"},"MiniSMG":{label:`MiniSMG`,color:"bg-purple-950 text-purple-300"},"TEC9":{label:`TEC9`,color:"bg-fuchsia-950 text-fuchsia-300"},"MicroSMG":{label:`MicroSMG`,color:"bg-rose-950 text-rose-300"},"Chalecos":{label:`11 Chalecos`,color:"bg-amber-950 text-amber-300"},"Pagado":{label:"Pagado",color:"bg-emerald-950 text-emerald-300"} };
             return map[k]||map["Pendiente"];
         }
         function formatStrikes(p) {
-            if(p >= 108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>';
-            if(!p) return '<span class="text-zinc-500">0 Faltas</span>';
-            let gr = Math.floor(p / 54), r = p % 54;
-            let it = Math.floor(r / 18), r2 = r % 18;
-            let lv = Math.floor(r2 / 3), ll = r2 % 3;
-            let pt = [];
-            if(gr) pt.push(`<span class="text-red-400 font-bold">${gr} Grave${gr > 1 ? 's' : ''}</span>`);
-            if(it) pt.push(`<span class="text-orange-400 font-semibold">${it} Intermedia${it > 1 ? 's' : ''}</span>`);
-            if(lv) pt.push(`<span class="text-yellow-400 font-semibold">${lv} Leve${lv > 1 ? 's' : ''}</span>`);
-            if(ll) pt.push(`<span class="text-zinc-300">${ll} Llamado${ll > 1 ? 's' : ''}</span>`);
-            return pt.join(' • ');
+            if(p>=108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>';
+            if(!p) return '<span class="text-zinc-500">0</span>';
+            let gr=Math.floor(p/54),r=p%54, it=Math.floor(r/18),r2=r%18, lv=Math.floor(r2/3),ll=r2%3, pt=[];
+            if(gr) pt.push(`<span class="text-red-400 font-bold">${gr}G</span>`); if(it) pt.push(`<span class="text-orange-400 font-semibold">${it}I</span>`);
+            if(lv) pt.push(`<span class="text-yellow-400">${lv}L</span>`); if(ll) pt.push(`<span class="text-zinc-300">${ll}Llam</span>`);
+            return pt.join('•');
         }
         function addStrike(a) { let el = document.getElementById('f-strikes'); el.value = parseInt(el.value)+a; document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(el.value)); }
-        function clearStrikes() { document.getElementById('f-strikes').value = 0; document.getElementById('strike-preview').innerHTML = '0 Faltas'; }
-        function addExtraWeek() { let e = document.getElementById('f-extra'); e.value = parseInt(e.value)+1; }
-        function subExtraWeek() { let e = document.getElementById('f-extra'); if(parseInt(e.value)>0) e.value = parseInt(e.value)-1; }
+        function clearStrikes() { document.getElementById('f-strikes').value = 0; document.getElementById('strike-preview').innerHTML = '0'; }
+        function addExtraWeek() { document.getElementById('f-extra').value = parseInt(document.getElementById('f-extra').value)+1; }
+        function subExtraWeek() { let e = document.getElementById('f-extra'); if(e.value>0) e.value = parseInt(e.value)-1; }
+
         let editId = null;
         function openModal(id = null) {
-            if(!checkPermission('add_edit')) return;
-            editId = id; document.getElementById('modal-title').innerText = id ? 'Editar Miembro' : 'Nuevo Miembro';
-            if(id) { const m = members.find(x=>x.id===id); document.getElementById('f-name').value = m.name; document.getElementById('f-discord').value = m.discord; document.getElementById('f-rank').value = m.rank||'Soldado'; document.getElementById('f-discount').value = m.discount||'0'; updatePaymentOptions(); document.getElementById('f-payment').value = m.payment||'Nuevo'; document.getElementById('f-date').value = m.lastPaymentDate; document.getElementById('f-extra').value = m.extraWeeks||0; document.getElementById('f-strikes').value = m.strikes||0; } 
-            else { document.getElementById('member-form').reset(); document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; onRankFormChange(); clearStrikes(); }
-            document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value));
-            document.getElementById('memberModal').classList.remove('hidden');
+            if(!checkPermission('add_edit')) return; editId = id; document.getElementById('modal-title').innerText = id ? 'Editar Miembro' : 'Nuevo Miembro';
+            if(id) {
+                const m = members.find(x=>x.id===id); document.getElementById('f-name').value = m.name; document.getElementById('f-discord').value = m.discord; document.getElementById('f-rank').value = m.rank||'Soldado'; document.getElementById('f-discount').value = m.discount||'0'; updatePaymentOptions(); document.getElementById('f-payment').value = m.payment||'Nuevo'; document.getElementById('f-date').value = m.lastPaymentDate; document.getElementById('f-extra').value = m.extraWeeks||0; document.getElementById('f-strikes').value = m.strikes||0;
+            } else { document.getElementById('member-form').reset(); document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; onRankFormChange(); clearStrikes(); }
+            document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value)); document.getElementById('memberModal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('memberModal').classList.add('hidden'); }
-        document.getElementById('member-form').addEventListener('submit', e => {
+        document.getElementById('member-form').addEventListener('submit', async e => {
             e.preventDefault();
-            const n = document.getElementById('f-name').value, d = document.getElementById('f-discord').value, r = document.getElementById('f-rank').value, p = document.getElementById('f-payment').value, dt = document.getElementById('f-date').value, ex = parseInt(document.getElementById('f-extra').value)||0, disc = document.getElementById('f-discount').value, s = parseInt(document.getElementById('f-strikes').value)||0;
-            if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], name:n, discord:d, rank:r, payment:p, lastPaymentDate:dt, extraWeeks:ex, discount:disc, strikes:s}; logAction(`Editó perfil de: ${n}`); }
-            else { members.push({id: members.length ? Math.max(...members.map(x=>x.id))+1 : 1, name:n, discord:d, rank:r, payment:p, lastPaymentDate:dt, extraWeeks:ex, discount:disc, strikes:s}); logAction(`Añadió miembro: ${n}`); }
-            saveToCloud(); closeModal();
+            const mData = { name:document.getElementById('f-name').value, discord:document.getElementById('f-discord').value, rank:document.getElementById('f-rank').value, payment:document.getElementById('f-payment').value, lastPaymentDate:document.getElementById('f-date').value, extraWeeks:parseInt(document.getElementById('f-extra').value)||0, discount:document.getElementById('f-discount').value, strikes:parseInt(document.getElementById('f-strikes').value)||0 };
+            if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], ...mData}; logAction(`Editó a ${mData.name}`); }
+            else { mData.id = members.length ? Math.max(...members.map(x=>x.id))+1 : 1; mData.status = 'Activo'; members.push(mData); logAction(`Añadió a ${mData.name}`); }
+            closeModal(); await saveToCloud();
         });
-        function deleteMember(id) {
-            if(!checkPermission('delete')) return; const m = members.find(x=>x.id===id);
-            if(confirm('¿Eliminar a este miembro de GHOST?')) { logAction(`Expulsó a: ${m.name}`); members = members.filter(x=>x.id!==id); saveToCloud(); }
-        }
-        function logAction(act) { if(currentUser.isGuest || currentUser.role === 'Miembro') return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.icName || currentUser.role, action: act }); }
+
+        function logAction(act) { if(currentUser.isGuest || currentUser.role==='Miembro') return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.icName || currentUser.role, action: act }); }
+        function formatDateTime() { const d=new Date(); return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
+        function formatDate(dt) { if(!dt) return 'N/A'; const p=dt.split('T')[0].split('-'); return `${p[2]}/${p[1]}/${p[0].slice(-2)}`; }
+        function openImageModal() { document.getElementById('imageModal').classList.remove('hidden'); } function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+
         function renderFinanzas() {
             let cash = 0, coca = 0, sns = 0, vintage = 0, mm9 = 0, minismg = 0, tec9 = 0, microsmg = 0, chalecos = 0;
-            members.forEach(m => {
-                const info = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
-                if (info.status === 'Al día' && m.discount !== 'Exonerado') {
-                    const mult = getDiscountMultiplier(m.discount);
-                    if(m.payment === 'Efectivo' || m.payment === 'Pagado') cash += 150000 * mult; if(m.payment === 'Coca') coca += Math.round(1500 * mult);
-                    if(m.payment === 'SNS') sns += Math.ceil(5 * mult); if(m.payment === 'Vintage') vintage += Math.ceil(4 * mult); if(m.payment === '9mm') mm9 += Math.ceil(3 * mult);
-                    if(m.payment === 'MiniSMG') { minismg += Math.ceil(1 * mult); cash += 30000 * mult; } if(m.payment === 'TEC9') { tec9 += Math.ceil(1 * mult); cash += 10000 * mult; }
-                    if(m.payment === 'MicroSMG') microsmg += Math.ceil(1 * mult); if(m.payment === 'Chalecos') chalecos += Math.ceil(11 * mult);
+            members.filter(m => m.status === 'Activo' || !m.status).forEach(m => {
+                const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+                if (i.status === 'Al día' && m.discount !== 'Exonerado') {
+                    const mul = getDiscountMultiplier(m.discount);
+                    if(['Efectivo','Pagado'].includes(m.payment)) cash+=150000*mul; if(m.payment==='Coca') coca+=Math.round(1500*mul);
+                    if(m.payment==='SNS') sns+=Math.ceil(5*mul); if(m.payment==='Vintage') vintage+=Math.ceil(4*mul); if(m.payment==='9mm') mm9+=Math.ceil(3*mul);
+                    if(m.payment==='MiniSMG') { minismg+=Math.ceil(1*mul); cash+=30000*mul; } if(m.payment==='TEC9') { tec9+=Math.ceil(1*mul); cash+=10000*mul; }
+                    if(m.payment==='MicroSMG') microsmg+=Math.ceil(1*mul); if(m.payment==='Chalecos') chalecos+=Math.ceil(11*mul);
                 }
             });
             document.getElementById('fin-efectivo').innerText = "$" + Math.round(cash).toLocaleString('es-ES'); document.getElementById('fin-coca').innerText = coca.toLocaleString('es-ES'); document.getElementById('fin-sns').innerText = sns; document.getElementById('fin-vintage').innerText = vintage; document.getElementById('fin-9mm').innerText = mm9; document.getElementById('fin-minismg').innerText = minismg; document.getElementById('fin-tec9').innerText = tec9; document.getElementById('fin-microsmg').innerText = microsmg; document.getElementById('fin-chalecos').innerText = chalecos;
         }
-        function renderRegistro() { const tbody = document.getElementById('logs-table-body'); if(!tbody) return; tbody.innerHTML = ''; logs.forEach(l => { tbody.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400">${l.date}</td><td class="px-6 py-4 font-bold text-white">${l.role}</td><td class="px-6 py-4 text-zinc-300">${l.action}</td></tr>`; }); }
-        function formatDateTime() { const d=new Date(); return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
-        function formatDate(dt) { if(!dt) return 'N/A'; const p=dt.split('T')[0].split('-'); return `${p[2]}/${p[1]}/${p[0].slice(-2)}`; }
-        
-        function openImageModal() { document.getElementById('imageModal').classList.remove('hidden'); } 
-        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
-        
+
+        function renderRegistro() { 
+            const tb = document.getElementById('logs-table-body'), term = (document.getElementById('log-search-input')?.value||'').toLowerCase();
+            if(!tb) return; tb.innerHTML = ''; 
+            logs.filter(l => l.action.toLowerCase().includes(term) || l.role.toLowerCase().includes(term)).forEach(l => { 
+                tb.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400 whitespace-nowrap">${l.date}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-zinc-300 min-w-[250px]">${l.action}</td></tr>`; 
+            }); 
+        }
         document.getElementById('search-input')?.addEventListener('input', renderDashboard);
     </script>
 </body>
