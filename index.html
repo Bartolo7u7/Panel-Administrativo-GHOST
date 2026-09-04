@@ -42,6 +42,9 @@
 </head>
 <body class="text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
 
+    <!-- CONTENEDOR DE TOASTS (NOTIFICACIONES) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
     <!-- SPINNER DE CARGA GLOBAL -->
     <div id="global-loader" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl text-emerald-500 mb-4"></i>
@@ -301,7 +304,6 @@
                     <select id="v-usage" required class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
                         <option value="Uso Público">Uso Público (Cualquier miembro)</option>
                         <option value="Grupo Sigilo">Exclusivo: Grupo Sigilo</option>
-                         <option value="La Mesa Blanca">Exclusivo: La Mesa Blanca</option>
                         <option value="Operativa Antrax">Exclusivo: Operativa Antrax</option>
                         <option value="Dealers">Exclusivo: Dealers</option>
                         <option value="Jefatura">Exclusivo: Cúpula / Jefatura</option>
@@ -468,7 +470,7 @@
     </div>
 
     <script>
-        // PEGA TU API KEY DE IMGBB AQUÍ ABAJO (La misma que obtuviste en el paso anterior):
+        // API KEY INTEGADA DIRECTAMENTE
         const IMGBB_API_KEY = "0a824764dca72f7e4df7dda75f1aceae"; 
 
         const firebaseConfig = {
@@ -484,16 +486,52 @@
         let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
         let targetStatusId = null; let paymentTargetId = null;
 
+        // --- SISTEMA DE TOASTS (NOTIFICACIONES ELEGANTES) ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let icon = ''; let bgClass = '';
+            if (type === 'success') {
+                icon = '<i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>';
+                bgClass = 'bg-emerald-950/95 border-emerald-800';
+            } else if (type === 'error') {
+                icon = '<i class="fa-solid fa-circle-xmark text-red-400 text-xl"></i>';
+                bgClass = 'bg-red-950/95 border-red-800';
+            } else {
+                icon = '<i class="fa-solid fa-circle-info text-blue-400 text-xl"></i>';
+                bgClass = 'bg-blue-950/95 border-blue-800';
+            }
+
+            toast.className = `flex items-center gap-3 px-4 py-3 min-w-[250px] rounded-lg border ${bgClass} text-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] backdrop-blur-md transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.innerHTML = `${icon} <span class="text-sm font-semibold">${message}</span>`;
+
+            container.appendChild(toast);
+
+            // Animar entrada
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-x-full', 'opacity-0');
+            });
+
+            // Animar salida y eliminar
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+        // ----------------------------------------------------
+
         function showLoader(text = "Sincronizando...") { document.getElementById('loader-text').innerText = text; document.getElementById('global-loader').classList.remove('hidden'); }
         function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
 
         function loginWithDiscord() {
-            if(!DISCORD_CLIENT_ID || DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ") return alert("Configura tu Client ID de Discord.");
+            if(!DISCORD_CLIENT_ID || DISCORD_CLIENT_ID === "TU_CLIENT_ID_AQUÍ") return showToast("Configura tu Client ID de Discord.", "error");
             window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}&response_type=token&scope=${encodeURIComponent("identify guilds guilds.members.read")}`;
         }
         function loginAsGuest() {
             currentUser = { username: "Invitado", icName: "Invitado", role: "Invitados", isGuest: true };
             localStorage.setItem('ghost_session', JSON.stringify(currentUser)); initApp();
+            showToast("Iniciaste sesión como Invitado", "info");
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -538,7 +576,8 @@
                     currentUser = { username: userData.username, icName: matchedICName || userData.global_name || userData.username, role: role, specialTitle: title || (matchedICName ? `${matchedICName} (${role})` : null), isGuest: false };
                     localStorage.setItem('ghost_session', JSON.stringify(currentUser));
                     initApp();
-                } catch (err) { hideLoader(); alert("Error al verificar Discord."); }
+                    showToast("Sesión iniciada correctamente");
+                } catch (err) { hideLoader(); showToast("Error al verificar Discord.", "error"); }
             } else {
                 const saved = localStorage.getItem('ghost_session');
                 if (saved) { currentUser = JSON.parse(saved); initApp(); } else { document.getElementById('loginModal').classList.remove('hidden'); hideLoader(); }
@@ -566,8 +605,8 @@
         }
 
         function checkPermission(action) {
-            if (currentUser.isGuest || ['Invitados','Miembro'].includes(currentUser.role)) { alert("Sin permisos."); return false; }
-            if (currentUser.role === 'La Mesa Blanca' && action === 'delete') { alert("Sin permisos para bajas."); return false; }
+            if (currentUser.isGuest || ['Invitados','Miembro'].includes(currentUser.role)) { showToast("Sin permisos para realizar esta acción.", "error"); return false; }
+            if (currentUser.role === 'La Mesa Blanca' && action === 'delete') { showToast("Sin permisos para gestionar bajas.", "error"); return false; }
             return true;
         }
 
@@ -599,8 +638,11 @@
 
         async function saveToCloud() { 
             showLoader("Guardando en la nube...");
-            try { await db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); } 
-            catch (err) { alert("Error al guardar: " + err.message); } 
+            try { 
+                await db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); 
+                showToast("Cambios guardados en la nube");
+            } 
+            catch (err) { showToast("Error al guardar: " + err.message, "error"); } 
             finally { hideLoader(); }
         }
 
@@ -636,7 +678,7 @@
 
         async function saveVehicle(e) {
             e.preventDefault();
-            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return alert("Sin permisos.");
+            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return showToast("Sin permisos.", "error");
             
             const model = document.getElementById('v-model').value.trim();
             const usage = document.getElementById('v-usage').value;
@@ -646,7 +688,6 @@
             let imageUrl = null;
 
             if (file) {
-                if(IMGBB_API_KEY === "AQUÍ_TU_API_KEY") return alert("Ingresa tu API Key de ImgBB en el código (Línea 390).");
                 showLoader("Subiendo imagen a la nube...");
                 try {
                     const formData = new FormData(); formData.append("image", file);
@@ -654,9 +695,9 @@
                     const data = await res.json();
                     if(!data.success) throw new Error("Error en ImgBB");
                     imageUrl = data.data.url;
-                } catch(err) { hideLoader(); return alert("Error al subir imagen: " + err.message); }
+                } catch(err) { hideLoader(); return showToast("Error al subir imagen.", "error"); }
             } else if (!editVehicleId) {
-                return alert("Selecciona una foto para el nuevo vehículo.");
+                return showToast("Selecciona una foto para el nuevo vehículo.", "error");
             }
 
             if(editVehicleId) {
@@ -665,10 +706,12 @@
                 vehicles[i].usage = usage;
                 if(imageUrl) vehicles[i].image = imageUrl;
                 logAction(`Editó el vehículo: ${model}`);
+                showToast("Vehículo actualizado");
             } else {
                 const newV = { id: Date.now(), model: model, usage: usage, image: imageUrl, addedBy: currentUser.icName || currentUser.username };
                 vehicles.push(newV);
                 logAction(`Añadió el vehículo: ${model}`);
+                showToast("Vehículo añadido al garaje");
             }
 
             closeVehicleModal();
@@ -676,13 +719,14 @@
         }
 
         async function deleteVehicle(id) {
-            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return alert("Sin permisos.");
+            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return showToast("Sin permisos.", "error");
             if(!confirm("¿Eliminar este vehículo del garaje?")) return;
             const i = vehicles.findIndex(x => x.id === id);
             if(i > -1) {
                 const modelName = vehicles[i].model;
                 vehicles.splice(i, 1);
                 logAction(`Eliminó el vehículo: ${modelName}`);
+                showToast("Vehículo eliminado del garaje");
                 await saveToCloud();
             }
         }
@@ -749,8 +793,7 @@
 
         async function uploadImage(e) {
             e.preventDefault();
-            if(currentUser.isGuest) return alert("Los invitados no pueden subir fotos.");
-            if(IMGBB_API_KEY === "AQUÍ_TU_API_KEY") return alert("Ingresa tu API Key de ImgBB en el código.");
+            if(currentUser.isGuest) return showToast("Los invitados no pueden subir fotos.", "error");
 
             const file = document.getElementById('gallery-file').files[0];
             const title = document.getElementById('gallery-title').value.trim();
@@ -784,16 +827,17 @@
                 await db.collection("ghost_data").doc("main_state").update({ images: images });
                 
                 logAction(`Subió una foto a la galería`);
+                showToast("Foto subida exitosamente");
                 closeUploadModal();
             } catch(err) { 
-                alert("Error al subir la imagen: " + err.message); 
+                showToast("Error al subir la imagen.", "error");
             } finally { 
                 hideLoader(); 
             }
         }
 
         async function toggleReaction(imageId, emoji) {
-            if(currentUser.isGuest) return alert("Los invitados no pueden reaccionar.");
+            if(currentUser.isGuest) return showToast("Los invitados no pueden reaccionar.", "error");
             const img = images.find(x => x.id === imageId);
             if(!img) return;
 
@@ -818,12 +862,12 @@
             try {
                 await db.collection("ghost_data").doc("main_state").update({ images: images });
             } catch(err) {
-                alert("Error al actualizar reacción: " + err.message);
+                showToast("Error al actualizar reacción.", "error");
             }
         }
 
         async function deleteImage(id) {
-            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return alert("Sin permisos. Solo la Cúpula puede borrar fotos.");
+            if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return showToast("Sin permisos para borrar fotos.", "error");
             if(!confirm("¿Estás seguro de que quieres eliminar esta foto de la galería?")) return;
             
             const imgIndex = images.findIndex(x => x.id === id);
@@ -834,7 +878,8 @@
                 images.splice(imgIndex, 1);
                 await db.collection("ghost_data").doc("main_state").update({ images: images });
                 logAction(`Eliminó una foto de la galería`);
-            } catch(err) { alert("Error al eliminar: " + err.message); } 
+                showToast("Foto eliminada");
+            } catch(err) { showToast("Error al eliminar foto.", "error"); } 
             finally { hideLoader(); }
         }
 
@@ -1081,6 +1126,7 @@
 
             logAction(`Registró pago con [${chosenMethod}] (${pI.label}) para ${m.name}`);
             closePaymentModal();
+            showToast("Pago registrado exitosamente");
             await saveToCloud();
         }
 
@@ -1106,12 +1152,12 @@
             if(!targetStatusId) return; const m = members.find(x => x.id === targetStatusId);
             if(confirm(`¿Confirmar que ${m.name} pasará a estado: ${newStatus}?`)) {
                 m.status = newStatus; logAction(`Cambió estado a [${newStatus}] para ${m.name}`);
-                saveToCloud(); closeStatusModal();
+                saveToCloud(); closeStatusModal(); showToast(`Estado actualizado a ${newStatus}`);
             }
         }
 
         function exportToCSV() {
-            if(currentUser.isGuest || currentUser.role === 'Miembro') return alert("Sin permisos.");
+            if(currentUser.isGuest || currentUser.role === 'Miembro') return showToast("Sin permisos para exportar.", "error");
             let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas,Notas\n";
             members.forEach(m => {
                 const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
@@ -1120,6 +1166,7 @@
             const l = document.createElement("a"); l.href = encodeURI(csv); l.download = `GHOST_Reporte.csv`;
             document.body.appendChild(l); l.click(); document.body.removeChild(l);
             logAction("Exportó CSV");
+            showToast("Reporte CSV descargado");
         }
 
         function renderMemberPortal() {
@@ -1139,7 +1186,7 @@
         }
 
         function switchView(view) {
-            if(view === 'finanzas' && (!['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role) || currentUser.isGuest)) return alert("Denegado: Solo altos mandos.");
+            if(view === 'finanzas' && (!['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role) || currentUser.isGuest)) return showToast("Denegado: Solo altos mandos.", "error");
             ['mi-estado','miembros','garaje','galeria','finanzas','registro'].forEach(v => {
                 const e = document.getElementById(`view-${v}`); if(e) { e.classList.add('hidden'); e.classList.remove('animate-view','flex'); }
                 const b = document.getElementById(`btn-nav-${v}`); if(b) b.classList.remove('bg-zinc-800/90','text-white');
@@ -1301,8 +1348,8 @@
                 strikes: parseInt(document.getElementById('f-strikes').value)||0,
                 notes: document.getElementById('f-notes').value.trim()
             };
-            if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], ...mData}; logAction(`Editó a ${mData.name}`); }
-            else { mData.id = members.length ? Math.max(...members.map(x=>x.id))+1 : 1; mData.status = 'Activo'; members.push(mData); logAction(`Añadió a ${mData.name}`); }
+            if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], ...mData}; logAction(`Editó a ${mData.name}`); showToast(`Perfil de ${mData.name} actualizado`); }
+            else { mData.id = members.length ? Math.max(...members.map(x=>x.id))+1 : 1; mData.status = 'Activo'; members.push(mData); logAction(`Añadió a ${mData.name}`); showToast(`Nuevo miembro añadido: ${mData.name}`); }
             closeModal(); await saveToCloud();
         });
 
