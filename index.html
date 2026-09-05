@@ -895,7 +895,7 @@
             
             const canDelete = ['JEFES', 'Cúpula Administrativa'].includes(currentUser.role);
             const sorted = [...images].sort((a,b) => b.id - a.id);
-            const availableEmojis = ["❤️", "🔥", "👍", "😂", "💀", "👏"];
+            const availableEmojis = ["❤️", "🔝", "🔥", "💦", "🍆", "👍", "😂", "💀", "👏"];
             
             sorted.forEach(img => {
                 const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl backdrop-blur-md z-20" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
