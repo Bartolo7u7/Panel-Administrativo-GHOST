@@ -486,7 +486,7 @@
                         </div>
                         <div>
                             <label class="block text-xs uppercase font-bold text-red-400 mb-1"><i class="fa-solid fa-mask"></i> Rol Ilegales</label>
-                            <select id="f-illegal" class="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2.5 text-red-200 interactive-input focus:border-red-500 font-bold">
+                            <select id="f-illegal" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input font-bold">
                                 <option value="Por Entrar">Por Entrar</option>
                                 <option value="Sin Rol">Sin Rol</option>
                                 <option value="Tiene Rol">Tiene Rol</option>
@@ -1063,11 +1063,11 @@
 
         function getIllegalBadge(status) {
             if (status === 'Tiene Rol') {
-                return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]"><i class="fa-solid fa-mask mr-1"></i> Tiene Rol</span>';
+                return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.4)]"><i class="fa-solid fa-mask mr-1"></i> Tiene Rol</span>';
             } else if (status === 'Sin Rol') {
                 return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-400 border border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Sin Rol</span>';
             } else {
-                return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-600"><i class="fa-solid fa-user-clock mr-1"></i> Por Entrar</span>';
+                return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]"><i class="fa-solid fa-user-clock mr-1"></i> Por Entrar</span>';
             }
         }
 
@@ -1373,9 +1373,9 @@
             
             const rawIll = f.illegalStatus || (f.illegalRole ? 'Tiene Rol' : 'Por Entrar');
             let illegalDisplay = '';
-            if (rawIll === 'Tiene Rol') illegalDisplay = '<span class="text-red-400 font-bold drop-shadow-md"><i class="fa-solid fa-mask"></i> Tiene Rol</span>';
+            if (rawIll === 'Tiene Rol') illegalDisplay = '<span class="text-purple-400 font-bold drop-shadow-md"><i class="fa-solid fa-mask"></i> Tiene Rol</span>';
             else if (rawIll === 'Sin Rol') illegalDisplay = '<span class="text-orange-400 font-bold drop-shadow-md"><i class="fa-solid fa-triangle-exclamation"></i> Sin Rol</span>';
-            else illegalDisplay = '<span class="text-zinc-400 font-bold">Por Entrar</span>';
+            else illegalDisplay = '<span class="text-red-400 font-bold drop-shadow-md"><i class="fa-solid fa-user-clock"></i> Por Entrar</span>';
 
             pc.innerHTML = `
                 ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950/50 border border-red-900/80 p-2 text-center rounded text-red-500 font-black mb-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
