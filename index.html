@@ -260,6 +260,12 @@
                                 <select id="rank-filter" onchange="renderDashboard()" class="bg-black/80 border theme-border text-zinc-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input">
                                     <option value="">Rango (Todos)</option><option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option><option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option><option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option><option>Líder de Operativa Antrax</option><option>Operativa Antrax</option><option>Líder de Dealers</option><option>Dealers</option><option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
                                 </select>
+                                <select id="illegal-filter" onchange="renderDashboard()" class="bg-black/80 border theme-border text-red-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold">
+                                    <option value="">Ilegales (Todos)</option>
+                                    <option value="Tiene Rol">Tiene Rol</option>
+                                    <option value="Sin Rol">Sin Rol</option>
+                                    <option value="Por Entrar">Por Entrar</option>
+                                </select>
                             </div>
                             <div class="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
                                 <button onclick="exportToCSV()" class="flex-1 sm:flex-none bg-black/80 hover:bg-zinc-900 text-brand-300 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border theme-border font-semibold text-sm interactive-btn shadow-[0_0_10px_var(--theme-glow)]"><i class="fa-solid fa-file-csv"></i> Exportar</button>
@@ -444,70 +450,70 @@
                     <div><label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Nombre In-Character</label><input type="text" id="f-name" required class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></div>
                     <div><label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Usuario Discord</label><input type="text" id="f-discord" required class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Jerarquía (Rango)</label>
-                        <select id="f-rank" onchange="onRankFormChange()" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
-                            <option>Recolector</option><option>Novato</option><option>Soldado</option><option>GHOST</option><option>Dealers</option><option>Grupo Sigilo</option><option>Operativa Antrax</option><option>La Mesa Blanca</option><option>Líder de Dealers</option><option>Líder de Grupo Sigilo</option><option>Líder de Operativa Antrax</option><option>Líder de La Mesa Blanca</option><option>Subjefe</option><option>Mano Derecha</option><option>JEFES</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Método de Pago Base</label>
-                        <select id="f-payment" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Fecha Base</label>
-                        <input type="date" id="f-date" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input" style="color-scheme: dark;">
-                    </div>
-                </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Descuento Fijo</label>
-                        <select id="f-discount" onchange="updatePaymentOptions()" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
-                            <option value="0">0 Hojas</option>
-                            <option value="200">200 Hojas</option>
-                            <option value="300">300 Hojas</option>
-                            <option value="400">400 Hojas (Sigilo/Antrax)</option>
-                            <option value="500">500 Hojas (Dealers)</option>
-                            <option value="Exonerado">Exonerado (Cúpula/Líderes)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cuotas Extra</label>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="subExtraWeek()" class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">-</button>
-                            <input type="number" id="f-extra" min="0" value="0" class="w-16 bg-black border theme-border rounded-lg p-2.5 text-white font-bold text-center">
-                            <button type="button" onclick="addExtraWeek()" class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">+</button>
+                <!-- SECCIÓN EDITABLE (OCULTA AL AÑADIR NUEVO MIEMBRO) -->
+                <div id="edit-only-section" class="space-y-4 md:space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Método de Pago Base</label>
+                            <select id="f-payment" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Fecha Base</label>
+                            <input type="date" id="f-date" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input" style="color-scheme: dark;">
                         </div>
                     </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Descuento Fijo</label>
+                            <select id="f-discount" onchange="updatePaymentOptions()" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                                <option value="0">0 Hojas</option>
+                                <option value="200">200 Hojas</option>
+                                <option value="300">300 Hojas</option>
+                                <option value="400">400 Hojas (Sigilo/Antrax)</option>
+                                <option value="500">500 Hojas (Dealers)</option>
+                                <option value="Exonerado">Exonerado (Cúpula/Líderes)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cuotas Extra</label>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="subExtraWeek()" class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">-</button>
+                                <input type="number" id="f-extra" min="0" value="0" class="w-16 bg-black border theme-border rounded-lg p-2.5 text-white font-bold text-center">
+                                <button type="button" onclick="addExtraWeek()" class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase font-bold text-red-400 mb-1"><i class="fa-solid fa-mask"></i> Rol Ilegales</label>
+                            <select id="f-illegal" class="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2.5 text-red-200 interactive-input focus:border-red-500 font-bold">
+                                <option value="Por Entrar">Por Entrar</option>
+                                <option value="Sin Rol">Sin Rol</option>
+                                <option value="Tiene Rol">Tiene Rol</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-xs uppercase font-bold text-red-400 mb-1"><i class="fa-solid fa-mask"></i> Rol Ilegales</label>
-                        <select id="f-illegal" class="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2.5 text-red-200 interactive-input focus:border-red-500">
-                            <option value="No">No (Legal)</option>
-                            <option value="Sí">Sí (Ilegal)</option>
-                        </select>
+                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Notas u Observaciones Internas</label>
+                        <textarea id="f-notes" rows="2" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input text-xs" placeholder="Ej: Aviso de vacaciones hasta el viernes, motivo de faltas..."></textarea>
+                    </div>
+                    <div class="bg-black/50 p-4 rounded-lg border theme-border">
+                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-2">Faltas (Puntos)</label>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <button type="button" onclick="addStrike(1)" class="bg-zinc-900 border border-zinc-700 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Llamado</button>
+                            <button type="button" onclick="addStrike(3)" class="bg-yellow-950/40 border border-yellow-900/50 text-xs px-2.5 py-1.5 rounded text-yellow-300 font-semibold interactive-btn">+1 Leve</button>
+                            <button type="button" onclick="addStrike(18)" class="bg-orange-950/40 border border-orange-900/50 text-xs px-2.5 py-1.5 rounded text-orange-300 font-semibold interactive-btn">+1 Intermedia</button>
+                            <button type="button" onclick="addStrike(54)" class="bg-red-950/40 border border-red-900/50 text-xs px-2.5 py-1.5 rounded text-red-300 font-semibold interactive-btn">+1 Grave</button>
+                            <button type="button" onclick="clearStrikes()" class="bg-black border theme-border text-xs px-2.5 py-1.5 rounded ml-auto text-brand-300 interactive-btn">Limpiar</button>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="number" id="f-strikes" min="0" value="0" class="w-16 bg-black border theme-border rounded-lg p-2 text-white font-bold text-center" readonly>
+                            <div id="strike-preview" class="text-sm font-bold text-amber-400">0 Faltas</div>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Notas u Observaciones Internas</label>
-                    <textarea id="f-notes" rows="2" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input text-xs" placeholder="Ej: Aviso de vacaciones hasta el viernes, motivo de faltas..."></textarea>
-                </div>
-                <div class="bg-black/50 p-4 rounded-lg border theme-border">
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-2">Faltas (Puntos)</label>
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <button type="button" onclick="addStrike(1)" class="bg-zinc-900 border border-zinc-700 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Llamado</button>
-                        <button type="button" onclick="addStrike(3)" class="bg-yellow-950/40 border border-yellow-900/50 text-xs px-2.5 py-1.5 rounded text-yellow-300 font-semibold interactive-btn">+1 Leve</button>
-                        <button type="button" onclick="addStrike(18)" class="bg-orange-950/40 border border-orange-900/50 text-xs px-2.5 py-1.5 rounded text-orange-300 font-semibold interactive-btn">+1 Intermedia</button>
-                        <button type="button" onclick="addStrike(54)" class="bg-red-950/40 border border-red-900/50 text-xs px-2.5 py-1.5 rounded text-red-300 font-semibold interactive-btn">+1 Grave</button>
-                        <button type="button" onclick="clearStrikes()" class="bg-black border theme-border text-xs px-2.5 py-1.5 rounded ml-auto text-brand-300 interactive-btn">Limpiar</button>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <input type="number" id="f-strikes" min="0" value="0" class="w-16 bg-black border theme-border rounded-lg p-2 text-white font-bold text-center" readonly>
-                        <div id="strike-preview" class="text-sm font-bold text-amber-400">0 Faltas</div>
-                    </div>
-                </div>
                 <div class="flex justify-end gap-3 mt-6 pt-4 border-t theme-border">
                     <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
                     <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-lg font-black shadow-[0_0_15px_var(--theme-glow)] interactive-btn">Guardar Perfil</button>
@@ -718,7 +724,13 @@
                     db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); 
                 }
                 
-                members.forEach(m => { if(!m.status) m.status = 'Activo'; });
+                members.forEach(m => { 
+                    if(!m.status) m.status = 'Activo'; 
+                    // Migrar campos antiguos si es necesario
+                    if(!m.illegalStatus) {
+                        m.illegalStatus = m.illegalRole ? 'Tiene Rol' : 'Por Entrar';
+                    }
+                });
 
                 renderDashboard(); renderFinanzas(); renderRegistro(); renderGallery(); renderGarage();
                 if (isFirstLoad) {
@@ -1049,9 +1061,20 @@
 
         function changeSort(col) { sortCol === col ? sortAsc = !sortAsc : (sortCol = col, sortAsc = true); renderDashboard(); }
 
+        function getIllegalBadge(status) {
+            if (status === 'Tiene Rol') {
+                return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]"><i class="fa-solid fa-mask mr-1"></i> Tiene Rol</span>';
+            } else if (status === 'Sin Rol') {
+                return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-400 border border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.4)]"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Sin Rol</span>';
+            } else {
+                return '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-600"><i class="fa-solid fa-user-clock mr-1"></i> Por Entrar</span>';
+            }
+        }
+
         function renderDashboard() {
             const term = (document.getElementById('search-input')?.value || '').toLowerCase();
             const rF = document.getElementById('rank-filter')?.value || '';
+            const illF = document.getElementById('illegal-filter')?.value || '';
             const sF = document.getElementById('strike-filter')?.value || '';
             
             const statusEl = document.getElementById('status-filter');
@@ -1060,16 +1083,23 @@
             let filtered = members.filter(m => {
                 const s1 = m.name.toLowerCase().includes(term) || (m.discord||'').toLowerCase().includes(term);
                 const s2 = rF === "" || m.rank === rF;
+                
+                const illStatus = m.illegalStatus || (m.illegalRole ? 'Tiene Rol' : 'Por Entrar');
+                const s5 = illF === "" || illStatus === illF;
+
                 const str = m.strikes || 0;
                 const s3 = sF === 'clean' ? str === 0 : (sF === 'has_strikes' ? str > 0 : true);
                 const mStatus = m.status || 'Activo';
                 const s4 = stF === "" || mStatus.toLowerCase() === stF.toLowerCase();
-                return s1 && s2 && s3 && s4;
+                return s1 && s2 && s3 && s4 && s5;
             });
 
             filtered.sort((a, b) => {
                 if (sortCol === 'illegal') {
-                    return a.illegalRole === b.illegalRole ? 0 : (a.illegalRole ? (sortAsc ? -1 : 1) : (sortAsc ? 1 : -1));
+                    const order = { 'Tiene Rol': 1, 'Sin Rol': 2, 'Por Entrar': 3 };
+                    const statA = a.illegalStatus || (a.illegalRole ? 'Tiene Rol' : 'Por Entrar');
+                    const statB = b.illegalStatus || (b.illegalRole ? 'Tiene Rol' : 'Por Entrar');
+                    return (order[statA] || 9) === (order[statB] || 9) ? 0 : ((order[statA] || 9) < (order[statB] || 9) ? (sortAsc ? -1 : 1) : (sortAsc ? 1 : -1));
                 }
                 let vA = sortCol==='name' ? a.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[a.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(a.payment, a.lastPaymentDate, a.extraWeeks, a.discount).weeksLate : a.strikes||0;
                 let vB = sortCol==='name' ? b.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[b.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(b.payment, b.lastPaymentDate, b.extraWeeks, b.discount).weeksLate : b.strikes||0;
@@ -1100,9 +1130,8 @@
                 const isActivo = m.status === 'Activo' || !m.status;
                 const statBadge = isActivo ? '' : `<span class="ml-2 py-0.5 px-2 rounded text-[10px] font-black uppercase ${m.status==='CK'?'bg-red-950 text-red-500 border border-red-900 shadow-[0_0_10px_rgba(239,68,68,0.3)]':'bg-orange-950 text-orange-400 border border-orange-900 shadow-[0_0_10px_rgba(249,115,22,0.3)]'}">${m.status}</span>`;
                 
-                const illegalBadge = m.illegalRole 
-                    ? '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-red-950/80 text-red-400 border border-red-900 shadow-[0_0_10px_rgba(239,68,68,0.2)]"><i class="fa-solid fa-mask mr-1"></i> Sí</span>' 
-                    : '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-zinc-900 text-zinc-500 border border-zinc-700">No</span>';
+                const illStatus = m.illegalStatus || (m.illegalRole ? 'Tiene Rol' : 'Por Entrar');
+                const illegalBadge = getIllegalBadge(illStatus);
 
                 const md = (m.discord || '').toLowerCase().replace('@', '').trim();
                 const isMe = md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName || '').toLowerCase();
@@ -1136,7 +1165,7 @@
                             ${notesHtml}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-xs"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i>${m.discord}</td>
-                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS} shadow-sm">${m.rank}</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS} shadow-sm">${m.rank || 'Recolector'}</span></td>
                         <td class="px-6 py-4 whitespace-nowrap">${illegalBadge}</td>
                         <td class="px-6 py-4 min-w-[200px]">${qHtml}</td>
                         <td class="px-6 py-4 text-xs min-w-[150px]">${sHtml}</td>
@@ -1152,7 +1181,7 @@
                                 ${notesHtml}
                             </div>
                             <div class="flex flex-col items-end gap-1">
-                                <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS} shadow-sm">${m.rank}</span>
+                                <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS} shadow-sm">${m.rank || 'Recolector'}</span>
                                 ${illegalBadge}
                             </div>
                         </div>
@@ -1177,7 +1206,7 @@
             if(!checkPermission('edit')) return;
             paymentTargetId = id;
             const m = members.find(x => x.id === id);
-            document.getElementById('payment-member-name').innerText = `Miembro: ${m.name} (Rango: ${m.rank})`;
+            document.getElementById('payment-member-name').innerText = `Miembro: ${m.name} (Rango: ${m.rank || 'Recolector'})`;
             
             const dv = getDiscountValues(m.discount);
             const sel = document.getElementById('modal-payment-method');
@@ -1266,7 +1295,8 @@
             let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Ilegales,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas,Notas\n";
             members.forEach(m => {
                 const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
-                csv += `"${m.name}","${m.discord}","${m.rank}","${m.illegalRole?'Sí':'No'}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}","${(m.notes||'').replace(/"/g, '""')}"\n`;
+                const illStatus = m.illegalStatus || (m.illegalRole ? 'Tiene Rol' : 'Por Entrar');
+                csv += `"${m.name}","${m.discord}","${m.rank || 'Recolector'}","${illStatus}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}","${(m.notes||'').replace(/"/g, '""')}"\n`;
             });
             const l = document.createElement("a"); l.href = encodeURI(csv); l.download = `GHOST_Reporte.csv`;
             document.body.appendChild(l); l.click(); document.body.removeChild(l);
@@ -1336,22 +1366,27 @@
             }
             
             pn.innerText = f.name; 
-            const rS = RANK_STYLES[f.rank] || "bg-slate-900 border-slate-700"; 
+            const rankName = f.rank || 'Recolector';
+            const rS = RANK_STYLES[rankName] || "bg-slate-900 border-slate-700"; 
             const q = calculateQuotaStatus(f.payment, f.lastPaymentDate, f.extraWeeks, f.discount); 
             const p = getPaymentInfo(f.payment, f.discount);
-            const illegalText = f.illegalRole ? '<span class="text-red-400 font-bold drop-shadow-md"><i class="fa-solid fa-mask"></i> Sí</span>' : '<span class="text-zinc-500 font-bold">No</span>';
+            
+            const rawIll = f.illegalStatus || (f.illegalRole ? 'Tiene Rol' : 'Por Entrar');
+            let illegalDisplay = '';
+            if (rawIll === 'Tiene Rol') illegalDisplay = '<span class="text-red-400 font-bold drop-shadow-md"><i class="fa-solid fa-mask"></i> Tiene Rol</span>';
+            else if (rawIll === 'Sin Rol') illegalDisplay = '<span class="text-orange-400 font-bold drop-shadow-md"><i class="fa-solid fa-triangle-exclamation"></i> Sin Rol</span>';
+            else illegalDisplay = '<span class="text-zinc-400 font-bold">Por Entrar</span>';
 
             pc.innerHTML = `
                 ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950/50 border border-red-900/80 p-2 text-center rounded text-red-500 font-black mb-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
-                <div class="flex justify-between items-center border-b theme-border pb-3"><span class="text-xs font-bold text-brand-500 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS} shadow-sm">${f.rank}</span></div>
-                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Rol en Ilegales</span><span class="text-xs">${illegalText}</span></div>
+                <div class="flex justify-between items-center border-b theme-border pb-3"><span class="text-xs font-bold text-brand-500 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS} shadow-sm">${rankName}</span></div>
+                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Rol en Ilegales</span><span class="text-xs">${illegalDisplay}</span></div>
                 <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Método de Pago Actual</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color} shadow-sm">${p.label}</span></div>
                 <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Estado de Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color} shadow-sm">${q.text}</span></div>
                 <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400 drop-shadow-md">${formatStrikes(f.strikes||0)}</span></div>
                 ${f.notes ? `<div class="bg-black/60 p-3 mt-3 rounded border theme-border"><span class="text-[10px] font-bold text-brand-500 uppercase block mb-1">Nota Interna:</span><p class="text-xs text-brand-300 italic">${f.notes}</p></div>` : ''}
             `;
 
-            // Configurar Simulador Inicial con el descuento base del miembro
             if(f.discount) {
                 simCont.classList.remove('hidden');
                 select.value = f.discount; 
@@ -1375,7 +1410,7 @@
         function getDiscountValues(d) {
             if (d === 'Exonerado') return { hojas: 1500, cash: 150000, remVal: 0, ratio: 0 };
             const hojas = parseInt(d) || 0;
-            const cash = hojas * 100; // 100 hojas = $10.000 ($100 c/u)
+            const cash = hojas * 100;
             const remVal = Math.max(0, 150000 - cash);
             const ratio = remVal / 150000;
             return { hojas, cash, remVal, ratio };
@@ -1411,20 +1446,6 @@
                 <option value="Pagado">Pagado (Antiguo)</option>
             `;
             if([...s.options].some(o=>o.value===v)) s.value = v;
-        }
-
-        function onRankFormChange() {
-            const r = document.getElementById('f-rank').value, d = document.getElementById('f-discount');
-            if (['JEFES', 'Mano Derecha', 'Subjefe', 'La Mesa Blanca', 'Líder de La Mesa Blanca', 'Líder de Grupo Sigilo', 'Líder de Operativa Antrax'].includes(r)) {
-                d.value = 'Exonerado';
-            } else if (r.includes('Dealers')) {
-                d.value = '500';
-            } else if (r.includes('Sigilo') || r.includes('Antrax')) {
-                d.value = '400';
-            } else {
-                d.value = '200';
-            }
-            updatePaymentOptions();
         }
 
         function calculateQuotaStatus(pay, last, ex=0, disc='0') {
@@ -1487,12 +1508,18 @@
 
         let editId = null;
         function openModal(id = null) {
-            if(!checkPermission('add_edit')) return; editId = id; document.getElementById('modal-title').innerText = id ? 'Editar Miembro' : 'Nuevo Miembro';
+            if(!checkPermission('add_edit')) return; 
+            editId = id; 
+            document.getElementById('modal-title').innerText = id ? 'Editar Miembro' : 'Añadir Miembro';
+            
+            const editOnlySection = document.getElementById('edit-only-section');
+
             if(id) {
+                // MODO EDICIÓN: Muestra todos los campos (excepto rango, gestionado por el bot)
+                editOnlySection.classList.remove('hidden');
                 const m = members.find(x=>x.id===id); 
                 document.getElementById('f-name').value = m.name; 
                 document.getElementById('f-discord').value = m.discord; 
-                document.getElementById('f-rank').value = m.rank||'Soldado'; 
                 document.getElementById('f-discount').value = m.discount||'0'; 
                 updatePaymentOptions(); 
                 document.getElementById('f-payment').value = m.payment||'Nuevo'; 
@@ -1500,14 +1527,17 @@
                 document.getElementById('f-extra').value = m.extraWeeks||0; 
                 document.getElementById('f-strikes').value = m.strikes||0;
                 document.getElementById('f-notes').value = m.notes||'';
-                document.getElementById('f-illegal').value = m.illegalRole ? 'Sí' : 'No';
+                
+                const illStatus = m.illegalStatus || (m.illegalRole ? 'Tiene Rol' : 'Por Entrar');
+                document.getElementById('f-illegal').value = illStatus;
             } else { 
+                // MODO AÑADIR: Solo pide Nombre IC y Discord. Oculta el resto de opciones avanzadas.
+                editOnlySection.classList.add('hidden');
                 document.getElementById('member-form').reset(); 
                 document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; 
-                onRankFormChange(); 
                 clearStrikes(); 
                 document.getElementById('f-notes').value = '';
-                document.getElementById('f-illegal').value = 'No';
+                document.getElementById('f-illegal').value = 'Por Entrar';
             }
             document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value)); 
             document.getElementById('memberModal').classList.remove('hidden');
@@ -1516,21 +1546,49 @@
         
         document.getElementById('member-form').addEventListener('submit', async e => {
             e.preventDefault();
-            const mData = { 
-                name: document.getElementById('f-name').value, 
-                discord: document.getElementById('f-discord').value, 
-                rank: document.getElementById('f-rank').value, 
-                payment: document.getElementById('f-payment').value, 
-                lastPaymentDate: document.getElementById('f-date').value, 
-                extraWeeks: parseInt(document.getElementById('f-extra').value)||0, 
-                discount: document.getElementById('f-discount').value, 
-                strikes: parseInt(document.getElementById('f-strikes').value)||0,
-                notes: document.getElementById('f-notes').value.trim(),
-                illegalRole: document.getElementById('f-illegal').value === 'Sí'
-            };
-            if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], ...mData}; logAction(`Editó a ${mData.name}`); showToast(`Perfil de ${mData.name} actualizado`); }
-            else { mData.id = members.length ? Math.max(...members.map(x=>x.id))+1 : 1; mData.status = 'Activo'; members.push(mData); logAction(`Añadió a ${mData.name}`); showToast(`Nuevo miembro añadido: ${mData.name}`); }
-            closeModal(); await saveToCloud();
+            if(editId) { 
+                const i = members.findIndex(x=>x.id===editId); 
+                const mData = { 
+                    name: document.getElementById('f-name').value, 
+                    discord: document.getElementById('f-discord').value, 
+                    payment: document.getElementById('f-payment').value, 
+                    lastPaymentDate: document.getElementById('f-date').value, 
+                    extraWeeks: parseInt(document.getElementById('f-extra').value)||0, 
+                    discount: document.getElementById('f-discount').value, 
+                    strikes: parseInt(document.getElementById('f-strikes').value)||0,
+                    notes: document.getElementById('f-notes').value.trim(),
+                    illegalStatus: document.getElementById('f-illegal').value
+                };
+                members[i] = {...members[i], ...mData}; 
+                logAction(`Editó a ${mData.name}`); 
+                showToast(`Perfil de ${mData.name} actualizado`); 
+            } else { 
+                // Al añadir solo se requiere Nombre IC y Discord. Asignamos valores por defecto (Rango inicial Recolector).
+                const nameVal = document.getElementById('f-name').value;
+                const discordVal = document.getElementById('f-discord').value;
+                const newId = members.length ? Math.max(...members.map(x=>x.id))+1 : 1;
+                
+                const mData = {
+                    id: newId,
+                    name: nameVal,
+                    discord: discordVal,
+                    rank: 'Recolector',
+                    payment: 'Nuevo',
+                    lastPaymentDate: new Date().toISOString().split('T')[0],
+                    extraWeeks: 0,
+                    discount: '200',
+                    strikes: 0,
+                    notes: '',
+                    illegalStatus: 'Por Entrar',
+                    status: 'Activo',
+                    payHistory: []
+                };
+                members.push(mData); 
+                logAction(`Añadió a ${nameVal}`); 
+                showToast(`Nuevo miembro añadido: ${nameVal}`); 
+            }
+            closeModal(); 
+            await saveToCloud();
         });
 
         function logAction(act) { if(currentUser.isGuest || currentUser.role==='Miembro') return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.icName || currentUser.role, action: act }); }
