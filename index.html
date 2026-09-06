@@ -12,7 +12,42 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <!-- CONFIGURACIÓN TAILWIND PARA TEMAS DINÁMICOS -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            300: 'var(--brand-300)', 400: 'var(--brand-400)', 500: 'var(--brand-500)',
+                            600: 'var(--brand-600)', 700: 'var(--brand-700)', 800: 'var(--brand-800)',
+                            900: 'var(--brand-900)', 950: 'var(--brand-950)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
+        /* VARIABLES DE TEMAS */
+        :root, [data-theme="esmeralda"] {
+            --brand-300: #6ee7b7; --brand-400: #34d399; --brand-500: #10b981; --brand-600: #059669; 
+            --brand-700: #047857; --brand-800: #065f46; --brand-900: #064e3b; --brand-950: #022c22;
+        }
+        [data-theme="rojo"] {
+            --brand-300: #fca5a5; --brand-400: #f87171; --brand-500: #ef4444; --brand-600: #dc2626; 
+            --brand-700: #b91c1c; --brand-800: #991b1b; --brand-900: #7f1d1d; --brand-950: #450a0a;
+        }
+        [data-theme="azul"] {
+            --brand-300: #93c5fd; --brand-400: #60a5fa; --brand-500: #3b82f6; --brand-600: #2563eb; 
+            --brand-700: #1d4ed8; --brand-800: #1e40af; --brand-900: #1e3a8a; --brand-950: #172554;
+        }
+        [data-theme="morado"] {
+            --brand-300: #d8b4fe; --brand-400: #c084fc; --brand-500: #a855f7; --brand-600: #9333ea; 
+            --brand-700: #7e22ce; --brand-800: #6b21a8; --brand-900: #581c87; --brand-950: #3b0764;
+        }
+
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(9, 9, 11, 0.8); }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
@@ -47,7 +82,7 @@
 
     <!-- SPINNER DE CARGA GLOBAL -->
     <div id="global-loader" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
-        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-emerald-500 mb-4"></i>
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-brand-500 mb-4"></i>
         <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con GHOST Cloud...</p>
     </div>
 
@@ -83,7 +118,7 @@
                 <h1 class="text-xl font-black text-white tracking-widest uppercase">GHOST</h1>
                 <div class="mt-2 px-2.5 py-1 bg-zinc-900/80 border border-zinc-700 rounded text-center">
                     <span class="text-[9px] text-zinc-500 block uppercase font-bold">Sesión Activa:</span>
-                    <span id="current-role-badge" class="text-xs font-black text-emerald-400">Verificando...</span>
+                    <span id="current-role-badge" class="text-xs font-black text-brand-400">Verificando...</span>
                 </div>
             </div>
 
@@ -107,6 +142,15 @@
                     <i class="fa-solid fa-clipboard-list text-zinc-400"></i> <span class="hidden md:inline">Logs</span>
                 </button>
             </nav>
+
+            <!-- SELECTOR DE TEMA -->
+            <div class="px-4 py-3 border-t border-zinc-800 flex justify-center gap-3 bg-zinc-950/50">
+                <button onclick="changeTheme('esmeralda')" class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Esmeralda"></button>
+                <button onclick="changeTheme('rojo')" class="w-5 h-5 rounded-full bg-red-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Rojo Sangre"></button>
+                <button onclick="changeTheme('azul')" class="w-5 h-5 rounded-full bg-blue-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Azul Ciber"></button>
+                <button onclick="changeTheme('morado')" class="w-5 h-5 rounded-full bg-purple-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Morado"></button>
+            </div>
+
             <div class="p-2 md:p-4 border-t border-zinc-800 flex md:flex-col gap-2">
                 <button onclick="logout()" class="flex-1 flex items-center justify-center gap-2 text-zinc-300 hover:text-white hover:bg-zinc-900/80 text-xs py-2.5 rounded border border-zinc-700 interactive-btn">
                     <i class="fa-solid fa-right-from-bracket"></i> Cambiar Cuenta
@@ -119,13 +163,25 @@
             
             <!-- VISTA: MI ESTADO (PORTAL PERSONAL) -->
             <div id="view-mi-estado" class="hidden h-full flex flex-col p-6 md:p-12 items-center justify-center overflow-y-auto">
-                <div class="max-w-xl w-full bg-zinc-900/85 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-2xl animate-modal text-center">
-                    <div class="w-20 h-20 bg-zinc-950 border-2 border-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-emerald-400 text-3xl font-black">
+                <div class="max-w-xl w-full bg-zinc-900/85 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-2xl animate-modal text-center my-auto">
+                    <div class="w-20 h-20 bg-zinc-950 border-2 border-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-brand-400 text-3xl font-black">
                         <i class="fa-solid fa-user-shield"></i>
                     </div>
                     <h2 class="text-2xl font-black text-white uppercase tracking-wider mb-1" id="portal-name">Cargando...</h2>
                     <p class="text-xs text-zinc-400 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
                     <div id="portal-data-container" class="space-y-4 text-left bg-zinc-950/80 p-5 rounded-xl border border-zinc-800 shadow-inner"></div>
+                    
+                    <!-- SIMULADOR DE CUOTAS (NUEVO) -->
+                    <div id="portal-simulator-container" class="mt-6 text-left bg-zinc-950/80 p-5 rounded-xl border border-zinc-800 shadow-inner hidden">
+                        <h3 class="text-sm font-bold text-brand-400 uppercase border-b border-zinc-800 pb-2 mb-3">
+                            <i class="fa-solid fa-calculator mr-1"></i> Simulador de Cuota
+                        </h3>
+                        <p class="text-[11px] text-zinc-400 mb-4 leading-relaxed">Según tu descuento actual, puedes abonar tu cuota semanal entregando <span class="text-white font-black underline">UNA</span> de las siguientes opciones (Cantidades exactas requeridas):</p>
+                        <div id="simulator-options" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <!-- Opciones inyectadas por JS -->
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -174,7 +230,7 @@
                                 </select>
                             </div>
                             <div class="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
-                                <button onclick="exportToCSV()" class="flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow"><i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar</button>
+                                <button onclick="exportToCSV()" class="flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow"><i class="fa-solid fa-file-csv text-brand-400"></i> Exportar</button>
                                 <button onclick="openModal()" class="flex-1 sm:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md"><i class="fa-solid fa-user-plus"></i> Añadir</button>
                             </div>
                         </div>
@@ -182,11 +238,12 @@
                         <!-- Vista Desktop: Tabla -->
                         <div class="hidden md:block overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
                             <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
-                                <thead class="text-xs text-zinc-300 uppercase bg-zinc-900/90 border-b border-zinc-800 sticky top-0">
+                                <thead class="text-xs text-zinc-300 uppercase bg-zinc-900/90 border-b border-zinc-800 sticky top-0 z-10">
                                     <tr>
                                         <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
                                         <th class="px-6 py-4">Discord</th>
                                         <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('illegal')">Ilegales <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-illegal"></i></th>
                                         <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
                                         <th class="px-6 py-4">Faltas</th>
                                         <th class="px-6 py-4 text-right">Acciones</th>
@@ -226,7 +283,7 @@
                         <h2 class="text-3xl font-black text-white">Galería Fotográfica</h2>
                         <p class="text-zinc-400 text-sm mt-1">Comparte y visualiza los mejores momentos de la organización.</p>
                     </div>
-                    <button id="btn-upload-photo" onclick="openUploadModal()" class="hidden bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md border border-emerald-500 w-full md:w-auto">
+                    <button id="btn-upload-photo" onclick="openUploadModal()" class="hidden bg-brand-700 hover:bg-brand-600 text-white font-bold py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md border border-brand-500 w-full md:w-auto">
                         <i class="fa-solid fa-camera"></i> Subir Foto
                     </button>
                 </div>
@@ -331,7 +388,7 @@
     <!-- MODAL PARA SUBIR FOTO A GALERÍA -->
     <div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
         <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-md shadow-2xl animate-modal">
-            <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-cloud-arrow-up text-emerald-500 mr-2"></i> Subir a la Galería</h3>
+            <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-cloud-arrow-up text-brand-500 mr-2"></i> Subir a la Galería</h3>
             <p class="text-sm text-zinc-400 mb-6 pb-3 border-b border-zinc-800">Selecciona una imagen de tu dispositivo. Todos los miembros podrán verla.</p>
             <form onsubmit="uploadImage(event)" class="space-y-4">
                 <div>
@@ -344,7 +401,7 @@
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-zinc-800 mt-6">
                     <button type="button" onclick="closeUploadModal()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg font-black interactive-btn shadow-md">Confirmar Subida</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-700 hover:bg-brand-600 text-white rounded-lg font-black interactive-btn shadow-md border border-brand-600">Confirmar Subida</button>
                 </div>
             </form>
         </div>
@@ -352,7 +409,7 @@
 
     <!-- MODAL DE MIEMBRO (Agregar/Editar) -->
     <div id="memberModal" class="hidden fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-800 w-full max-w-2xl shadow-2xl animate-modal overflow-y-auto max-h-[90vh]">
+        <div class="bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-800 w-full max-w-3xl shadow-2xl animate-modal overflow-y-auto max-h-[90vh]">
             <h3 id="modal-title" class="text-xl font-bold text-white mb-6 border-b border-zinc-800 pb-2">Añadir Miembro</h3>
             <form id="member-form" class="space-y-4 md:space-y-5">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -375,7 +432,9 @@
                         <input type="date" id="f-date" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- NUEVA FILA DE CONFIGURACIÓN -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Descuento</label>
                         <select id="f-discount" onchange="updatePaymentOptions()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
@@ -388,14 +447,22 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Cuotas Extra Pagadas</label>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Cuotas Extra</label>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="subExtraWeek()" class="bg-zinc-800 text-white px-3 py-2 rounded-lg interactive-btn">-</button>
                             <input type="number" id="f-extra" min="0" value="0" class="w-16 bg-black border border-zinc-700 rounded-lg p-2 text-white font-bold text-center">
-                            <button type="button" onclick="addExtraWeek()" class="bg-zinc-800 text-emerald-400 px-3 py-2 rounded-lg font-bold interactive-btn">+1</button>
+                            <button type="button" onclick="addExtraWeek()" class="bg-zinc-800 text-brand-400 px-3 py-2 rounded-lg font-bold interactive-btn">+1</button>
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1 text-red-400"><i class="fa-solid fa-mask"></i> Rol Ilegales</label>
+                        <select id="f-illegal" class="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2.5 text-white interactive-input">
+                            <option value="No">No (Legal)</option>
+                            <option value="Sí">Sí (Ilegal)</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div>
                     <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Notas u Observaciones Internas</label>
                     <textarea id="f-notes" rows="2" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input text-xs" placeholder="Ej: Aviso de vacaciones hasta el viernes, motivo de faltas..."></textarea>
@@ -486,15 +553,22 @@
         let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
         let targetStatusId = null; let paymentTargetId = null;
 
-        // --- SISTEMA DE TOASTS (NOTIFICACIONES ELEGANTES) ---
+        // INICIALIZACIÓN DEL TEMA (Personalización)
+        function changeTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('ghost_theme', theme);
+        }
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('ghost_theme') || 'esmeralda');
+
+        // --- SISTEMA DE TOASTS ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
             let icon = ''; let bgClass = '';
             if (type === 'success') {
-                icon = '<i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>';
-                bgClass = 'bg-emerald-950/95 border-emerald-800';
+                icon = '<i class="fa-solid fa-circle-check text-brand-400 text-xl"></i>';
+                bgClass = 'bg-brand-950/95 border-brand-800';
             } else if (type === 'error') {
                 icon = '<i class="fa-solid fa-circle-xmark text-red-400 text-xl"></i>';
                 bgClass = 'bg-red-950/95 border-red-800';
@@ -507,13 +581,7 @@
             toast.innerHTML = `${icon} <span class="text-sm font-semibold">${message}</span>`;
 
             container.appendChild(toast);
-
-            // Animar entrada
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-x-full', 'opacity-0');
-            });
-
-            // Animar salida y eliminar
+            requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
             setTimeout(() => {
                 toast.classList.add('translate-x-full', 'opacity-0');
                 setTimeout(() => toast.remove(), 300);
@@ -757,7 +825,7 @@
 
                 grid.innerHTML += `
                     <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/90 backdrop-blur-md shadow-lg flex flex-col interactive-card">
-                        <div class="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${v.image}', '<span class=\\'text-emerald-400 font-bold\\'>${v.model}</span> - ${v.usage}')">
+                        <div class="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${v.image}', '<span class=\\'text-brand-400 font-bold\\'>${v.model}</span> - ${v.usage}')">
                             <img src="${v.image}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                             ${actionsHtml}
@@ -900,9 +968,9 @@
             sorted.forEach(img => {
                 const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl backdrop-blur-md z-20" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
                 
-                const titleHtml = img.title ? `<p class="text-emerald-400 text-xs font-bold truncate mb-0.5" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
+                const titleHtml = img.title ? `<p class="text-brand-400 text-xs font-bold truncate mb-0.5" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
                 
-                const modalTitle = img.title ? `<span class="block text-emerald-400 font-bold mb-1 text-base">${img.title}</span>` : '';
+                const modalTitle = img.title ? `<span class="block text-brand-400 font-bold mb-1 text-base">${img.title}</span>` : '';
                 const modalCaption = `${modalTitle}Subido por <span class="text-white">${img.uploader}</span> el ${img.date}`;
                 const safeCaption = modalCaption.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
@@ -974,6 +1042,9 @@
             });
 
             filtered.sort((a, b) => {
+                if (sortCol === 'illegal') {
+                    return a.illegalRole === b.illegalRole ? 0 : (a.illegalRole ? (sortAsc ? -1 : 1) : (sortAsc ? 1 : -1));
+                }
                 let vA = sortCol==='name' ? a.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[a.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(a.payment, a.lastPaymentDate, a.extraWeeks, a.discount).weeksLate : a.strikes||0;
                 let vB = sortCol==='name' ? b.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[b.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(b.payment, b.lastPaymentDate, b.extraWeeks, b.discount).weeksLate : b.strikes||0;
                 return vA < vB ? (sortAsc ? -1 : 1) : vA > vB ? (sortAsc ? 1 : -1) : 0;
@@ -1002,6 +1073,10 @@
                 const pI = getPaymentInfo(m.payment || "Pendiente", m.discount || '0');
                 const isActivo = m.status === 'Activo' || !m.status;
                 const statBadge = isActivo ? '' : `<span class="ml-2 py-0.5 px-2 rounded text-[10px] font-black uppercase ${m.status==='CK'?'bg-red-950 text-red-500 border border-red-900':'bg-orange-950 text-orange-400 border border-orange-900'}">${m.status}</span>`;
+                
+                const illegalBadge = m.illegalRole 
+                    ? '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-red-950/80 text-red-400 border border-red-900"><i class="fa-solid fa-mask mr-1"></i> Sí</span>' 
+                    : '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-zinc-900 text-zinc-500 border border-zinc-700">No</span>';
 
                 const md = (m.discord || '').toLowerCase().replace('@', '').trim();
                 const isMe = md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName || '').toLowerCase();
@@ -1021,7 +1096,7 @@
                 let actions = '<span class="text-zinc-600 text-xs">Lectura</span>';
                 if (!currentUser.isGuest && isL) {
                     actions = `<div class="flex items-center justify-end gap-3 text-lg">
-                        ${isActivo ? `<button onclick="openPaymentModal(${m.id})" title="Registrar Pago" class="text-emerald-500 hover:text-emerald-400 transition-transform hover:scale-125"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
+                        ${isActivo ? `<button onclick="openPaymentModal(${m.id})" title="Registrar Pago" class="text-brand-500 hover:text-brand-400 transition-transform hover:scale-125"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
                         <button onclick="viewHistory(${m.id})" title="Ver Pagos" class="text-blue-400 hover:text-blue-300 transition-transform hover:scale-125"><i class="fa-solid fa-clock-rotate-left"></i></button>
                         <button onclick="openModal(${m.id})" title="Editar" class="text-zinc-400 hover:text-white transition-transform hover:scale-125"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button onclick="openStatusModal(${m.id})" title="Baja / CK" class="text-zinc-600 hover:text-red-500 transition-transform hover:scale-125"><i class="fa-solid fa-skull"></i></button>
@@ -1036,6 +1111,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-xs"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i>${m.discord}</td>
                         <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS}">${m.rank}</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap">${illegalBadge}</td>
                         <td class="px-6 py-4 min-w-[200px]">${qHtml}</td>
                         <td class="px-6 py-4 text-xs min-w-[150px]">${sHtml}</td>
                         <td class="px-6 py-4">${actions}</td>
@@ -1049,7 +1125,10 @@
                                 <p class="text-xs text-zinc-400 mt-1"><i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}</p>
                                 ${notesHtml}
                             </div>
-                            <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS}">${m.rank}</span>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS}">${m.rank}</span>
+                                ${illegalBadge}
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
                             <div class="bg-black/50 p-2 rounded border border-zinc-800">
@@ -1135,7 +1214,7 @@
             document.getElementById('history-name').innerText = m.name;
             const hl = document.getElementById('history-list'); hl.innerHTML = '';
             if(!m.payHistory || m.payHistory.length === 0) hl.innerHTML = '<p class="text-zinc-500 text-sm italic">No hay pagos registrados.</p>';
-            else m.payHistory.forEach(h => hl.innerHTML += `<div class="bg-zinc-950 p-3 rounded border border-zinc-800 text-sm flex justify-between items-center"><span class="font-bold text-emerald-400">${h.detail}</span><span class="text-zinc-500 text-xs">${h.date}</span></div>`);
+            else m.payHistory.forEach(h => hl.innerHTML += `<div class="bg-zinc-950 p-3 rounded border border-zinc-800 text-sm flex justify-between items-center"><span class="font-bold text-brand-400">${h.detail}</span><span class="text-zinc-500 text-xs">${h.date}</span></div>`);
             document.getElementById('historyModal').classList.remove('hidden');
         }
         function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
@@ -1158,10 +1237,10 @@
 
         function exportToCSV() {
             if(currentUser.isGuest || currentUser.role === 'Miembro') return showToast("Sin permisos para exportar.", "error");
-            let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas,Notas\n";
+            let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Ilegales,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas,Notas\n";
             members.forEach(m => {
                 const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
-                csv += `"${m.name}","${m.discord}","${m.rank}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}","${(m.notes||'').replace(/"/g, '""')}"\n`;
+                csv += `"${m.name}","${m.discord}","${m.rank}","${m.illegalRole?'Sí':'No'}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}","${(m.notes||'').replace(/"/g, '""')}"\n`;
             });
             const l = document.createElement("a"); l.href = encodeURI(csv); l.download = `GHOST_Reporte.csv`;
             document.body.appendChild(l); l.click(); document.body.removeChild(l);
@@ -1171,18 +1250,77 @@
 
         function renderMemberPortal() {
             const pn = document.getElementById('portal-name'), pd = document.getElementById('portal-discord'), pc = document.getElementById('portal-data-container');
+            const simCont = document.getElementById('portal-simulator-container');
+            const simOpts = document.getElementById('simulator-options');
+
             if(!pn) return; pd.innerText = "@" + currentUser.username;
             const f = members.find(m => { const md = (m.discord||'').toLowerCase().replace('@','').trim(); return md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName||'').toLowerCase(); });
-            if(!f) { pn.innerText = currentUser.icName || currentUser.username; pc.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3"></i><p class="text-sm text-zinc-300 font-bold">Perfil no vinculado</p></div>`; return; }
-            pn.innerText = f.name; const rS = RANK_STYLES[f.rank] || "bg-slate-900 border-slate-700"; const q = calculateQuotaStatus(f.payment, f.lastPaymentDate, f.extraWeeks, f.discount); const p = getPaymentInfo(f.payment, f.discount);
+            if(!f) { 
+                pn.innerText = currentUser.icName || currentUser.username; 
+                pc.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3"></i><p class="text-sm text-zinc-300 font-bold">Perfil no vinculado</p></div>`; 
+                simCont.classList.add('hidden');
+                return; 
+            }
+            
+            pn.innerText = f.name; 
+            const rS = RANK_STYLES[f.rank] || "bg-slate-900 border-slate-700"; 
+            const q = calculateQuotaStatus(f.payment, f.lastPaymentDate, f.extraWeeks, f.discount); 
+            const p = getPaymentInfo(f.payment, f.discount);
+            const illegalText = f.illegalRole ? '<span class="text-red-400 font-bold"><i class="fa-solid fa-mask"></i> Sí</span>' : '<span class="text-zinc-500 font-bold">No</span>';
+
             pc.innerHTML = `
                 ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950 border border-red-900 p-2 text-center rounded text-red-500 font-black mb-3">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS}">${f.rank}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Método de Pago</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rol en Ilegales</span><span class="text-xs">${illegalText}</span></div>
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Método de Pago Actual</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Estado de Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color}">${q.text}</span></div>
                 <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400">${formatStrikes(f.strikes||0)}</span></div>
                 ${f.notes ? `<div class="bg-black/50 p-3 rounded border border-zinc-800"><span class="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nota Interna:</span><p class="text-xs text-amber-300 italic">${f.notes}</p></div>` : ''}
             `;
+
+            // --- CONFIGURACIÓN DEL SIMULADOR ---
+            if(f.discount) {
+                simCont.classList.remove('hidden');
+                const dv = getDiscountValues(f.discount);
+
+                const snsCount = Math.round(5 * dv.ratio);
+                const vintageCount = Math.round(4 * dv.ratio);
+                const mm9Count = Math.round(3 * dv.ratio);
+                const miniSmgCount = dv.remVal > 0 ? 1 : 0;
+                const miniSmgCash = Math.max(0, 30000 - dv.cash);
+                const tec9Count = dv.remVal > 0 ? 1 : 0;
+                const tec9Cash = Math.max(0, 10000 - dv.cash);
+                const microSmgCount = dv.remVal > 0 ? 1 : 0;
+                const chalecosCount = Math.round(11 * dv.ratio);
+                const cocaCount = Math.max(0, 1500 - dv.hojas);
+
+                if (dv.remVal === 0) {
+                    simOpts.innerHTML = `<div class="col-span-full bg-brand-950/50 border border-brand-800 p-4 rounded-lg text-center text-brand-400 font-bold text-sm tracking-wide shadow-inner">¡Felicidades! Estás exonerado del pago de cuotas.</div>`;
+                } else {
+                    const options = [
+                        { label: 'Efectivo', val: `$${Math.round(dv.remVal).toLocaleString('es')}`, icon: 'fa-money-bill-wave', color: 'text-emerald-400' },
+                        { label: 'Hojas de Coca', val: `${cocaCount} uds.`, icon: 'fa-leaf', color: 'text-lime-400' },
+                        { label: 'Pistolas SNS', val: `${snsCount} uds.`, icon: 'fa-gun', color: 'text-cyan-400' },
+                        { label: 'Vintage', val: `${vintageCount} uds.`, icon: 'fa-gun', color: 'text-blue-400' },
+                        { label: 'Pistolas 9mm', val: `${mm9Count} uds.`, icon: 'fa-gun', color: 'text-indigo-400' },
+                        { label: 'Chalecos', val: `${chalecosCount} uds.`, icon: 'fa-shield-halved', color: 'text-amber-400' }
+                    ];
+
+                    if(miniSmgCount > 0) options.push({ label: 'Mini SMG', val: `1 ud. + $${miniSmgCash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-purple-400' });
+                    if(tec9Count > 0) options.push({ label: 'TEC-9', val: `1 ud. + $${tec9Cash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-fuchsia-400' });
+                    if(microSmgCount > 0) options.push({ label: 'Micro SMG', val: `1 ud.`, icon: 'fa-gun', color: 'text-rose-400' });
+
+                    simOpts.innerHTML = options.map(o => `
+                        <div class="bg-black/50 border border-zinc-800 p-3 rounded-lg flex flex-col items-center justify-center text-center interactive-card hover:border-brand-700 transition-colors">
+                            <i class="fa-solid ${o.icon} ${o.color} text-2xl mb-2 drop-shadow-md"></i>
+                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">${o.label}</span>
+                            <span class="text-xs text-white font-black mt-1">${o.val}</span>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                simCont.classList.add('hidden');
+            }
         }
 
         function switchView(view) {
@@ -1324,17 +1462,20 @@
                 document.getElementById('f-extra').value = m.extraWeeks||0; 
                 document.getElementById('f-strikes').value = m.strikes||0;
                 document.getElementById('f-notes').value = m.notes||'';
+                document.getElementById('f-illegal').value = m.illegalRole ? 'Sí' : 'No';
             } else { 
                 document.getElementById('member-form').reset(); 
                 document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; 
                 onRankFormChange(); 
                 clearStrikes(); 
                 document.getElementById('f-notes').value = '';
+                document.getElementById('f-illegal').value = 'No';
             }
             document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value)); 
             document.getElementById('memberModal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('memberModal').classList.add('hidden'); }
+        
         document.getElementById('member-form').addEventListener('submit', async e => {
             e.preventDefault();
             const mData = { 
@@ -1346,7 +1487,8 @@
                 extraWeeks: parseInt(document.getElementById('f-extra').value)||0, 
                 discount: document.getElementById('f-discount').value, 
                 strikes: parseInt(document.getElementById('f-strikes').value)||0,
-                notes: document.getElementById('f-notes').value.trim()
+                notes: document.getElementById('f-notes').value.trim(),
+                illegalRole: document.getElementById('f-illegal').value === 'Sí'
             };
             if(editId) { const i = members.findIndex(x=>x.id===editId); members[i] = {...members[i], ...mData}; logAction(`Editó a ${mData.name}`); showToast(`Perfil de ${mData.name} actualizado`); }
             else { mData.id = members.length ? Math.max(...members.map(x=>x.id))+1 : 1; mData.status = 'Activo'; members.push(mData); logAction(`Añadió a ${mData.name}`); showToast(`Nuevo miembro añadido: ${mData.name}`); }
