@@ -30,28 +30,36 @@
     </script>
 
     <style>
-        /* VARIABLES DE TEMAS */
+        /* VARIABLES DE TEMAS (COLORES + GLOW + BORDES) */
         :root, [data-theme="esmeralda"] {
             --brand-300: #6ee7b7; --brand-400: #34d399; --brand-500: #10b981; --brand-600: #059669; 
             --brand-700: #047857; --brand-800: #065f46; --brand-900: #064e3b; --brand-950: #022c22;
+            --theme-glow: rgba(16, 185, 129, 0.25);
+            --theme-border: rgba(6, 78, 59, 0.6);
         }
         [data-theme="rojo"] {
             --brand-300: #fca5a5; --brand-400: #f87171; --brand-500: #ef4444; --brand-600: #dc2626; 
             --brand-700: #b91c1c; --brand-800: #991b1b; --brand-900: #7f1d1d; --brand-950: #450a0a;
+            --theme-glow: rgba(239, 68, 68, 0.25);
+            --theme-border: rgba(127, 29, 29, 0.6);
         }
         [data-theme="azul"] {
             --brand-300: #93c5fd; --brand-400: #60a5fa; --brand-500: #3b82f6; --brand-600: #2563eb; 
             --brand-700: #1d4ed8; --brand-800: #1e40af; --brand-900: #1e3a8a; --brand-950: #172554;
+            --theme-glow: rgba(59, 130, 246, 0.25);
+            --theme-border: rgba(30, 58, 138, 0.6);
         }
         [data-theme="morado"] {
             --brand-300: #d8b4fe; --brand-400: #c084fc; --brand-500: #a855f7; --brand-600: #9333ea; 
             --brand-700: #7e22ce; --brand-800: #6b21a8; --brand-900: #581c87; --brand-950: #3b0764;
+            --theme-glow: rgba(168, 85, 247, 0.25);
+            --theme-border: rgba(88, 28, 135, 0.6);
         }
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(9, 9, 11, 0.8); }
-        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+        ::-webkit-scrollbar-thumb { background: var(--brand-900); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-700); }
 
         body {
             background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), url('fondo panel de ghost.jpg');
@@ -64,43 +72,47 @@
         @keyframes viewFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .animate-view { animation: viewFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        .interactive-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background-color: rgba(24, 24, 27, 0.85); backdrop-filter: blur(8px); }
-        .interactive-card:hover { transform: translateY(-3px) scale(1.01); border-color: #52525b; box-shadow: 0 10px 30px -10px rgba(255, 255, 255, 0.05); }
+        /* APLICACIÓN PROFUNDA DE TEMAS A PANELES */
+        .theme-panel { border-color: var(--theme-border) !important; box-shadow: inset 0 0 30px var(--theme-glow), 0 10px 30px -10px rgba(0,0,0,0.5); }
+        .theme-border { border-color: var(--theme-border) !important; }
+        
+        .interactive-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background-color: rgba(24, 24, 27, 0.85); backdrop-filter: blur(8px); border: 1px solid var(--theme-border); }
+        .interactive-card:hover { transform: translateY(-3px) scale(1.01); border-color: var(--brand-500) !important; box-shadow: 0 10px 30px -10px var(--theme-glow) !important; }
 
         .interactive-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .interactive-btn:hover { transform: translateY(-1px); }
+        .interactive-btn:hover { transform: translateY(-1px); box-shadow: 0 0 15px var(--theme-glow); }
         .interactive-btn:active { transform: scale(0.95) translateY(0); }
 
         .interactive-input { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); background-color: rgba(0, 0, 0, 0.7); }
-        .interactive-input:focus { transform: scale(1.005); border-color: #a1a1aa; box-shadow: 0 0 15px rgba(255, 255, 255, 0.05); }
+        .interactive-input:focus { transform: scale(1.005); border-color: var(--brand-500) !important; box-shadow: 0 0 15px var(--theme-glow) !important; outline: none; }
     </style>
 </head>
-<body class="text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white">
+<body class="text-zinc-100 font-sans selection:bg-brand-900 selection:text-white">
 
-    <!-- CONTENEDOR DE TOASTS (NOTIFICACIONES) -->
+    <!-- CONTENEDOR DE TOASTS -->
     <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- SPINNER DE CARGA GLOBAL -->
-    <div id="global-loader" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
-        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-brand-500 mb-4"></i>
-        <p id="loader-text" class="text-zinc-400 font-bold uppercase tracking-widest text-xs">Sincronizando con GHOST Cloud...</p>
+    <!-- SPINNER GLOBAL -->
+    <div id="global-loader" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center transition-opacity duration-300 theme-panel">
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-brand-500 mb-4 drop-shadow-[0_0_15px_var(--brand-500)]"></i>
+        <p id="loader-text" class="text-brand-400 font-bold uppercase tracking-widest text-xs">Sincronizando con GHOST Cloud...</p>
     </div>
 
     <!-- MODAL DE INICIO DE SESIÓN -->
     <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
-        <div class="bg-zinc-900/90 backdrop-blur-xl p-8 rounded-2xl border border-zinc-800 w-full max-w-md shadow-2xl text-center animate-modal">
-            <div onclick="openImageModal('icono web panel de ghost.jpg', 'GHOST Cloud')" class="w-16 h-16 rounded-full border border-zinc-700 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6" title="Click para ver en grande">
+        <div class="bg-zinc-950/90 backdrop-blur-xl p-8 rounded-2xl w-full max-w-md text-center animate-modal theme-panel">
+            <div onclick="openImageModal('icono web panel de ghost.jpg', 'GHOST Cloud')" class="w-20 h-20 rounded-full border-2 border-brand-500 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-[0_0_20px_var(--theme-glow)] cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6">
                 <img src="icono web panel de ghost.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
             </div>
-            <h2 class="text-2xl font-black text-white tracking-widest uppercase mb-1">Nube de GHOST</h2>
+            <h2 class="text-2xl font-black text-brand-400 tracking-widest uppercase mb-1 drop-shadow-md">Nube de GHOST</h2>
             <p class="text-xs text-zinc-400 mb-6 font-semibold">Panel Administrativo y de Control</p>
             
             <div class="space-y-4">
                 <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3.5 px-4 rounded-lg interactive-btn flex items-center justify-center gap-3 shadow-lg uppercase tracking-wider text-xs">
                     <i class="fa-brands fa-discord text-lg"></i> Iniciar Sesión con Discord
                 </button>
-                <div class="relative flex py-2 items-center"><div class="flex-grow border-t border-zinc-800"></div><span class="flex-shrink mx-4 text-zinc-500 text-xs uppercase font-bold">O</span><div class="flex-grow border-t border-zinc-800"></div></div>
-                <button onclick="loginAsGuest()" class="w-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 font-semibold py-3 rounded-lg interactive-btn text-xs uppercase tracking-wider border border-zinc-700">
+                <div class="relative flex py-2 items-center"><div class="flex-grow border-t theme-border"></div><span class="flex-shrink mx-4 text-brand-500 text-xs uppercase font-bold">O</span><div class="flex-grow border-t theme-border"></div></div>
+                <button onclick="loginAsGuest()" class="w-full bg-black hover:bg-zinc-900 text-brand-300 font-semibold py-3 rounded-lg interactive-btn text-xs uppercase tracking-wider border theme-border">
                     Continuar como Invitado (Modo Lectura)
                 </button>
             </div>
@@ -110,49 +122,52 @@
     <!-- CONTENEDOR PRINCIPAL -->
     <div class="flex h-screen overflow-hidden flex-col md:flex-row">
         <!-- BARRA LATERAL -->
-        <aside class="w-full md:w-72 bg-zinc-950/90 backdrop-blur-md border-b md:border-b-0 md:border-r border-zinc-800 flex flex-col z-10 relative shadow-2xl">
-            <div class="p-4 md:p-6 text-center border-b border-zinc-800 flex flex-col items-center">
-                <div onclick="openImageModal('icono web panel de ghost.jpg', 'GHOST')" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-zinc-700 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-3 bg-black flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-6 cursor-pointer">
+        <aside class="w-full md:w-72 bg-zinc-950/95 backdrop-blur-md border-b md:border-b-0 md:border-r theme-border flex flex-col z-10 relative shadow-[5px_0_30px_rgba(0,0,0,0.5)]">
+            <div class="p-4 md:p-6 text-center border-b theme-border flex flex-col items-center">
+                <div onclick="openImageModal('icono web panel de ghost.jpg', 'GHOST')" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-brand-500/50 overflow-hidden shadow-[0_0_15px_var(--theme-glow)] mb-3 bg-black flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-6 cursor-pointer hover:border-brand-400">
                     <img src="icono web panel de ghost.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
                 </div>
-                <h1 class="text-xl font-black text-white tracking-widest uppercase">GHOST</h1>
-                <div class="mt-2 px-2.5 py-1 bg-zinc-900/80 border border-zinc-700 rounded text-center">
+                <h1 class="text-xl font-black text-white tracking-widest uppercase drop-shadow-[0_0_10px_var(--theme-glow)]">GHOST</h1>
+                <div class="mt-2 px-2.5 py-1 bg-black/50 border theme-border rounded text-center shadow-inner">
                     <span class="text-[9px] text-zinc-500 block uppercase font-bold">Sesión Activa:</span>
                     <span id="current-role-badge" class="text-xs font-black text-brand-400">Verificando...</span>
                 </div>
             </div>
 
             <nav class="flex-row md:flex-col flex flex-1 p-2 md:p-4 gap-2 overflow-x-auto md:overflow-x-visible">
-                <button onclick="switchView('mi-estado')" id="btn-nav-mi-estado" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-zinc-800/90 text-white px-4 py-3 rounded-lg font-semibold border border-zinc-700 shadow-sm text-sm interactive-btn">
-                    <i class="fa-solid fa-id-card text-zinc-400"></i> <span class="hidden md:inline">Mi Estado</span>
+                <button onclick="switchView('mi-estado')" id="btn-nav-mi-estado" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-brand-900/30 text-brand-300 px-4 py-3 rounded-lg font-semibold border border-brand-500/50 shadow-[0_0_15px_var(--theme-glow)] text-sm interactive-btn transition-colors">
+                    <i class="fa-solid fa-id-card"></i> <span class="hidden md:inline">Mi Estado</span>
                 </button>
-                <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
-                    <i class="fa-solid fa-users text-zinc-400"></i> <span class="hidden md:inline">Miembros</span>
+                <button onclick="switchView('miembros')" id="btn-nav-miembros" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-brand-900/20 hover:text-brand-300 hover:border-brand-500/30 border border-transparent text-sm interactive-btn transition-colors">
+                    <i class="fa-solid fa-users"></i> <span class="hidden md:inline">Miembros</span>
                 </button>
-                <button onclick="switchView('garaje')" id="btn-nav-garaje" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
-                    <i class="fa-solid fa-warehouse text-zinc-400"></i> <span class="hidden md:inline">Garaje</span>
+                <button onclick="switchView('garaje')" id="btn-nav-garaje" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-brand-900/20 hover:text-brand-300 hover:border-brand-500/30 border border-transparent text-sm interactive-btn transition-colors">
+                    <i class="fa-solid fa-warehouse"></i> <span class="hidden md:inline">Garaje</span>
                 </button>
-                <button onclick="switchView('galeria')" id="btn-nav-galeria" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
-                    <i class="fa-solid fa-images text-zinc-400"></i> <span class="hidden md:inline">Galería</span>
+                <button onclick="switchView('galeria')" id="btn-nav-galeria" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-brand-900/20 hover:text-brand-300 hover:border-brand-500/30 border border-transparent text-sm interactive-btn transition-colors">
+                    <i class="fa-solid fa-images"></i> <span class="hidden md:inline">Galería</span>
                 </button>
-                <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
-                    <i class="fa-solid fa-money-bill-wave text-zinc-400"></i> <span class="hidden md:inline">Finanzas</span>
+                <button onclick="switchView('finanzas')" id="btn-nav-finanzas" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-brand-900/20 hover:text-brand-300 hover:border-brand-500/30 border border-transparent text-sm interactive-btn transition-colors">
+                    <i class="fa-solid fa-money-bill-wave"></i> <span class="hidden md:inline">Finanzas</span>
                 </button>
-                <button onclick="switchView('registro')" id="btn-nav-registro" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-zinc-900/60 hover:text-white border border-transparent text-sm interactive-btn">
-                    <i class="fa-solid fa-clipboard-list text-zinc-400"></i> <span class="hidden md:inline">Logs</span>
+                <button onclick="switchView('registro')" id="btn-nav-registro" class="hidden flex-1 md:flex-none items-center justify-center md:justify-start gap-2 md:gap-3 bg-transparent text-zinc-400 px-4 py-3 rounded-lg font-semibold hover:bg-brand-900/20 hover:text-brand-300 hover:border-brand-500/30 border border-transparent text-sm interactive-btn transition-colors">
+                    <i class="fa-solid fa-clipboard-list"></i> <span class="hidden md:inline">Logs</span>
                 </button>
             </nav>
 
             <!-- SELECTOR DE TEMA -->
-            <div class="px-4 py-3 border-t border-zinc-800 flex justify-center gap-3 bg-zinc-950/50">
-                <button onclick="changeTheme('esmeralda')" class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Esmeralda"></button>
-                <button onclick="changeTheme('rojo')" class="w-5 h-5 rounded-full bg-red-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Rojo Sangre"></button>
-                <button onclick="changeTheme('azul')" class="w-5 h-5 rounded-full bg-blue-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Azul Ciber"></button>
-                <button onclick="changeTheme('morado')" class="w-5 h-5 rounded-full bg-purple-500 border-2 border-zinc-700 hover:border-white hover:scale-110 transition-all shadow-lg" title="Tema: Morado"></button>
+            <div class="px-4 py-4 border-t theme-border flex flex-col items-center gap-2 bg-black/40">
+                <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Tema Visual</span>
+                <div class="flex gap-3">
+                    <button onclick="changeTheme('esmeralda')" class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-zinc-700 hover:border-white hover:scale-125 transition-all shadow-lg" title="Tema: Esmeralda"></button>
+                    <button onclick="changeTheme('rojo')" class="w-5 h-5 rounded-full bg-red-500 border-2 border-zinc-700 hover:border-white hover:scale-125 transition-all shadow-lg" title="Tema: Rojo Sangre"></button>
+                    <button onclick="changeTheme('azul')" class="w-5 h-5 rounded-full bg-blue-500 border-2 border-zinc-700 hover:border-white hover:scale-125 transition-all shadow-lg" title="Tema: Azul Ciber"></button>
+                    <button onclick="changeTheme('morado')" class="w-5 h-5 rounded-full bg-purple-500 border-2 border-zinc-700 hover:border-white hover:scale-125 transition-all shadow-lg" title="Tema: Morado"></button>
+                </div>
             </div>
 
-            <div class="p-2 md:p-4 border-t border-zinc-800 flex md:flex-col gap-2">
-                <button onclick="logout()" class="flex-1 flex items-center justify-center gap-2 text-zinc-300 hover:text-white hover:bg-zinc-900/80 text-xs py-2.5 rounded border border-zinc-700 interactive-btn">
+            <div class="p-2 md:p-4 border-t theme-border flex md:flex-col gap-2">
+                <button onclick="logout()" class="flex-1 flex items-center justify-center gap-2 text-zinc-400 hover:text-red-400 hover:bg-red-950/30 text-xs py-2.5 rounded border border-transparent hover:border-red-900/50 interactive-btn transition-all">
                     <i class="fa-solid fa-right-from-bracket"></i> Cambiar Cuenta
                 </button>
             </div>
@@ -163,25 +178,37 @@
             
             <!-- VISTA: MI ESTADO (PORTAL PERSONAL) -->
             <div id="view-mi-estado" class="hidden h-full flex flex-col p-6 md:p-12 items-center justify-center overflow-y-auto">
-                <div class="max-w-xl w-full bg-zinc-900/85 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 md:p-8 shadow-2xl animate-modal text-center my-auto">
-                    <div class="w-20 h-20 bg-zinc-950 border-2 border-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-brand-400 text-3xl font-black">
-                        <i class="fa-solid fa-user-shield"></i>
+                <div class="max-w-2xl w-full bg-zinc-950/90 backdrop-blur-xl rounded-2xl p-6 md:p-8 animate-modal text-center my-auto theme-panel">
+                    <div class="w-20 h-20 bg-black border-2 border-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_var(--theme-glow)] text-brand-400 text-3xl font-black">
+                        <i class="fa-solid fa-user-shield drop-shadow-md"></i>
                     </div>
                     <h2 class="text-2xl font-black text-white uppercase tracking-wider mb-1" id="portal-name">Cargando...</h2>
-                    <p class="text-xs text-zinc-400 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
-                    <div id="portal-data-container" class="space-y-4 text-left bg-zinc-950/80 p-5 rounded-xl border border-zinc-800 shadow-inner"></div>
+                    <p class="text-xs text-brand-400/80 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
+                    <div id="portal-data-container" class="space-y-4 text-left bg-black/60 p-5 rounded-xl border theme-border shadow-inner"></div>
                     
-                    <!-- SIMULADOR DE CUOTAS (NUEVO) -->
-                    <div id="portal-simulator-container" class="mt-6 text-left bg-zinc-950/80 p-5 rounded-xl border border-zinc-800 shadow-inner hidden">
-                        <h3 class="text-sm font-bold text-brand-400 uppercase border-b border-zinc-800 pb-2 mb-3">
-                            <i class="fa-solid fa-calculator mr-1"></i> Simulador de Cuota
-                        </h3>
-                        <p class="text-[11px] text-zinc-400 mb-4 leading-relaxed">Según tu descuento actual, puedes abonar tu cuota semanal entregando <span class="text-white font-black underline">UNA</span> de las siguientes opciones (Cantidades exactas requeridas):</p>
+                    <!-- SIMULADOR DE CUOTAS DINÁMICO -->
+                    <div id="portal-simulator-container" class="mt-6 text-left bg-black/60 p-5 rounded-xl border theme-border shadow-inner hidden">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b theme-border pb-3 gap-3">
+                            <h3 class="text-sm font-bold text-brand-400 uppercase drop-shadow-md">
+                                <i class="fa-solid fa-calculator mr-1"></i> Simulador de Cuota
+                            </h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-zinc-400 font-bold uppercase">Descuento a simular:</span>
+                                <select id="sim-discount-select" onchange="updateSimulator()" class="bg-brand-950/40 border border-brand-500/50 rounded text-brand-300 text-xs p-1.5 font-bold cursor-pointer hover:border-brand-400 transition-colors focus:outline-none">
+                                    <option value="0">0 Hojas (Sin Dcto)</option>
+                                    <option value="200">200 Hojas</option>
+                                    <option value="300">300 Hojas</option>
+                                    <option value="400">400 Hojas (Sigilo/Antrax)</option>
+                                    <option value="500">500 Hojas (Dealers)</option>
+                                    <option value="Exonerado">Exonerado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-zinc-400 mb-4 leading-relaxed">Las siguientes opciones muestran lo que debes entregar para saldar tu cuota semanal aplicando el descuento seleccionado. Solo debes elegir <span class="text-brand-400 font-black underline">UNA</span> opción:</p>
                         <div id="simulator-options" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <!-- Opciones inyectadas por JS -->
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -189,62 +216,62 @@
             <div id="view-miembros" class="hidden h-full flex flex-col">
                 <header class="p-4 md:p-8 pb-4">
                     <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
-                        <span class="inline-block w-2 h-6 bg-white transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
+                        <span class="inline-block w-2 h-6 bg-brand-500 shadow-[0_0_10px_var(--brand-500)] transition-all duration-300 hover:scale-y-125"></span> Dashboard de Gestión
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-                        <div class="bg-zinc-900/85 backdrop-blur-md p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Activos</div>
+                        <div class="bg-black/40 backdrop-blur-md p-5 md:p-6 rounded-xl relative overflow-hidden interactive-card theme-panel">
+                            <div class="text-brand-300 text-xs font-bold uppercase tracking-wider mb-1 drop-shadow-md">Activos</div>
                             <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
-                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-users"></i></div>
+                            <div class="absolute right-4 bottom-4 text-brand-900/40 text-3xl md:text-5xl"><i class="fa-solid fa-users"></i></div>
                         </div>
-                        <div class="bg-zinc-900/85 backdrop-blur-md p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Cuotas Atrasadas</div>
+                        <div class="bg-black/40 backdrop-blur-md p-5 md:p-6 rounded-xl relative overflow-hidden interactive-card theme-panel">
+                            <div class="text-red-400 text-xs font-bold uppercase tracking-wider mb-1 drop-shadow-md">Cuotas Atrasadas</div>
                             <div id="stat-pending" class="text-3xl md:text-4xl font-black text-red-500">0</div>
-                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-clock"></i></div>
+                            <div class="absolute right-4 bottom-4 text-red-900/30 text-3xl md:text-5xl"><i class="fa-solid fa-clock"></i></div>
                         </div>
-                        <div class="bg-zinc-900/85 backdrop-blur-md p-5 md:p-6 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden interactive-card">
-                            <div class="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Recaudación (Activos)</div>
+                        <div class="bg-black/40 backdrop-blur-md p-5 md:p-6 rounded-xl relative overflow-hidden interactive-card theme-panel">
+                            <div class="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1 drop-shadow-md">Recaudación (Activos)</div>
                             <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
-                            <div class="absolute right-4 bottom-4 text-zinc-800 text-3xl md:text-4xl"><i class="fa-solid fa-vault"></i></div>
+                            <div class="absolute right-4 bottom-4 text-emerald-900/30 text-3xl md:text-5xl"><i class="fa-solid fa-vault"></i></div>
                         </div>
                     </div>
                 </header>
 
                 <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
-                    <div class="bg-zinc-900/85 backdrop-blur-md rounded-xl border border-zinc-800 shadow-lg flex-1 flex flex-col overflow-hidden">
+                    <div class="bg-black/60 backdrop-blur-xl rounded-xl flex-1 flex flex-col overflow-hidden theme-panel">
                         <!-- Filtros -->
-                        <div class="p-4 border-b border-zinc-800 flex flex-wrap gap-3 justify-between items-center bg-zinc-900/60">
+                        <div class="p-4 border-b theme-border flex flex-wrap gap-3 justify-between items-center bg-zinc-950/50">
                             <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
                                 <div class="relative w-full sm:w-auto">
                                     <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
-                                    <input type="text" id="search-input" placeholder="Buscar nombre..." class="bg-black/80 border border-zinc-700 text-white text-sm rounded-lg pl-10 p-2.5 w-full sm:w-48 interactive-input">
+                                    <input type="text" id="search-input" placeholder="Buscar nombre..." class="bg-black/80 border theme-border text-white text-sm rounded-lg pl-10 p-2.5 w-full sm:w-48 interactive-input">
                                 </div>
-                                <select id="status-filter" onchange="renderDashboard()" class="bg-black/80 border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold text-emerald-400">
+                                <select id="status-filter" onchange="renderDashboard()" class="bg-black/80 border theme-border text-brand-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold">
                                     <option value="Activo">Estado: Activos</option>
                                     <option value="Expulsado" class="text-orange-400">Estado: Expulsados</option>
                                     <option value="CK" class="text-red-500">Estado: Abatidos (CK)</option>
-                                    <option value="" class="text-zinc-300">Todos (Histórico)</option>
+                                    <option value="" class="text-white">Todos (Histórico)</option>
                                 </select>
-                                <select id="rank-filter" onchange="renderDashboard()" class="bg-black/80 border border-zinc-700 text-zinc-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input">
+                                <select id="rank-filter" onchange="renderDashboard()" class="bg-black/80 border theme-border text-zinc-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input">
                                     <option value="">Rango (Todos)</option><option>JEFES</option><option>Mano Derecha</option><option>Subjefe</option><option>Líder de La Mesa Blanca</option><option>La Mesa Blanca</option><option>Líder de Grupo Sigilo</option><option>Grupo Sigilo</option><option>Líder de Operativa Antrax</option><option>Operativa Antrax</option><option>Líder de Dealers</option><option>Dealers</option><option>GHOST</option><option>Soldado</option><option>Novato</option><option>Recolector</option>
                                 </select>
                             </div>
                             <div class="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
-                                <button onclick="exportToCSV()" class="flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-zinc-700 font-semibold text-sm interactive-btn shadow"><i class="fa-solid fa-file-csv text-brand-400"></i> Exportar</button>
-                                <button onclick="openModal()" class="flex-1 sm:flex-none bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md"><i class="fa-solid fa-user-plus"></i> Añadir</button>
+                                <button onclick="exportToCSV()" class="flex-1 sm:flex-none bg-black/80 hover:bg-zinc-900 text-brand-300 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border theme-border font-semibold text-sm interactive-btn shadow-[0_0_10px_var(--theme-glow)]"><i class="fa-solid fa-file-csv"></i> Exportar</button>
+                                <button onclick="openModal()" class="flex-1 sm:flex-none bg-brand-600 hover:bg-brand-500 text-white font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400"><i class="fa-solid fa-user-plus"></i> Añadir</button>
                             </div>
                         </div>
                         
                         <!-- Vista Desktop: Tabla -->
-                        <div class="hidden md:block overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
+                        <div class="hidden md:block overflow-x-auto flex-1 w-full bg-black/20">
                             <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
-                                <thead class="text-xs text-zinc-300 uppercase bg-zinc-900/90 border-b border-zinc-800 sticky top-0 z-10">
+                                <thead class="text-xs text-brand-300 uppercase bg-black/80 border-b theme-border sticky top-0 z-10 shadow-md">
                                     <tr>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-name"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('name')">Nombre IC <i class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-name"></i></th>
                                         <th class="px-6 py-4">Discord</th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-rank"></i></th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('illegal')">Ilegales <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-illegal"></i></th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white" onclick="changeSort('quota')">Estado de Cuota <i class="fa-solid fa-sort text-zinc-600 ml-1" id="sort-icon-quota"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('rank')">Rango <i class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-rank"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('illegal')">Ilegales <i class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-illegal"></i></th>
+                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors" onclick="changeSort('quota')">Estado Cuota <i class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-quota"></i></th>
                                         <th class="px-6 py-4">Faltas</th>
                                         <th class="px-6 py-4 text-right">Acciones</th>
                                     </tr>
@@ -254,60 +281,57 @@
                         </div>
 
                         <!-- Vista Mobile: Tarjetas Colapsables -->
-                        <div id="mobile-cards" class="md:hidden flex-1 overflow-y-auto bg-zinc-950/80 backdrop-blur-sm p-4 space-y-4"></div>
+                        <div id="mobile-cards" class="md:hidden flex-1 overflow-y-auto bg-black/20 p-4 space-y-4"></div>
                     </div>
                 </section>
             </div>
 
-            <!-- VISTA: GARAJE (NUEVA) -->
+            <!-- VISTA: GARAJE -->
             <div id="view-garaje" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-3xl font-black text-white">Garaje Organizativo</h2>
-                        <p class="text-zinc-400 text-sm mt-1">Catálogo de vehículos, estado y asignación operativa.</p>
+                        <h2 class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Garaje Organizativo</h2>
+                        <p class="text-brand-300/70 text-sm mt-1">Catálogo de vehículos, estado y asignación operativa.</p>
                     </div>
-                    <button id="btn-add-vehicle" onclick="openVehicleModal()" class="hidden bg-white hover:bg-zinc-200 text-black font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md w-full md:w-auto">
+                    <button id="btn-add-vehicle" onclick="openVehicleModal()" class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400 text-white font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_var(--theme-glow)] w-full md:w-auto">
                         <i class="fa-solid fa-car-side"></i> Añadir Vehículo
                     </button>
                 </div>
                 
-                <div id="garage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <!-- Vehículos generados por JS -->
-                </div>
+                <div id="garage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
             </div>
 
             <!-- VISTA: GALERÍA -->
             <div id="view-galeria" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-3xl font-black text-white">Galería Fotográfica</h2>
-                        <p class="text-zinc-400 text-sm mt-1">Comparte y visualiza los mejores momentos de la organización.</p>
+                        <h2 class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Galería Fotográfica</h2>
+                        <p class="text-brand-300/70 text-sm mt-1">Comparte y visualiza los mejores momentos de la organización.</p>
                     </div>
-                    <button id="btn-upload-photo" onclick="openUploadModal()" class="hidden bg-brand-700 hover:bg-brand-600 text-white font-bold py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-md border border-brand-500 w-full md:w-auto">
+                    <button id="btn-upload-photo" onclick="openUploadModal()" class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400 text-white font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_var(--theme-glow)] w-full md:w-auto">
                         <i class="fa-solid fa-camera"></i> Subir Foto
                     </button>
                 </div>
                 
-                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    <!-- Fotos generadas por JS -->
-                </div>
+                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             </div>
 
             <!-- VISTA: FINANZAS -->
             <div id="view-finanzas" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
-                <h2 class="text-3xl font-black mb-1 text-white">Desglose Financiero</h2>
-                <p class="text-zinc-400 mb-8 text-sm">Inventario real y capital recaudado (Solo miembros activos).</p>
+                <h2 class="text-3xl font-black mb-1 text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Desglose Financiero</h2>
+                <p class="text-brand-300/70 mb-8 text-sm">Inventario real y capital recaudado (Solo miembros activos).</p>
+                <!-- Aquí se mantienen colores fijos por semántica de dinero (verde) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-emerald-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-emerald-500 shadow-lg flex items-center justify-between interactive-card">
+                    <div class="bg-emerald-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-emerald-500 shadow-lg flex items-center justify-between interactive-card" style="border-color: #10b981 !important;">
                         <div><div class="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">Efectivo Líquido Total</div><div id="fin-efectivo" class="text-4xl md:text-5xl font-black text-white">$0</div></div>
                         <i class="fa-solid fa-sack-dollar text-5xl md:text-6xl text-emerald-500/60"></i>
                     </div>
-                    <div class="bg-lime-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-lime-500 shadow-lg flex items-center justify-between interactive-card">
+                    <div class="bg-lime-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-lime-500 shadow-lg flex items-center justify-between interactive-card" style="border-color: #84cc16 !important;">
                         <div><div class="text-lime-300 text-xs font-bold uppercase tracking-wider mb-2">Hojas de Coca</div><div id="fin-coca" class="text-4xl md:text-5xl font-black text-white">0</div></div>
                         <i class="fa-solid fa-leaf text-5xl md:text-6xl text-lime-500/60"></i>
                     </div>
                 </div>
-                <h3 class="text-lg font-bold text-zinc-300 mb-4 border-b border-zinc-800 pb-2 flex items-center gap-2"><i class="fa-solid fa-gun text-white"></i> Arsenal y Equipamiento</h3>
+                <h3 class="text-lg font-bold text-brand-300 mb-4 border-b theme-border pb-2 flex items-center gap-2"><i class="fa-solid fa-gun text-white"></i> Arsenal y Equipamiento</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-cyan-950/85 backdrop-blur-md p-4 rounded-lg border border-cyan-500 text-center interactive-card"><div class="text-cyan-300 text-xs font-bold uppercase">Pistolas SNS</div><div id="fin-sns" class="text-2xl font-bold text-white mt-1">0</div></div>
                     <div class="bg-blue-950/85 backdrop-blur-md p-4 rounded-lg border border-blue-500 text-center interactive-card"><div class="text-blue-300 text-xs font-bold uppercase">Vintage</div><div id="fin-vintage" class="text-2xl font-bold text-white mt-1">0</div></div>
@@ -319,17 +343,17 @@
                 </div>
             </div>
 
-            <!-- VISTA: REGISTRO (LOGS EXCLUSIVO JEFES) -->
+            <!-- VISTA: REGISTRO -->
             <div id="view-registro" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
-                <h2 class="text-3xl font-black mb-1 text-white">Registro de Actividad</h2>
+                <h2 class="text-3xl font-black mb-1 text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Registro de Actividad</h2>
                 <div class="flex flex-col sm:flex-row gap-3 mb-6 items-center">
-                    <p class="text-zinc-400 text-sm flex-1">Auditoría completa (Filtrable por acción, responsable o fecha).</p>
-                    <input type="text" id="log-search-input" placeholder="🔍 Buscar por acción, responsable o fecha..." oninput="renderRegistro()" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg p-2.5 w-full sm:w-96 interactive-input">
+                    <p class="text-brand-300/70 text-sm flex-1">Auditoría completa (Filtrable por acción, responsable o fecha).</p>
+                    <input type="text" id="log-search-input" placeholder="🔍 Buscar por acción, responsable o fecha..." oninput="renderRegistro()" class="bg-black border theme-border text-white text-sm rounded-lg p-2.5 w-full sm:w-96 interactive-input">
                 </div>
-                <div class="bg-zinc-900/85 backdrop-blur-md rounded-xl border border-zinc-800 shadow-lg overflow-hidden flex-1 flex flex-col">
-                    <div class="overflow-x-auto flex-1 w-full bg-zinc-950/80 backdrop-blur-sm">
+                <div class="bg-black/60 backdrop-blur-xl rounded-xl theme-panel flex-1 flex flex-col overflow-hidden">
+                    <div class="overflow-x-auto flex-1 w-full bg-black/20">
                         <table class="w-full min-w-[600px] text-sm text-left text-zinc-400">
-                            <thead class="text-xs text-zinc-300 uppercase bg-zinc-900/90 border-b border-zinc-800 sticky top-0">
+                            <thead class="text-xs text-brand-300 uppercase bg-black/80 border-b theme-border sticky top-0 shadow-md">
                                 <tr>
                                     <th class="px-6 py-4">Fecha y Hora</th>
                                     <th class="px-6 py-4">Responsable</th>
@@ -347,18 +371,18 @@
     <!-- MODALES VARIOS -->
 
     <!-- MODAL VEHÍCULOS (GARAJE) -->
-    <div id="vehicleModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-md shadow-2xl animate-modal">
-            <h3 id="vehicle-modal-title" class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-car text-zinc-400 mr-2"></i> Añadir Vehículo</h3>
-            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b border-zinc-800">Registra un nuevo coche en el garaje de la organización.</p>
+    <div id="vehicleModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
+            <h3 id="vehicle-modal-title" class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md"><i class="fa-solid fa-car mr-2"></i> Añadir Vehículo</h3>
+            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b theme-border">Registra un nuevo coche en el garaje de la organización.</p>
             <form id="vehicle-form" onsubmit="saveVehicle(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Modelo / Nombre del Vehículo</label>
-                    <input type="text" id="v-model" required placeholder="Ej: Kuruma Blindado" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Modelo / Nombre del Vehículo</label>
+                    <input type="text" id="v-model" required placeholder="Ej: Kuruma Blindado" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Asignación / Uso Permtido</label>
-                    <select id="v-usage" required class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Asignación / Uso Permtido</label>
+                    <select id="v-usage" required class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
                         <option value="Uso Público">Uso Público (Cualquier miembro)</option>
                         <option value="Grupo Sigilo">Exclusivo: Grupo Sigilo</option>
                         <option value="Operativa Antrax">Exclusivo: Operativa Antrax</option>
@@ -367,77 +391,76 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1 mt-2">Foto del Vehículo <span id="v-file-optional" class="text-zinc-500 font-normal lowercase hidden">(Opcional al editar)</span></label>
-                    <input type="file" id="v-file" accept="image/png, image/jpeg, image/webp" class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 interactive-btn cursor-pointer bg-black rounded-lg border border-zinc-800">
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1 mt-2">Foto del Vehículo <span id="v-file-optional" class="text-zinc-500 font-normal lowercase hidden">(Opcional al editar)</span></label>
+                    <input type="file" id="v-file" accept="image/png, image/jpeg, image/webp" class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-brand-900/30 file:text-brand-300 hover:file:bg-brand-900/50 interactive-btn cursor-pointer bg-black rounded-lg border theme-border">
                 </div>
-                <div class="flex justify-end gap-3 pt-4 border-t border-zinc-800 mt-6">
-                    <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-white text-black rounded-lg font-black interactive-btn shadow-md">Guardar Vehículo</button>
+                <div class="flex justify-end gap-3 pt-4 border-t theme-border mt-6">
+                    <button type="button" onclick="closeVehicleModal()" class="px-4 py-2 bg-black text-zinc-300 border theme-border hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400">Guardar Vehículo</button>
                 </div>
             </form>
         </div>
     </div>
     
     <!-- MODAL DE IMAGEN FULLSCREEN -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-xl flex items-center justify-center z-[100] transition-opacity duration-300 p-4" onclick="closeImageModal()">
-        <button class="absolute top-4 right-6 text-white text-3xl hover:text-red-500 transition-colors cursor-pointer" onclick="closeImageModal()"><i class="fa-solid fa-xmark"></i></button>
-        <img id="fullscreen-image" src="" alt="Fullscreen" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl border border-zinc-800 object-contain" onclick="event.stopPropagation()">
-        <div id="fullscreen-caption" class="absolute bottom-6 bg-black/80 px-6 py-2.5 rounded-xl border border-zinc-700 text-zinc-300 text-sm font-semibold pointer-events-none hidden max-w-2xl text-center shadow-2xl backdrop-blur-md"></div>
+    <div id="imageModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-[100] transition-opacity duration-300 p-4" onclick="closeImageModal()">
+        <button class="absolute top-4 right-6 text-brand-400 text-3xl hover:text-red-500 transition-colors cursor-pointer drop-shadow-md" onclick="closeImageModal()"><i class="fa-solid fa-xmark"></i></button>
+        <img id="fullscreen-image" src="" alt="Fullscreen" class="max-w-full max-h-[90vh] rounded-xl shadow-[0_0_30px_var(--theme-glow)] border-2 theme-border object-contain" onclick="event.stopPropagation()">
+        <div id="fullscreen-caption" class="absolute bottom-6 bg-black/80 px-6 py-2.5 rounded-xl border theme-border text-brand-300 text-sm font-semibold pointer-events-none hidden max-w-2xl text-center shadow-2xl backdrop-blur-md"></div>
     </div>
 
     <!-- MODAL PARA SUBIR FOTO A GALERÍA -->
-    <div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-md shadow-2xl animate-modal">
-            <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-cloud-arrow-up text-brand-500 mr-2"></i> Subir a la Galería</h3>
-            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b border-zinc-800">Selecciona una imagen de tu dispositivo. Todos los miembros podrán verla.</p>
+    <div id="uploadModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
+            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Subir a la Galería</h3>
+            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b theme-border">Selecciona una imagen de tu dispositivo. Todos los miembros podrán verla.</p>
             <form onsubmit="uploadImage(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Título / Descripción (Opcional)</label>
-                    <input type="text" id="gallery-title" placeholder="Ej: Operativo en la zona norte..." class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Título / Descripción (Opcional)</label>
+                    <input type="text" id="gallery-title" placeholder="Ej: Operativo en la zona norte..." class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1 mt-2">Archivo de Imagen</label>
-                    <input type="file" id="gallery-file" accept="image/png, image/jpeg, image/webp" required class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 interactive-btn cursor-pointer bg-black rounded-lg border border-zinc-800">
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1 mt-2">Archivo de Imagen</label>
+                    <input type="file" id="gallery-file" accept="image/png, image/jpeg, image/webp" required class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-brand-900/30 file:text-brand-300 hover:file:bg-brand-900/50 interactive-btn cursor-pointer bg-black rounded-lg border theme-border">
                 </div>
-                <div class="flex justify-end gap-3 pt-4 border-t border-zinc-800 mt-6">
-                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-brand-700 hover:bg-brand-600 text-white rounded-lg font-black interactive-btn shadow-md border border-brand-600">Confirmar Subida</button>
+                <div class="flex justify-end gap-3 pt-4 border-t theme-border mt-6">
+                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2 bg-black text-zinc-300 border theme-border hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400">Confirmar Subida</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL DE MIEMBRO (Agregar/Editar) -->
-    <div id="memberModal" class="hidden fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-800 w-full max-w-3xl shadow-2xl animate-modal overflow-y-auto max-h-[90vh]">
-            <h3 id="modal-title" class="text-xl font-bold text-white mb-6 border-b border-zinc-800 pb-2">Añadir Miembro</h3>
+    <div id="memberModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 transition-opacity duration-300 p-4">
+        <div class="bg-zinc-950 p-6 md:p-8 rounded-xl w-full max-w-3xl animate-modal overflow-y-auto max-h-[90vh] theme-panel">
+            <h3 id="modal-title" class="text-xl font-black text-brand-400 mb-6 border-b theme-border pb-2 drop-shadow-md">Añadir Miembro</h3>
             <form id="member-form" class="space-y-4 md:space-y-5">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Nombre In-Character</label><input type="text" id="f-name" required class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input"></div>
-                    <div><label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Usuario Discord</label><input type="text" id="f-discord" required class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input"></div>
+                    <div><label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Nombre In-Character</label><input type="text" id="f-name" required class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></div>
+                    <div><label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Usuario Discord</label><input type="text" id="f-discord" required class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Jerarquía (Rango)</label>
-                        <select id="f-rank" onchange="onRankFormChange()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Jerarquía (Rango)</label>
+                        <select id="f-rank" onchange="onRankFormChange()" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
                             <option>Recolector</option><option>Novato</option><option>Soldado</option><option>GHOST</option><option>Dealers</option><option>Grupo Sigilo</option><option>Operativa Antrax</option><option>La Mesa Blanca</option><option>Líder de Dealers</option><option>Líder de Grupo Sigilo</option><option>Líder de Operativa Antrax</option><option>Líder de La Mesa Blanca</option><option>Subjefe</option><option>Mano Derecha</option><option>JEFES</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Método de Pago Base</label>
-                        <select id="f-payment" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input"></select>
+                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Método de Pago Base</label>
+                        <select id="f-payment" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></select>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Fecha Base</label>
-                        <input type="date" id="f-date" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Fecha Base</label>
+                        <input type="date" id="f-date" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input" style="color-scheme: dark;">
                     </div>
                 </div>
                 
-                <!-- NUEVA FILA DE CONFIGURACIÓN -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Descuento</label>
-                        <select id="f-discount" onchange="updatePaymentOptions()" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Descuento Fijo</label>
+                        <select id="f-discount" onchange="updatePaymentOptions()" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
                             <option value="0">0 Hojas</option>
                             <option value="200">200 Hojas</option>
                             <option value="300">300 Hojas</option>
@@ -447,16 +470,16 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Cuotas Extra</label>
+                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cuotas Extra</label>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="subExtraWeek()" class="bg-zinc-800 text-white px-3 py-2 rounded-lg interactive-btn">-</button>
-                            <input type="number" id="f-extra" min="0" value="0" class="w-16 bg-black border border-zinc-700 rounded-lg p-2 text-white font-bold text-center">
-                            <button type="button" onclick="addExtraWeek()" class="bg-zinc-800 text-brand-400 px-3 py-2 rounded-lg font-bold interactive-btn">+1</button>
+                            <button type="button" onclick="subExtraWeek()" class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">-</button>
+                            <input type="number" id="f-extra" min="0" value="0" class="w-16 bg-black border theme-border rounded-lg p-2.5 text-white font-bold text-center">
+                            <button type="button" onclick="addExtraWeek()" class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">+</button>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-zinc-400 mb-1 text-red-400"><i class="fa-solid fa-mask"></i> Rol Ilegales</label>
-                        <select id="f-illegal" class="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2.5 text-white interactive-input">
+                        <label class="block text-xs uppercase font-bold text-red-400 mb-1"><i class="fa-solid fa-mask"></i> Rol Ilegales</label>
+                        <select id="f-illegal" class="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2.5 text-red-200 interactive-input focus:border-red-500">
                             <option value="No">No (Legal)</option>
                             <option value="Sí">Sí (Ilegal)</option>
                         </select>
@@ -464,74 +487,74 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Notas u Observaciones Internas</label>
-                    <textarea id="f-notes" rows="2" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input text-xs" placeholder="Ej: Aviso de vacaciones hasta el viernes, motivo de faltas..."></textarea>
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Notas u Observaciones Internas</label>
+                    <textarea id="f-notes" rows="2" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input text-xs" placeholder="Ej: Aviso de vacaciones hasta el viernes, motivo de faltas..."></textarea>
                 </div>
-                <div class="bg-black p-4 rounded-lg border border-zinc-800">
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-2">Faltas (Puntos)</label>
+                <div class="bg-black/50 p-4 rounded-lg border theme-border">
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-2">Faltas (Puntos)</label>
                     <div class="flex flex-wrap gap-2 mb-3">
-                        <button type="button" onclick="addStrike(1)" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Llamado</button>
-                        <button type="button" onclick="addStrike(3)" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Leve</button>
-                        <button type="button" onclick="addStrike(18)" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Intermedia</button>
-                        <button type="button" onclick="addStrike(54)" class="bg-red-950 text-xs px-2.5 py-1.5 rounded text-red-300 font-semibold border border-red-900 interactive-btn">+1 Grave</button>
-                        <button type="button" onclick="clearStrikes()" class="bg-zinc-800 text-xs px-2.5 py-1.5 rounded ml-auto text-zinc-400 interactive-btn">Limpiar</button>
+                        <button type="button" onclick="addStrike(1)" class="bg-zinc-900 border border-zinc-700 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1 Llamado</button>
+                        <button type="button" onclick="addStrike(3)" class="bg-yellow-950/40 border border-yellow-900/50 text-xs px-2.5 py-1.5 rounded text-yellow-300 font-semibold interactive-btn">+1 Leve</button>
+                        <button type="button" onclick="addStrike(18)" class="bg-orange-950/40 border border-orange-900/50 text-xs px-2.5 py-1.5 rounded text-orange-300 font-semibold interactive-btn">+1 Intermedia</button>
+                        <button type="button" onclick="addStrike(54)" class="bg-red-950/40 border border-red-900/50 text-xs px-2.5 py-1.5 rounded text-red-300 font-semibold interactive-btn">+1 Grave</button>
+                        <button type="button" onclick="clearStrikes()" class="bg-black border theme-border text-xs px-2.5 py-1.5 rounded ml-auto text-brand-300 interactive-btn">Limpiar</button>
                     </div>
                     <div class="flex items-center gap-4">
-                        <input type="number" id="f-strikes" min="0" value="0" class="w-16 bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white font-bold text-center" readonly>
+                        <input type="number" id="f-strikes" min="0" value="0" class="w-16 bg-black border theme-border rounded-lg p-2 text-white font-bold text-center" readonly>
                         <div id="strike-preview" class="text-sm font-bold text-amber-400">0 Faltas</div>
                     </div>
                 </div>
-                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-zinc-800">
-                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 bg-white text-black rounded-lg font-black shadow-lg interactive-btn">Guardar Perfil</button>
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t theme-border">
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-lg font-black shadow-[0_0_15px_var(--theme-glow)] interactive-btn">Guardar Perfil</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL SELECCIÓN DE PAGO -->
-    <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-md shadow-2xl animate-modal">
-            <h3 class="text-xl font-bold text-white mb-2">Registrar Pago de Cuota</h3>
-            <p id="payment-member-name" class="text-sm text-zinc-400 mb-4 pb-3 border-b border-zinc-800">Cargando...</p>
+    <div id="paymentModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
+            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md">Registrar Pago de Cuota</h3>
+            <p id="payment-member-name" class="text-sm text-zinc-400 mb-4 pb-3 border-b theme-border">Cargando...</p>
             <div class="space-y-4 mb-6">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-zinc-400 mb-1">Selecciona el Método con el que Pagó:</label>
-                    <select id="modal-payment-method" class="w-full bg-black border border-zinc-700 rounded-lg p-2.5 text-white interactive-input">
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Selecciona el Método con el que Pagó:</label>
+                    <select id="modal-payment-method" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
                         <!-- Generado por JS -->
                     </select>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 pt-3 border-t border-zinc-800">
-                <button onclick="closePaymentModal()" class="px-4 py-2 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cancelar</button>
-                <button onclick="confirmRegisterPayment()" class="px-4 py-2 bg-white text-black hover:bg-zinc-200 rounded-lg font-black interactive-btn shadow-md">Confirmar Pago</button>
+            <div class="flex justify-end gap-3 pt-3 border-t theme-border">
+                <button onclick="closePaymentModal()" class="px-4 py-2 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                <button onclick="confirmRegisterPayment()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)]">Confirmar Pago</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL HISTORIAL DE PAGOS -->
-    <div id="historyModal" class="hidden fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-lg shadow-2xl animate-modal">
-            <h3 class="text-xl font-bold text-white mb-2">Historial de Pagos</h3>
-            <p id="history-name" class="text-sm text-zinc-400 mb-4 pb-4 border-b border-zinc-800">Cargando...</p>
+    <div id="historyModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-lg animate-modal theme-panel">
+            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md">Historial de Pagos</h3>
+            <p id="history-name" class="text-sm text-zinc-400 mb-4 pb-4 border-b theme-border">Cargando...</p>
             <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 mb-4"></div>
-            <div class="flex justify-end pt-2 border-t border-zinc-800">
-                <button onclick="closeHistoryModal()" class="px-5 py-2.5 bg-zinc-800 text-white rounded-lg font-semibold interactive-btn">Cerrar</button>
+            <div class="flex justify-end pt-2 border-t theme-border">
+                <button onclick="closeHistoryModal()" class="px-5 py-2.5 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cerrar</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL CAMBIO ESTADO (BAJAS/CK) -->
-    <div id="statusModal" class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-900 p-6 rounded-xl border border-zinc-800 w-full max-w-sm shadow-2xl animate-modal text-center">
-            <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3"></i>
+    <div id="statusModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-sm animate-modal text-center theme-panel">
+            <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3 drop-shadow-md"></i>
             <h3 class="text-lg font-bold text-white mb-1">Dar de Baja</h3>
-            <p id="status-name" class="text-sm text-zinc-400 mb-6 border-b border-zinc-800 pb-4">Cargando...</p>
+            <p id="status-name" class="text-sm text-zinc-400 mb-6 border-b theme-border pb-4">Cargando...</p>
             <div class="space-y-3">
-                <button onclick="confirmStatusChange('Expulsado')" class="w-full py-3 bg-orange-950 text-orange-400 border border-orange-900 rounded-lg font-bold hover:bg-orange-900 transition-colors">Expulsar (Faltas/Inactividad)</button>
-                <button onclick="confirmStatusChange('CK')" class="w-full py-3 bg-red-950 text-red-500 border border-red-900 rounded-lg font-bold hover:bg-red-900 transition-colors">Ejecutar CK (Abatido)</button>
-                <button onclick="confirmStatusChange('Activo')" class="w-full py-3 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded-lg font-bold hover:bg-emerald-900 transition-colors hidden" id="btn-reactivate">Reactivar Miembro</button>
-                <button onclick="closeStatusModal()" class="w-full py-3 bg-zinc-800 text-white rounded-lg font-semibold hover:bg-zinc-700 transition-colors mt-4">Cancelar</button>
+                <button onclick="confirmStatusChange('Expulsado')" class="w-full py-3 bg-orange-950/50 text-orange-400 border border-orange-900 rounded-lg font-bold hover:bg-orange-900 transition-colors">Expulsar (Faltas/Inactividad)</button>
+                <button onclick="confirmStatusChange('CK')" class="w-full py-3 bg-red-950/50 text-red-500 border border-red-900 rounded-lg font-bold hover:bg-red-900 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.2)]">Ejecutar CK (Abatido)</button>
+                <button onclick="confirmStatusChange('Activo')" class="w-full py-3 bg-emerald-950/50 text-emerald-400 border border-emerald-900 rounded-lg font-bold hover:bg-emerald-900 transition-colors hidden" id="btn-reactivate">Reactivar Miembro</button>
+                <button onclick="closeStatusModal()" class="w-full py-3 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold transition-colors mt-4">Cancelar</button>
             </div>
         </div>
     </div>
@@ -553,7 +576,7 @@
         let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
         let targetStatusId = null; let paymentTargetId = null;
 
-        // INICIALIZACIÓN DEL TEMA (Personalización)
+        // --- SISTEMA DE TEMAS AVANZADO ---
         function changeTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('ghost_theme', theme);
@@ -568,16 +591,16 @@
             let icon = ''; let bgClass = '';
             if (type === 'success') {
                 icon = '<i class="fa-solid fa-circle-check text-brand-400 text-xl"></i>';
-                bgClass = 'bg-brand-950/95 border-brand-800';
+                bgClass = 'bg-brand-950 border-brand-800';
             } else if (type === 'error') {
                 icon = '<i class="fa-solid fa-circle-xmark text-red-400 text-xl"></i>';
-                bgClass = 'bg-red-950/95 border-red-800';
+                bgClass = 'bg-red-950 border-red-800';
             } else {
                 icon = '<i class="fa-solid fa-circle-info text-blue-400 text-xl"></i>';
-                bgClass = 'bg-blue-950/95 border-blue-800';
+                bgClass = 'bg-blue-950 border-blue-800';
             }
 
-            toast.className = `flex items-center gap-3 px-4 py-3 min-w-[250px] rounded-lg border ${bgClass} text-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] backdrop-blur-md transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+            toast.className = `flex items-center gap-3 px-4 py-3 min-w-[250px] rounded-lg border ${bgClass} text-white shadow-[0_10px_40px_-10px_var(--theme-glow)] backdrop-blur-md transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
             toast.innerHTML = `${icon} <span class="text-sm font-semibold">${message}</span>`;
 
             container.appendChild(toast);
@@ -587,7 +610,6 @@
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
         }
-        // ----------------------------------------------------
 
         function showLoader(text = "Sincronizando...") { document.getElementById('loader-text').innerText = text; document.getElementById('global-loader').classList.remove('hidden'); }
         function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
@@ -728,13 +750,13 @@
             editVehicleId = id;
             if(id) {
                 const v = vehicles.find(x => x.id === id);
-                document.getElementById('vehicle-modal-title').innerHTML = '<i class="fa-solid fa-pen text-zinc-400 mr-2"></i> Editar Vehículo';
+                document.getElementById('vehicle-modal-title').innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Editar Vehículo';
                 document.getElementById('v-model').value = v.model;
                 document.getElementById('v-usage').value = v.usage;
                 document.getElementById('v-file').removeAttribute('required');
                 document.getElementById('v-file-optional').classList.remove('hidden');
             } else {
-                document.getElementById('vehicle-modal-title').innerHTML = '<i class="fa-solid fa-car text-zinc-400 mr-2"></i> Añadir Vehículo';
+                document.getElementById('vehicle-modal-title').innerHTML = '<i class="fa-solid fa-car mr-2"></i> Añadir Vehículo';
                 document.getElementById('vehicle-form').reset();
                 document.getElementById('v-file').setAttribute('required', 'true');
                 document.getElementById('v-file-optional').classList.add('hidden');
@@ -804,7 +826,7 @@
             if(!grid) return; grid.innerHTML = '';
             
             if(!vehicles || vehicles.length === 0) {
-                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-500 py-16"><i class="fa-solid fa-warehouse text-5xl mb-3 opacity-30"></i><p class="text-sm font-bold uppercase tracking-wider">El garaje está vacío.</p></div>';
+                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-brand-500 py-16"><i class="fa-solid fa-warehouse text-5xl mb-3 opacity-30 drop-shadow-md"></i><p class="text-sm font-bold uppercase tracking-wider text-brand-300">El garaje está vacío.</p></div>';
                 return;
             }
 
@@ -817,24 +839,24 @@
                 if(canEdit) {
                     actionsHtml = `
                         <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                            <button onclick="event.stopPropagation(); openVehicleModal(${v.id})" class="bg-blue-950/90 hover:bg-blue-900 border border-blue-800 text-blue-400 w-8 h-8 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="event.stopPropagation(); deleteVehicle(${v.id})" class="bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md" title="Eliminar"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            <button onclick="event.stopPropagation(); openVehicleModal(${v.id})" class="bg-blue-950/90 hover:bg-blue-900 border border-blue-800 text-blue-400 w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] backdrop-blur-md" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="event.stopPropagation(); deleteVehicle(${v.id})" class="bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.5)] backdrop-blur-md" title="Eliminar"><i class="fa-solid fa-trash-can text-xs"></i></button>
                         </div>
                     `;
                 }
 
                 grid.innerHTML += `
-                    <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/90 backdrop-blur-md shadow-lg flex flex-col interactive-card">
+                    <div class="relative group rounded-xl overflow-hidden interactive-card">
                         <div class="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${v.image}', '<span class=\\'text-brand-400 font-bold\\'>${v.model}</span> - ${v.usage}')">
                             <img src="${v.image}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-brand-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                             ${actionsHtml}
                         </div>
-                        <div class="p-4 flex flex-col justify-between flex-1 bg-zinc-950/70 border-t border-zinc-800/50">
-                            <h3 class="text-white font-black text-lg mb-2 truncate" title="${v.model}">${v.model}</h3>
+                        <div class="p-4 flex flex-col justify-between flex-1 bg-black/40 border-t theme-border">
+                            <h3 class="text-white font-black text-lg mb-2 truncate drop-shadow-md" title="${v.model}">${v.model}</h3>
                             <div class="flex items-center justify-between">
                                 <span class="py-1 px-2.5 rounded text-[10px] font-bold uppercase border ${badgeStyle}">${v.usage}</span>
-                                <i class="fa-solid fa-key text-zinc-600" title="Añadido por ${v.addedBy}"></i>
+                                <i class="fa-solid fa-key text-brand-600 drop-shadow-md" title="Añadido por ${v.addedBy}"></i>
                             </div>
                         </div>
                     </div>
@@ -957,7 +979,7 @@
             grid.innerHTML = '';
             
             if(!images || images.length === 0) {
-                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-500 py-16"><i class="fa-regular fa-images text-5xl mb-3 opacity-30"></i><p class="text-sm font-bold uppercase tracking-wider">Aún no hay fotos en la galería.</p></div>';
+                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-brand-500 py-16"><i class="fa-regular fa-images text-5xl mb-3 opacity-30 drop-shadow-md"></i><p class="text-sm font-bold uppercase tracking-wider text-brand-300">Aún no hay fotos en la galería.</p></div>';
                 return;
             }
             
@@ -966,15 +988,15 @@
             const availableEmojis = ["❤️", "🔝", "🔥", "💦", "🍆", "👍", "😂", "💀", "👏"];
             
             sorted.forEach(img => {
-                const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-xl backdrop-blur-md z-20" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
+                const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_15px_rgba(239,68,68,0.5)] backdrop-blur-md z-20" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
                 
-                const titleHtml = img.title ? `<p class="text-brand-400 text-xs font-bold truncate mb-0.5" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
+                const titleHtml = img.title ? `<p class="text-brand-400 text-xs font-bold truncate mb-0.5 drop-shadow-sm" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
                 
                 const modalTitle = img.title ? `<span class="block text-brand-400 font-bold mb-1 text-base">${img.title}</span>` : '';
                 const modalCaption = `${modalTitle}Subido por <span class="text-white">${img.uploader}</span> el ${img.date}`;
                 const safeCaption = modalCaption.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-                let reactionsHtml = '<div class="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-zinc-800/80" onclick="event.stopPropagation()">';
+                let reactionsHtml = '<div class="flex flex-wrap gap-1.5 mt-2 pt-2 border-t theme-border" onclick="event.stopPropagation()">';
                 
                 availableEmojis.forEach(emoji => {
                     const usersStr = (img.reactions && img.reactions[emoji]) || "";
@@ -983,8 +1005,8 @@
                     const hasReacted = reactedUsers.includes(currentUser.username);
                     
                     const btnClass = hasReacted 
-                        ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.2)]' 
-                        : 'bg-black/60 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200';
+                        ? 'bg-brand-900/80 border-brand-500 text-brand-300 shadow-[0_0_10px_var(--theme-glow)]' 
+                        : 'bg-black/40 border-transparent text-zinc-400 hover:border-brand-800 hover:text-brand-300 transition-colors';
 
                     reactionsHtml += `
                         <button onclick="toggleReaction(${img.id}, '${emoji}')" class="px-2 py-1 rounded-lg border text-xs flex items-center gap-1 transition-all duration-200 ${btnClass}">
@@ -996,17 +1018,17 @@
                 reactionsHtml += '</div>';
                 
                 grid.innerHTML += `
-                    <div class="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/90 backdrop-blur-md shadow-lg flex flex-col interactive-card">
+                    <div class="relative group rounded-xl overflow-hidden interactive-card">
                         <div class="relative aspect-[4/3] w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${img.url}', '${safeCaption}')">
                             <img src="${img.url}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                             ${delBtn}
                         </div>
-                        <div class="p-3 flex flex-col justify-between flex-1 bg-zinc-950/70">
+                        <div class="p-3 flex flex-col justify-between flex-1 bg-black/60">
                             <div>
                                 ${titleHtml}
                                 <div class="flex justify-between items-center text-[10px] text-zinc-400 mt-1">
-                                    <span class="truncate max-w-[120px]" title="${img.uploader}"><i class="fa-solid fa-user-tag text-zinc-500 mr-1"></i>${img.uploader}</span>
+                                    <span class="truncate max-w-[120px]" title="${img.uploader}"><i class="fa-solid fa-user-tag text-brand-600 mr-1"></i>${img.uploader}</span>
                                     <span>${img.date}</span>
                                 </div>
                             </div>
@@ -1072,21 +1094,21 @@
                 const qI = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
                 const pI = getPaymentInfo(m.payment || "Pendiente", m.discount || '0');
                 const isActivo = m.status === 'Activo' || !m.status;
-                const statBadge = isActivo ? '' : `<span class="ml-2 py-0.5 px-2 rounded text-[10px] font-black uppercase ${m.status==='CK'?'bg-red-950 text-red-500 border border-red-900':'bg-orange-950 text-orange-400 border border-orange-900'}">${m.status}</span>`;
+                const statBadge = isActivo ? '' : `<span class="ml-2 py-0.5 px-2 rounded text-[10px] font-black uppercase ${m.status==='CK'?'bg-red-950 text-red-500 border border-red-900 shadow-[0_0_10px_rgba(239,68,68,0.3)]':'bg-orange-950 text-orange-400 border border-orange-900 shadow-[0_0_10px_rgba(249,115,22,0.3)]'}">${m.status}</span>`;
                 
                 const illegalBadge = m.illegalRole 
-                    ? '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-red-950/80 text-red-400 border border-red-900"><i class="fa-solid fa-mask mr-1"></i> Sí</span>' 
+                    ? '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-red-950/80 text-red-400 border border-red-900 shadow-[0_0_10px_rgba(239,68,68,0.2)]"><i class="fa-solid fa-mask mr-1"></i> Sí</span>' 
                     : '<span class="py-1 px-2.5 rounded text-[10px] font-bold bg-zinc-900 text-zinc-500 border border-zinc-700">No</span>';
 
                 const md = (m.discord || '').toLowerCase().replace('@', '').trim();
                 const isMe = md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName || '').toLowerCase();
                 const canViewData = !currentUser.isGuest && (isL || isMe);
 
-                const warningBadge = (canViewData && m.strikes >= 54 && m.strikes < 108) ? `<span class="ml-2 py-0.5 px-1.5 rounded text-[9px] font-black uppercase bg-amber-950 text-amber-400 border border-amber-800 animate-pulse" title="A un paso del límite de expulsión (108 pts)">⚠️ En Riesgo</span>` : '';
+                const warningBadge = (canViewData && m.strikes >= 54 && m.strikes < 108) ? `<span class="ml-2 py-0.5 px-1.5 rounded text-[9px] font-black uppercase bg-amber-950 text-amber-400 border border-amber-800 animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.3)]" title="A un paso del límite de expulsión (108 pts)">⚠️ En Riesgo</span>` : '';
                 const notesHtml = (isL && m.notes) ? `<div class="text-[10px] text-amber-300/80 italic mt-0.5 flex items-center gap-1" title="${m.notes}"><i class="fa-solid fa-note-sticky text-amber-500"></i><span class="truncate max-w-[220px]">${m.notes}</span></div>` : '';
 
                 let qHtml = canViewData ? 
-                    `<div class="mb-1 text-[10px]"><span class="py-1 px-2 rounded border ${pI.color}">${pI.label}</span></div><div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${m.extraWeeks>0?' (+'+m.extraWeeks+')':''}</div><span class="py-0.5 px-2 rounded text-[10px] font-bold border ${qI.color}">${qI.text}</span>` : 
+                    `<div class="mb-1 text-[10px]"><span class="py-1 px-2 rounded border ${pI.color} shadow-sm">${pI.label}</span></div><div class="text-[10px] text-zinc-400 mb-1">F. Base: ${formatDate(m.lastPaymentDate)}${m.extraWeeks>0?' (+'+m.extraWeeks+')':''}</div><span class="py-0.5 px-2 rounded text-[10px] font-bold border ${qI.color} shadow-sm">${qI.text}</span>` : 
                     '<span class="text-zinc-500 text-[11px] px-2.5 py-1 bg-black/80 rounded border border-zinc-800" title="Información privada"><i class="fa-solid fa-lock mr-1 text-zinc-600"></i> Privado</span>';
                 
                 let sHtml = canViewData ? 
@@ -1096,21 +1118,21 @@
                 let actions = '<span class="text-zinc-600 text-xs">Lectura</span>';
                 if (!currentUser.isGuest && isL) {
                     actions = `<div class="flex items-center justify-end gap-3 text-lg">
-                        ${isActivo ? `<button onclick="openPaymentModal(${m.id})" title="Registrar Pago" class="text-brand-500 hover:text-brand-400 transition-transform hover:scale-125"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
-                        <button onclick="viewHistory(${m.id})" title="Ver Pagos" class="text-blue-400 hover:text-blue-300 transition-transform hover:scale-125"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                        ${isActivo ? `<button onclick="openPaymentModal(${m.id})" title="Registrar Pago" class="text-brand-500 hover:text-brand-400 transition-transform hover:scale-125 drop-shadow-md"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
+                        <button onclick="viewHistory(${m.id})" title="Ver Pagos" class="text-blue-400 hover:text-blue-300 transition-transform hover:scale-125 drop-shadow-md"><i class="fa-solid fa-clock-rotate-left"></i></button>
                         <button onclick="openModal(${m.id})" title="Editar" class="text-zinc-400 hover:text-white transition-transform hover:scale-125"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button onclick="openStatusModal(${m.id})" title="Baja / CK" class="text-zinc-600 hover:text-red-500 transition-transform hover:scale-125"><i class="fa-solid fa-skull"></i></button>
                     </div>`;
                 }
 
                 tbody.innerHTML += `
-                    <tr class="bg-zinc-950/40 border-b border-zinc-800 hover:bg-zinc-900/80 transition-colors">
+                    <tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors">
                         <td class="px-6 py-4 font-bold text-white whitespace-nowrap">
                             <div>${m.name}${statBadge}${warningBadge}</div>
                             ${notesHtml}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-xs"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i>${m.discord}</td>
-                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS}">${m.rank}</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS} shadow-sm">${m.rank}</span></td>
                         <td class="px-6 py-4 whitespace-nowrap">${illegalBadge}</td>
                         <td class="px-6 py-4 min-w-[200px]">${qHtml}</td>
                         <td class="px-6 py-4 text-xs min-w-[150px]">${sHtml}</td>
@@ -1118,29 +1140,29 @@
                     </tr>`;
 
                 mContainer.innerHTML += `
-                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-lg">
-                        <div class="flex justify-between items-start mb-3 border-b border-zinc-800 pb-3">
+                    <div class="bg-black/40 border theme-border rounded-xl p-4 shadow-lg hover:shadow-[0_0_15px_var(--theme-glow)] transition-shadow">
+                        <div class="flex justify-between items-start mb-3 border-b theme-border pb-3">
                             <div>
                                 <h4 class="font-black text-white text-lg flex items-center flex-wrap gap-1">${m.name}${statBadge}${warningBadge}</h4>
-                                <p class="text-xs text-zinc-400 mt-1"><i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}</p>
+                                <p class="text-xs text-brand-300/70 mt-1"><i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}</p>
                                 ${notesHtml}
                             </div>
                             <div class="flex flex-col items-end gap-1">
-                                <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS}">${m.rank}</span>
+                                <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS} shadow-sm">${m.rank}</span>
                                 ${illegalBadge}
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-                            <div class="bg-black/50 p-2 rounded border border-zinc-800">
-                                <p class="text-zinc-500 font-bold uppercase mb-1 text-[9px]">Cuota</p>
+                            <div class="bg-black/60 p-2 rounded border theme-border">
+                                <p class="text-brand-500 font-bold uppercase mb-1 text-[9px]">Cuota</p>
                                 ${qHtml}
                             </div>
-                            <div class="bg-black/50 p-2 rounded border border-zinc-800">
-                                <p class="text-zinc-500 font-bold uppercase mb-1 text-[9px]">Faltas</p>
+                            <div class="bg-black/60 p-2 rounded border theme-border">
+                                <p class="text-brand-500 font-bold uppercase mb-1 text-[9px]">Faltas</p>
                                 <div class="mt-1">${sHtml}</div>
                             </div>
                         </div>
-                        <div class="bg-black/40 p-2 rounded flex justify-around items-center border border-zinc-800">${actions}</div>
+                        <div class="bg-black/80 p-2 rounded flex justify-around items-center border theme-border">${actions}</div>
                     </div>`;
             });
             renderMemberPortal();
@@ -1213,8 +1235,8 @@
             const m = members.find(x => x.id === id);
             document.getElementById('history-name').innerText = m.name;
             const hl = document.getElementById('history-list'); hl.innerHTML = '';
-            if(!m.payHistory || m.payHistory.length === 0) hl.innerHTML = '<p class="text-zinc-500 text-sm italic">No hay pagos registrados.</p>';
-            else m.payHistory.forEach(h => hl.innerHTML += `<div class="bg-zinc-950 p-3 rounded border border-zinc-800 text-sm flex justify-between items-center"><span class="font-bold text-brand-400">${h.detail}</span><span class="text-zinc-500 text-xs">${h.date}</span></div>`);
+            if(!m.payHistory || m.payHistory.length === 0) hl.innerHTML = '<p class="text-brand-500 text-sm italic">No hay pagos registrados.</p>';
+            else m.payHistory.forEach(h => hl.innerHTML += `<div class="bg-black/50 p-3 rounded border theme-border text-sm flex justify-between items-center mb-2"><span class="font-bold text-brand-400 drop-shadow-sm">${h.detail}</span><span class="text-zinc-500 text-xs">${h.date}</span></div>`);
             document.getElementById('historyModal').classList.remove('hidden');
         }
         function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
@@ -1248,16 +1270,63 @@
             showToast("Reporte CSV descargado");
         }
 
+        function updateSimulator() {
+            const simCont = document.getElementById('portal-simulator-container');
+            const simOpts = document.getElementById('simulator-options');
+            const select = document.getElementById('sim-discount-select');
+            
+            if(!select || !simCont) return;
+
+            const dv = getDiscountValues(select.value);
+
+            const snsCount = Math.round(5 * dv.ratio);
+            const vintageCount = Math.round(4 * dv.ratio);
+            const mm9Count = Math.round(3 * dv.ratio);
+            const miniSmgCount = dv.remVal > 0 ? 1 : 0;
+            const miniSmgCash = Math.max(0, 30000 - dv.cash);
+            const tec9Count = dv.remVal > 0 ? 1 : 0;
+            const tec9Cash = Math.max(0, 10000 - dv.cash);
+            const microSmgCount = dv.remVal > 0 ? 1 : 0;
+            const chalecosCount = Math.round(11 * dv.ratio);
+            const cocaCount = Math.max(0, 1500 - dv.hojas);
+
+            if (dv.remVal === 0) {
+                simOpts.innerHTML = `<div class="col-span-full bg-brand-950/40 border border-brand-500/50 p-4 rounded-lg text-center text-brand-300 font-bold text-sm tracking-wide shadow-[inset_0_0_20px_var(--theme-glow)]">¡Felicidades! Con este nivel de descuento estarías exonerado de cuotas.</div>`;
+            } else {
+                const options = [
+                    { label: 'Efectivo', val: `$${Math.round(dv.remVal).toLocaleString('es')}`, icon: 'fa-money-bill-wave', color: 'text-emerald-400' },
+                    { label: 'Hojas de Coca', val: `${cocaCount} uds.`, icon: 'fa-leaf', color: 'text-lime-400' },
+                    { label: 'Pistolas SNS', val: `${snsCount} uds.`, icon: 'fa-gun', color: 'text-cyan-400' },
+                    { label: 'Vintage', val: `${vintageCount} uds.`, icon: 'fa-gun', color: 'text-blue-400' },
+                    { label: 'Pistolas 9mm', val: `${mm9Count} uds.`, icon: 'fa-gun', color: 'text-indigo-400' },
+                    { label: 'Chalecos', val: `${chalecosCount} uds.`, icon: 'fa-shield-halved', color: 'text-amber-400' }
+                ];
+
+                if(miniSmgCount > 0) options.push({ label: 'Mini SMG', val: `1 ud. + $${miniSmgCash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-purple-400' });
+                if(tec9Count > 0) options.push({ label: 'TEC-9', val: `1 ud. + $${tec9Cash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-fuchsia-400' });
+                if(microSmgCount > 0) options.push({ label: 'Micro SMG', val: `1 ud.`, icon: 'fa-gun', color: 'text-rose-400' });
+
+                simOpts.innerHTML = options.map(o => `
+                    <div class="bg-black/40 border theme-border p-3 rounded-lg flex flex-col items-center justify-center text-center interactive-card hover:border-brand-500 transition-colors">
+                        <i class="fa-solid ${o.icon} ${o.color} text-2xl mb-2 drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]"></i>
+                        <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">${o.label}</span>
+                        <span class="text-xs text-white font-black mt-1 drop-shadow-md">${o.val}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
         function renderMemberPortal() {
             const pn = document.getElementById('portal-name'), pd = document.getElementById('portal-discord'), pc = document.getElementById('portal-data-container');
             const simCont = document.getElementById('portal-simulator-container');
-            const simOpts = document.getElementById('simulator-options');
+            const select = document.getElementById('sim-discount-select');
 
             if(!pn) return; pd.innerText = "@" + currentUser.username;
             const f = members.find(m => { const md = (m.discord||'').toLowerCase().replace('@','').trim(); return md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName||'').toLowerCase(); });
+            
             if(!f) { 
                 pn.innerText = currentUser.icName || currentUser.username; 
-                pc.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3"></i><p class="text-sm text-zinc-300 font-bold">Perfil no vinculado</p></div>`; 
+                pc.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3 drop-shadow-md"></i><p class="text-sm text-brand-300 font-bold">Perfil no vinculado</p></div>`; 
                 simCont.classList.add('hidden');
                 return; 
             }
@@ -1266,58 +1335,23 @@
             const rS = RANK_STYLES[f.rank] || "bg-slate-900 border-slate-700"; 
             const q = calculateQuotaStatus(f.payment, f.lastPaymentDate, f.extraWeeks, f.discount); 
             const p = getPaymentInfo(f.payment, f.discount);
-            const illegalText = f.illegalRole ? '<span class="text-red-400 font-bold"><i class="fa-solid fa-mask"></i> Sí</span>' : '<span class="text-zinc-500 font-bold">No</span>';
+            const illegalText = f.illegalRole ? '<span class="text-red-400 font-bold drop-shadow-md"><i class="fa-solid fa-mask"></i> Sí</span>' : '<span class="text-zinc-500 font-bold">No</span>';
 
             pc.innerHTML = `
-                ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950 border border-red-900 p-2 text-center rounded text-red-500 font-black mb-3">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS}">${f.rank}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Rol en Ilegales</span><span class="text-xs">${illegalText}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Método de Pago Actual</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color}">${p.label}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Estado de Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color}">${q.text}</span></div>
-                <div class="flex justify-between items-center border-b border-zinc-800 pb-3"><span class="text-xs font-bold text-zinc-400 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400">${formatStrikes(f.strikes||0)}</span></div>
-                ${f.notes ? `<div class="bg-black/50 p-3 rounded border border-zinc-800"><span class="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nota Interna:</span><p class="text-xs text-amber-300 italic">${f.notes}</p></div>` : ''}
+                ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950/50 border border-red-900/80 p-2 text-center rounded text-red-500 font-black mb-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
+                <div class="flex justify-between items-center border-b theme-border pb-3"><span class="text-xs font-bold text-brand-500 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS} shadow-sm">${f.rank}</span></div>
+                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Rol en Ilegales</span><span class="text-xs">${illegalText}</span></div>
+                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Método de Pago Actual</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color} shadow-sm">${p.label}</span></div>
+                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Estado de Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color} shadow-sm">${q.text}</span></div>
+                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400 drop-shadow-md">${formatStrikes(f.strikes||0)}</span></div>
+                ${f.notes ? `<div class="bg-black/60 p-3 mt-3 rounded border theme-border"><span class="text-[10px] font-bold text-brand-500 uppercase block mb-1">Nota Interna:</span><p class="text-xs text-brand-300 italic">${f.notes}</p></div>` : ''}
             `;
 
-            // --- CONFIGURACIÓN DEL SIMULADOR ---
+            // Configurar Simulador Inicial
             if(f.discount) {
                 simCont.classList.remove('hidden');
-                const dv = getDiscountValues(f.discount);
-
-                const snsCount = Math.round(5 * dv.ratio);
-                const vintageCount = Math.round(4 * dv.ratio);
-                const mm9Count = Math.round(3 * dv.ratio);
-                const miniSmgCount = dv.remVal > 0 ? 1 : 0;
-                const miniSmgCash = Math.max(0, 30000 - dv.cash);
-                const tec9Count = dv.remVal > 0 ? 1 : 0;
-                const tec9Cash = Math.max(0, 10000 - dv.cash);
-                const microSmgCount = dv.remVal > 0 ? 1 : 0;
-                const chalecosCount = Math.round(11 * dv.ratio);
-                const cocaCount = Math.max(0, 1500 - dv.hojas);
-
-                if (dv.remVal === 0) {
-                    simOpts.innerHTML = `<div class="col-span-full bg-brand-950/50 border border-brand-800 p-4 rounded-lg text-center text-brand-400 font-bold text-sm tracking-wide shadow-inner">¡Felicidades! Estás exonerado del pago de cuotas.</div>`;
-                } else {
-                    const options = [
-                        { label: 'Efectivo', val: `$${Math.round(dv.remVal).toLocaleString('es')}`, icon: 'fa-money-bill-wave', color: 'text-emerald-400' },
-                        { label: 'Hojas de Coca', val: `${cocaCount} uds.`, icon: 'fa-leaf', color: 'text-lime-400' },
-                        { label: 'Pistolas SNS', val: `${snsCount} uds.`, icon: 'fa-gun', color: 'text-cyan-400' },
-                        { label: 'Vintage', val: `${vintageCount} uds.`, icon: 'fa-gun', color: 'text-blue-400' },
-                        { label: 'Pistolas 9mm', val: `${mm9Count} uds.`, icon: 'fa-gun', color: 'text-indigo-400' },
-                        { label: 'Chalecos', val: `${chalecosCount} uds.`, icon: 'fa-shield-halved', color: 'text-amber-400' }
-                    ];
-
-                    if(miniSmgCount > 0) options.push({ label: 'Mini SMG', val: `1 ud. + $${miniSmgCash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-purple-400' });
-                    if(tec9Count > 0) options.push({ label: 'TEC-9', val: `1 ud. + $${tec9Cash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-fuchsia-400' });
-                    if(microSmgCount > 0) options.push({ label: 'Micro SMG', val: `1 ud.`, icon: 'fa-gun', color: 'text-rose-400' });
-
-                    simOpts.innerHTML = options.map(o => `
-                        <div class="bg-black/50 border border-zinc-800 p-3 rounded-lg flex flex-col items-center justify-center text-center interactive-card hover:border-brand-700 transition-colors">
-                            <i class="fa-solid ${o.icon} ${o.color} text-2xl mb-2 drop-shadow-md"></i>
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">${o.label}</span>
-                            <span class="text-xs text-white font-black mt-1">${o.val}</span>
-                        </div>
-                    `).join('');
-                }
+                select.value = f.discount; 
+                updateSimulator(); 
             } else {
                 simCont.classList.add('hidden');
             }
@@ -1327,11 +1361,11 @@
             if(view === 'finanzas' && (!['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role) || currentUser.isGuest)) return showToast("Denegado: Solo altos mandos.", "error");
             ['mi-estado','miembros','garaje','galeria','finanzas','registro'].forEach(v => {
                 const e = document.getElementById(`view-${v}`); if(e) { e.classList.add('hidden'); e.classList.remove('animate-view','flex'); }
-                const b = document.getElementById(`btn-nav-${v}`); if(b) b.classList.remove('bg-zinc-800/90','text-white');
+                const b = document.getElementById(`btn-nav-${v}`); if(b) b.classList.remove('bg-brand-900/30','text-brand-300','border-brand-500/50','shadow-[0_0_15px_var(--theme-glow)]');
             });
             const t = document.getElementById(`view-${view}`);
             if(t) { t.classList.remove('hidden'); if(view==='mi-estado'||view==='miembros'||view==='galeria'||view==='garaje') t.classList.add('flex'); void t.offsetWidth; t.classList.add('animate-view'); }
-            const tb = document.getElementById(`btn-nav-${view}`); if(tb) tb.classList.add('bg-zinc-800/90','text-white');
+            const tb = document.getElementById(`btn-nav-${view}`); if(tb) tb.classList.add('bg-brand-900/30','text-brand-300','border-brand-500/50','shadow-[0_0_15px_var(--theme-glow)]');
         }
 
         function getDiscountValues(d) {
@@ -1392,7 +1426,7 @@
         function calculateQuotaStatus(pay, last, ex=0, disc='0') {
             if(disc==='Exonerado') return {status:'Al día',color:'bg-amber-950 text-amber-300 border-amber-500',text:'Exonerado',weeksLate:0};
             if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ CUOTA PENDIENTE (1 sem.)',weeksLate:1};
-            if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400',text:'Sin Fecha Base',weeksLate:0};
+            if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400 border-yellow-800',text:'Sin Fecha Base',weeksLate:0};
             const l=new Date(last+'T00:00:00'), n=new Date();
             if(pay==='Nuevo') { 
                 const f=new Date(l); 
@@ -1401,9 +1435,9 @@
                 return n<=f ? {status:'Gracia',color:'bg-teal-950 text-teal-300 border-teal-500',text:'✨ 1 semana de gracia (Nuevo)',weeksLate:0} : {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ GRACIA EXPIRADA (1 sem.)',weeksLate:1}; 
             }
             const sun=new Date(l); sun.setDate(sun.getDate()+(l.getDay()===0?0:7-l.getDay())+(ex*7)); sun.setHours(23,59,59);
-            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400',text:`Al día (Dom ${formatDate(sun.toISOString())})`,weeksLate:0};
+            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400 border-emerald-800',text:`Al día (Dom ${formatDate(sun.toISOString())})`,weeksLate:0};
             const w = 1+Math.floor((n-sun)/(86400000*7)); 
-            return {status:'Atrasado',color:'bg-red-950 text-red-400',text:`❌ ATRASADO: ${w} sem. pendiente(s)`,weeksLate:w};
+            return {status:'Atrasado',color:'bg-red-950 text-red-400 border-red-800',text:`❌ ATRASADO: ${w} sem. pendiente(s)`,weeksLate:w};
         }
         function getPaymentInfo(k, d) {
             const dv = getDiscountValues(d);
@@ -1419,27 +1453,27 @@
             const cocaCount = Math.max(0, 1500 - dv.hojas);
 
             const map = { 
-                "Nuevo":{label:"Nuevo",color:"bg-teal-950 text-teal-300"},
-                "Pendiente":{label:"Pendiente",color:"bg-red-950 text-red-400"},
-                "Efectivo":{label:`$${Math.round(dv.remVal).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300"},
-                "Coca":{label:`${cocaCount} Coca`,color:"bg-lime-950 text-lime-300"},
-                "SNS":{label:`${snsCount} SNS`,color:"bg-cyan-950 text-cyan-300"},
-                "Vintage":{label:`${vintageCount} Vintage`,color:"bg-blue-950 text-blue-300"},
-                "9mm":{label:`${mm9Count} 9mm`,color:"bg-indigo-950 text-indigo-300"},
-                "MiniSMG":{label:`${miniSmgCount} MiniSMG + $${miniSmgCash.toLocaleString('es')}`,color:"bg-purple-950 text-purple-300"},
-                "TEC9":{label:`${tec9Count} TEC9 + $${tec9Cash.toLocaleString('es')}`,color:"bg-fuchsia-950 text-fuchsia-300"},
-                "MicroSMG":{label:`${microSmgCount} MicroSMG`,color:"bg-rose-950 text-rose-300"},
-                "Chalecos":{label:`${chalecosCount} Chalecos`,color:"bg-amber-950 text-amber-300"},
-                "Pagado":{label:"Pagado",color:"bg-emerald-950 text-emerald-300"} 
+                "Nuevo":{label:"Nuevo",color:"bg-teal-950 text-teal-300 border-teal-800"},
+                "Pendiente":{label:"Pendiente",color:"bg-red-950 text-red-400 border-red-800"},
+                "Efectivo":{label:`$${Math.round(dv.remVal).toLocaleString('es')}`,color:"bg-emerald-950 text-emerald-300 border-emerald-800"},
+                "Coca":{label:`${cocaCount} Coca`,color:"bg-lime-950 text-lime-300 border-lime-800"},
+                "SNS":{label:`${snsCount} SNS`,color:"bg-cyan-950 text-cyan-300 border-cyan-800"},
+                "Vintage":{label:`${vintageCount} Vintage`,color:"bg-blue-950 text-blue-300 border-blue-800"},
+                "9mm":{label:`${mm9Count} 9mm`,color:"bg-indigo-950 text-indigo-300 border-indigo-800"},
+                "MiniSMG":{label:`${miniSmgCount} MiniSMG + $${miniSmgCash.toLocaleString('es')}`,color:"bg-purple-950 text-purple-300 border-purple-800"},
+                "TEC9":{label:`${tec9Count} TEC9 + $${tec9Cash.toLocaleString('es')}`,color:"bg-fuchsia-950 text-fuchsia-300 border-fuchsia-800"},
+                "MicroSMG":{label:`${microSmgCount} MicroSMG`,color:"bg-rose-950 text-rose-300 border-rose-800"},
+                "Chalecos":{label:`${chalecosCount} Chalecos`,color:"bg-amber-950 text-amber-300 border-amber-800"},
+                "Pagado":{label:"Pagado",color:"bg-emerald-950 text-emerald-300 border-emerald-800"} 
             };
             return map[k]||map["Pendiente"];
         }
         function formatStrikes(p) {
             if(p>=108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>';
-            if(!p) return '<span class="text-zinc-500">0</span>';
+            if(!p) return '<span class="text-brand-300/50">0</span>';
             let gr=Math.floor(p/54),r=p%54, it=Math.floor(r/18),r2=r%18, lv=Math.floor(r2/3),ll=r2%3, pt=[];
             if(gr) pt.push(`<span class="text-red-400 font-bold">${gr}G</span>`); if(it) pt.push(`<span class="text-orange-400 font-semibold">${it}I</span>`);
-            if(lv) pt.push(`<span class="text-yellow-400">${lv}L</span>`); if(ll) pt.push(`<span class="text-zinc-300">${ll}Llam</span>`);
+            if(lv) pt.push(`<span class="text-yellow-400">${lv}L</span>`); if(ll) pt.push(`<span class="text-brand-300/80">${ll}Llam</span>`);
             return pt.join('•');
         }
         function addStrike(a) { let el = document.getElementById('f-strikes'); el.value = parseInt(el.value)+a; document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(el.value)); }
@@ -1540,12 +1574,12 @@
             });
 
             if(filteredLogs.length === 0) {
-                tb.innerHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-zinc-500 italic">No se encontraron registros en los logs.</td></tr>`;
+                tb.innerHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-brand-500 italic drop-shadow-md">No se encontraron registros en los logs.</td></tr>`;
                 return;
             }
 
             filteredLogs.forEach(l => { 
-                tb.innerHTML += `<tr class="bg-zinc-950/40 border-b border-zinc-800"><td class="px-6 py-4 text-xs text-zinc-400 whitespace-nowrap">${l.date}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-zinc-300 min-w-[250px]">${l.action}</td></tr>`; 
+                tb.innerHTML += `<tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors"><td class="px-6 py-4 text-xs text-brand-300/70 whitespace-nowrap">${l.date}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-brand-300 min-w-[250px]">${l.action}</td></tr>`; 
             }); 
         }
 
