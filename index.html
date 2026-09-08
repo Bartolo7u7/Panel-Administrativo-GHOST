@@ -185,7 +185,7 @@
                     <p class="text-xs text-brand-400/80 mb-6 font-semibold"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span id="portal-discord">@usuario</span></p>
                     <div id="portal-data-container" class="space-y-4 text-left bg-black/60 p-5 rounded-xl border theme-border shadow-inner"></div>
                     
-                    <!-- SIMULADOR DE CUOTAS DINÁMICO (ESTÉTICAMENTE RENOVADO) -->
+                    <!-- SIMULADOR DE CUOTAS DINÁMICO -->
                     <div id="portal-simulator-container" class="mt-6 text-left bg-black/60 p-5 rounded-xl border theme-border shadow-inner hidden">
                         <div class="flex flex-col sm:flex-row justify-between items-center mb-4 bg-brand-950/30 border theme-border p-3.5 rounded-xl gap-3 shadow-sm">
                             <div class="flex items-center gap-2.5">
@@ -265,6 +265,11 @@
                                     <option value="Tiene Rol">Tiene Rol</option>
                                     <option value="Sin Rol">Sin Rol</option>
                                     <option value="Por Entrar">Por Entrar</option>
+                                </select>
+                                <select id="strike-filter" onchange="renderDashboard()" class="bg-black/80 border theme-border text-yellow-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold">
+                                    <option value="">Faltas (Todos)</option>
+                                    <option value="clean">Sin faltas</option>
+                                    <option value="has_strikes">Con faltas</option>
                                 </select>
                             </div>
                             <div class="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
@@ -585,6 +590,18 @@
         let currentUser = null; let members = []; let logs = []; let images = []; let vehicles = []; let dbUnsubscribe = null;
         let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
         let targetStatusId = null; let paymentTargetId = null;
+        let isSaving = false; // Prevents race conditions and double-clicks
+        const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000; // Fuerza reautenticación tras 24h para no arrastrar un rol de Discord desactualizado
+
+        // FIX: Devuelve una fecha en zona horaria LOCAL como "YYYY-MM-DD" (por defecto, la de HOY).
+        // No usar new Date().toISOString().split('T')[0]: toISOString() siempre da la fecha en UTC,
+        // así que en zonas con offset negativo (América) puede devolver el día SIGUIENTE durante las
+        // últimas horas del día local.
+        function localISODate(baseDate) {
+            const d = baseDate || new Date();
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+        }
 
         // --- SISTEMA DE TEMAS AVANZADO ---
         function changeTheme(theme) {
@@ -629,7 +646,7 @@
             window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}&response_type=token&scope=${encodeURIComponent("identify guilds guilds.members.read")}`;
         }
         function loginAsGuest() {
-            currentUser = { username: "Invitado", icName: "Invitado", role: "Invitados", isGuest: true };
+            currentUser = { username: "Invitado", icName: "Invitado", role: "Invitados", isGuest: true, loginTimestamp: Date.now() };
             localStorage.setItem('ghost_session', JSON.stringify(currentUser)); initApp();
             showToast("Iniciaste sesión como Invitado", "info");
         }
@@ -653,7 +670,11 @@
                         if (doc.exists) {
                             const found = (doc.data().members || []).find(m => {
                                 const md = (m.discord || "").toLowerCase().replace('@', '').trim();
-                                return md === discordTag || discordTag.includes(md) || md.includes(discordTag) || (globalName && md.includes(globalName));
+                                if (!md) return false;
+                                // FIX: solo coincidencia EXACTA (antes se usaba .includes(), y un usuario
+                                // "juan123" hacía match por subcadena con un miembro guardado como "juan",
+                                // vinculando la sesión al perfil equivocado).
+                                return md === discordTag || (!!globalName && md === globalName);
                             });
                             if(found) matchedICName = found.name;
                         }
@@ -673,14 +694,24 @@
                             }
                         } catch (e) {}
                     }
-                    currentUser = { username: userData.username, icName: matchedICName || userData.global_name || userData.username, role: role, specialTitle: title || (matchedICName ? `${matchedICName} (${role})` : null), isGuest: false };
+                    currentUser = { username: userData.username, icName: matchedICName || userData.global_name || userData.username, role: role, specialTitle: title || (matchedICName ? `${matchedICName} (${role})` : null), isGuest: false, loginTimestamp: Date.now() };
                     localStorage.setItem('ghost_session', JSON.stringify(currentUser));
                     initApp();
                     showToast("Sesión iniciada correctamente");
                 } catch (err) { hideLoader(); showToast("Error al verificar Discord.", "error"); }
             } else {
                 const saved = localStorage.getItem('ghost_session');
-                if (saved) { currentUser = JSON.parse(saved); initApp(); } else { document.getElementById('loginModal').classList.remove('hidden'); hideLoader(); }
+                let parsedSession = null;
+                try { parsedSession = saved ? JSON.parse(saved) : null; } catch (e) { parsedSession = null; }
+                // FIX: si la sesión guardada tiene marca de tiempo y ya venció, forzamos un nuevo login
+                // en vez de confiar indefinidamente en un rol de Discord que pudo haber cambiado.
+                const sessionExpired = parsedSession && parsedSession.loginTimestamp && (Date.now() - parsedSession.loginTimestamp > SESSION_MAX_AGE_MS);
+                if (parsedSession && !sessionExpired) {
+                    currentUser = parsedSession; initApp();
+                } else {
+                    if (sessionExpired) localStorage.removeItem('ghost_session');
+                    document.getElementById('loginModal').classList.remove('hidden'); hideLoader();
+                }
             }
         });
 
@@ -713,43 +744,96 @@
         function loadDatabase() {
             showLoader("Descargando base de datos...");
             dbUnsubscribe = db.collection("ghost_data").doc("main_state").onSnapshot((doc) => {
-                if (doc.exists) { 
-                    const data = doc.data(); 
-                    members = data.members || []; 
-                    logs = data.logs || []; 
-                    images = data.images || [];
-                    vehicles = data.vehicles || [];
-                } else { 
-                    members = []; logs = []; images = []; vehicles = [];
-                    db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); 
-                }
-                
-                members.forEach(m => { 
-                    if(!m.status) m.status = 'Activo'; 
-                    // Migrar campos antiguos si es necesario
-                    if(!m.illegalStatus) {
-                        m.illegalStatus = m.illegalRole ? 'Tiene Rol' : 'Por Entrar';
+                try {
+                    if (doc.exists) { 
+                        const data = doc.data(); 
+                        members = data.members || []; 
+                        logs = data.logs || []; 
+                        images = data.images || [];
+                        vehicles = data.vehicles || [];
+                    } else { 
+                        members = []; logs = []; images = []; vehicles = [];
+                        db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); 
                     }
-                });
+                    
+                    members.forEach(m => { 
+                        if(!m.status) m.status = 'Activo'; 
+                        if(!m.name) m.name = 'Sin Nombre'; // FIX: un registro sin nombre ya no rompe el ordenamiento/comparaciones que dependen de m.name
+                        // Migrar campos antiguos si es necesario
+                        if(!m.illegalStatus) {
+                            m.illegalStatus = m.illegalRole ? 'Tiene Rol' : 'Por Entrar';
+                        }
+                    });
 
-                renderDashboard(); renderFinanzas(); renderRegistro(); renderGallery(); renderGarage();
-                if (isFirstLoad) {
-                    isFirstLoad = false;
-                    const isL = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
-                    switchView(isL || currentUser.isGuest ? 'miembros' : 'mi-estado');
-                    hideLoader();
+                    renderDashboard(); renderFinanzas(); renderRegistro(); renderGallery(); renderGarage();
+                } catch (renderErr) {
+                    // FIX: si algo inesperado falla al procesar/renderizar, ya no se queda la app a medio
+                    // actualizar en silencio (antes, una excepción aquí cortaba TODOS los renders restantes).
+                    console.error("Error al procesar/renderizar los datos:", renderErr);
+                    showToast("Ocurrió un error al mostrar los datos. Revisa la consola.", "error");
+                } finally {
+                    if (isFirstLoad) {
+                        isFirstLoad = false;
+                        const isL = ['JEFES', 'Cúpula Administrativa', 'La Mesa Blanca'].includes(currentUser.role);
+                        switchView(isL || currentUser.isGuest ? 'miembros' : 'mi-estado');
+                        hideLoader();
+                    }
                 }
+            }, (err) => {
+                // FIX: antes no existía este segundo callback; si la carga inicial fallaba (permisos,
+                // red, etc.) el loader quedaba girando para siempre sin ningún mensaje.
+                console.error("Error al escuchar la base de datos:", err);
+                hideLoader();
+                showToast("No se pudo conectar con la base de datos: " + err.message, "error");
             });
         }
 
-        async function saveToCloud() { 
+        // FIX REAL de concurrencia: antes se leía doc.data() dentro de la transacción pero NUNCA se
+        // usaba — ambas ramas (set/update) escribían directamente las variables globales del cliente,
+        // así que la transacción no protegía nada (se comportaba igual que un .set() común: la última
+        // escritura ganaba y borraba los cambios de cualquier otra sesión). Ahora saveToCloud recibe
+        // qué campos de nivel superior cambió ESTA operación (changedFields) y, dentro de la
+        // transacción, escribe esos campos desde memoria pero preserva los demás a partir de lo que
+        // haya en el servidor en ese momento — así una sesión que solo tocó "vehicles" ya no puede
+        // pisar un "members"/"images"/"logs" que otra sesión acaba de guardar.
+        async function saveToCloud(changedFields = ['members', 'logs', 'images', 'vehicles']) {
+            if (isSaving) {
+                // FIX (detectado en la segunda auditoría): esto antes devolvía "false" en silencio.
+                // Como cada función que llama a saveToCloud() ahora usa try/catch para revertir su
+                // cambio en memoria si el guardado falla, un "false" sin lanzar error se interpretaba
+                // como ÉXITO (el try no detecta un valor falsy, solo una excepción), mostrando
+                // "guardado correctamente" sin haberse guardado nada. Ahora SIEMPRE se lanza un error
+                // si no se pudo guardar, para que ningún llamador confunda "no se guardó" con "se guardó".
+                throw new Error("Ya hay un guardado en curso, intenta de nuevo en un momento.");
+            }
+            isSaving = true;
             showLoader("Guardando en la nube...");
             try { 
-                await db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles }); 
+                const docRef = db.collection("ghost_data").doc("main_state");
+                await db.runTransaction(async (transaction) => {
+                    const doc = await transaction.get(docRef);
+                    const serverData = doc.exists ? (doc.data() || {}) : {};
+                    const dataToWrite = {
+                        members: changedFields.includes('members') ? members : (serverData.members || []),
+                        logs: changedFields.includes('logs') ? logs : (serverData.logs || []),
+                        images: changedFields.includes('images') ? images : (serverData.images || []),
+                        vehicles: changedFields.includes('vehicles') ? vehicles : (serverData.vehicles || [])
+                    };
+                    if (!doc.exists) {
+                        transaction.set(docRef, dataToWrite);
+                    } else {
+                        transaction.update(docRef, dataToWrite);
+                    }
+                });
                 showToast("Cambios guardados en la nube");
+                return true;
             } 
-            catch (err) { showToast("Error al guardar: " + err.message, "error"); } 
-            finally { hideLoader(); }
+            catch (err) { 
+                showToast("Error al guardar: " + err.message, "error"); 
+                throw err; // FIX: antes el error quedaba "atrapado" aquí sin más; ahora se re-lanza para
+                           // que la función que llamó a saveToCloud() pueda revertir su cambio optimista.
+            } 
+            finally { hideLoader(); isSaving = false; }
         }
 
         // --- SISTEMA DE GARAJE ---
@@ -766,6 +850,12 @@
             editVehicleId = id;
             if(id) {
                 const v = vehicles.find(x => x.id === id);
+                if (!v) {
+                    // FIX: si otro admin ya eliminó este vehículo, evitamos leer propiedades de undefined
+                    showToast("Ese vehículo ya no existe (puede haber sido eliminado).", "error");
+                    editVehicleId = null;
+                    return;
+                }
                 document.getElementById('vehicle-modal-title').innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Editar Vehículo';
                 document.getElementById('v-model').value = v.model;
                 document.getElementById('v-usage').value = v.usage;
@@ -780,12 +870,13 @@
             document.getElementById('vehicleModal').classList.remove('hidden');
         }
 
-        function closeVehicleModal() { document.getElementById('vehicleModal').classList.add('hidden'); }
+        function closeVehicleModal() { document.getElementById('vehicleModal').classList.add('hidden'); editVehicleId = null; }
 
         async function saveVehicle(e) {
             e.preventDefault();
             if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return showToast("Sin permisos.", "error");
             
+            const targetId = editVehicleId; // capturado ANTES de cerrar el modal (closeVehicleModal ahora resetea editVehicleId)
             const model = document.getElementById('v-model').value.trim();
             const usage = document.getElementById('v-usage').value;
             const fileInput = document.getElementById('v-file');
@@ -802,26 +893,42 @@
                     if(!data.success) throw new Error("Error en ImgBB");
                     imageUrl = data.data.url;
                 } catch(err) { hideLoader(); return showToast("Error al subir imagen.", "error"); }
-            } else if (!editVehicleId) {
+            } else if (!targetId) {
                 return showToast("Selecciona una foto para el nuevo vehículo.", "error");
             }
 
-            if(editVehicleId) {
-                const i = vehicles.findIndex(x => x.id === editVehicleId);
+            // FIX: se guarda cómo revertir el cambio en memoria si saveToCloud() falla (antes, la UI ya
+            // mostraba el vehículo actualizado/agregado aunque el guardado en la nube fallara).
+            let rollback, actionMsg, successMsg;
+            if(targetId) {
+                const i = vehicles.findIndex(x => x.id === targetId);
+                if (i === -1) { closeVehicleModal(); return showToast("Ese vehículo ya no existe.", "error"); }
+                const prevVehicle = { ...vehicles[i] };
                 vehicles[i].model = model;
                 vehicles[i].usage = usage;
                 if(imageUrl) vehicles[i].image = imageUrl;
-                logAction(`Editó el vehículo: ${model}`);
-                showToast("Vehículo actualizado");
+                rollback = () => { vehicles[i] = prevVehicle; };
+                actionMsg = `Editó el vehículo: ${model}`;
+                successMsg = "Vehículo actualizado";
             } else {
                 const newV = { id: Date.now(), model: model, usage: usage, image: imageUrl, addedBy: currentUser.icName || currentUser.username };
                 vehicles.push(newV);
-                logAction(`Añadió el vehículo: ${model}`);
-                showToast("Vehículo añadido al garaje");
+                rollback = () => { const idx = vehicles.findIndex(x => x.id === newV.id); if (idx > -1) vehicles.splice(idx, 1); };
+                actionMsg = `Añadió el vehículo: ${model}`;
+                successMsg = "Vehículo añadido al garaje";
             }
-
+            logAction(actionMsg);
             closeVehicleModal();
-            await saveToCloud();
+
+            try {
+                await saveToCloud(['vehicles', 'logs']);
+                showToast(successMsg);
+                renderGarage();
+            } catch (err) {
+                rollback(); // FIX: sin esto, un fallo de guardado dejaba el vehículo "fantasma" solo en memoria
+                renderGarage();
+                showToast("No se pudo guardar el vehículo, se revirtió el cambio. Intenta de nuevo.", "error");
+            }
         }
 
         async function deleteVehicle(id) {
@@ -830,10 +937,21 @@
             const i = vehicles.findIndex(x => x.id === id);
             if(i > -1) {
                 const modelName = vehicles[i].model;
+                const removedVehicle = vehicles[i];
                 vehicles.splice(i, 1);
                 logAction(`Eliminó el vehículo: ${modelName}`);
-                showToast("Vehículo eliminado del garaje");
-                await saveToCloud();
+                try {
+                    await saveToCloud(['vehicles', 'logs']);
+                    showToast("Vehículo eliminado del garaje");
+                    renderGarage();
+                } catch (err) {
+                    // FIX: revertimos la eliminación en memoria si el guardado en la nube falló
+                    if (!vehicles.find(x => x.id === removedVehicle.id)) vehicles.push(removedVehicle);
+                    renderGarage();
+                    showToast("No se pudo eliminar el vehículo. Intenta de nuevo.", "error");
+                }
+            } else {
+                showToast("Ese vehículo ya no existe (puede haber sido eliminado por otra sesión).", "error");
             }
         }
 
@@ -930,11 +1048,26 @@
                 };
                 
                 images.unshift(newImg);
-                await db.collection("ghost_data").doc("main_state").update({ images: images });
-                
+                // FIX: logAction() ahora va ANTES de guardar (antes se llamaba después de un .update({images})
+                // que ni siquiera incluía "logs", así que la entrada de auditoría nunca se guardaba).
                 logAction(`Subió una foto a la galería`);
-                showToast("Foto subida exitosamente");
                 closeUploadModal();
+
+                try {
+                    // FIX: antes esta función hacía su propio .update({images}) directo a Firestore, sin
+                    // pasar por saveToCloud()/isSaving ni incluir "logs" — ahora usa el mismo guardado
+                    // centralizado y consistente que el resto de la app.
+                    await saveToCloud(['images', 'logs']);
+                    showToast("Foto subida exitosamente");
+                    renderGallery();
+                } catch (saveErr) {
+                    // FIX: si el guardado falla, revertimos la foto en memoria (la imagen ya subida a
+                    // ImgBB no se pierde, pero no queda "fantasma" en la galería local)
+                    const idx = images.findIndex(x => x.id === newImg.id);
+                    if (idx > -1) images.splice(idx, 1);
+                    renderGallery();
+                    showToast("La imagen se subió pero no se pudo guardar en la galería. Intenta de nuevo.", "error");
+                }
             } catch(err) { 
                 showToast("Error al subir la imagen.", "error");
             } finally { 
@@ -953,6 +1086,10 @@
             let usersArr = usersStr ? usersStr.split(',').map(u => u.trim()) : [];
             const index = usersArr.indexOf(currentUser.username);
 
+            // FIX: guardamos el valor previo de este emoji para poder revertirlo si el guardado falla
+            const hadKey = Object.prototype.hasOwnProperty.call(img.reactions, emoji);
+            const prevValue = img.reactions[emoji];
+
             if(index > -1) {
                 usersArr.splice(index, 1);
                 if(usersArr.length === 0) {
@@ -966,9 +1103,15 @@
             }
 
             try {
-                await db.collection("ghost_data").doc("main_state").update({ images: images });
+                // FIX: antes hacía un .update({images}) directo, sin isSaving ni transacción real
+                await saveToCloud(['images']);
+                renderGallery();
             } catch(err) {
-                showToast("Error al actualizar reacción.", "error");
+                // FIX: revertimos la reacción en memoria si el guardado falló (antes quedaba
+                // "reaccionado" visualmente aunque nunca se guardara, y desaparecía al recargar)
+                if (hadKey) { img.reactions[emoji] = prevValue; } else { delete img.reactions[emoji]; }
+                renderGallery();
+                showToast("No se pudo guardar tu reacción. Intenta de nuevo.", "error");
             }
         }
 
@@ -977,16 +1120,22 @@
             if(!confirm("¿Estás seguro de que quieres eliminar esta foto de la galería?")) return;
             
             const imgIndex = images.findIndex(x => x.id === id);
-            if(imgIndex === -1) return;
+            if(imgIndex === -1) return showToast("Esa foto ya no existe (puede haber sido eliminada por otra sesión).", "error");
 
-            showLoader("Eliminando foto...");
+            const removedImage = images[imgIndex];
+            images.splice(imgIndex, 1);
+            // FIX: logAction() ahora se guarda junto con "images" vía saveToCloud (antes se perdía)
+            logAction(`Eliminó una foto de la galería`);
             try {
-                images.splice(imgIndex, 1);
-                await db.collection("ghost_data").doc("main_state").update({ images: images });
-                logAction(`Eliminó una foto de la galería`);
+                await saveToCloud(['images', 'logs']);
                 showToast("Foto eliminada");
-            } catch(err) { showToast("Error al eliminar foto.", "error"); } 
-            finally { hideLoader(); }
+                renderGallery();
+            } catch(err) {
+                // FIX: revertimos la eliminación en memoria si el guardado falló
+                if (!images.find(x => x.id === removedImage.id)) images.splice(imgIndex, 0, removedImage);
+                renderGallery();
+                showToast("No se pudo eliminar la foto, se revirtió el cambio. Intenta de nuevo.", "error");
+            }
         }
 
         function renderGallery() {
@@ -1008,8 +1157,15 @@
                 
                 const titleHtml = img.title ? `<p class="text-brand-400 text-xs font-bold truncate mb-0.5 drop-shadow-sm" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
                 
+                // Formateo de fecha para render
+                let displayDate = img.date;
+                try {
+                    const dObj = new Date(img.date);
+                    if (!isNaN(dObj)) displayDate = `${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}/${dObj.getFullYear()} ${dObj.getHours().toString().padStart(2,'0')}:${dObj.getMinutes().toString().padStart(2,'0')}`;
+                } catch(e) {}
+
                 const modalTitle = img.title ? `<span class="block text-brand-400 font-bold mb-1 text-base">${img.title}</span>` : '';
-                const modalCaption = `${modalTitle}Subido por <span class="text-white">${img.uploader}</span> el ${img.date}`;
+                const modalCaption = `${modalTitle}Subido por <span class="text-white">${img.uploader}</span> el ${displayDate}`;
                 const safeCaption = modalCaption.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 let reactionsHtml = '<div class="flex flex-wrap gap-1.5 mt-2 pt-2 border-t theme-border" onclick="event.stopPropagation()">';
@@ -1045,7 +1201,7 @@
                                 ${titleHtml}
                                 <div class="flex justify-between items-center text-[10px] text-zinc-400 mt-1">
                                     <span class="truncate max-w-[120px]" title="${img.uploader}"><i class="fa-solid fa-user-tag text-brand-600 mr-1"></i>${img.uploader}</span>
-                                    <span>${img.date}</span>
+                                    <span>${displayDate}</span>
                                 </div>
                             </div>
                             ${reactionsHtml}
@@ -1071,6 +1227,7 @@
             }
         }
 
+        // FIX: Evita Crash Total de UI por "undefined"
         function renderDashboard() {
             const term = (document.getElementById('search-input')?.value || '').toLowerCase();
             const rF = document.getElementById('rank-filter')?.value || '';
@@ -1081,7 +1238,7 @@
             const stF = statusEl ? statusEl.value : 'Activo';
 
             let filtered = members.filter(m => {
-                const s1 = m.name.toLowerCase().includes(term) || (m.discord||'').toLowerCase().includes(term);
+                const s1 = (m.name || '').toLowerCase().includes(term) || (m.discord || '').toLowerCase().includes(term);
                 const s2 = rF === "" || m.rank === rF;
                 
                 const illStatus = m.illegalStatus || (m.illegalRole ? 'Tiene Rol' : 'Por Entrar');
@@ -1101,9 +1258,20 @@
                     const statB = b.illegalStatus || (b.illegalRole ? 'Tiene Rol' : 'Por Entrar');
                     return (order[statA] || 9) === (order[statB] || 9) ? 0 : ((order[statA] || 9) < (order[statB] || 9) ? (sortAsc ? -1 : 1) : (sortAsc ? 1 : -1));
                 }
-                let vA = sortCol==='name' ? a.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[a.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(a.payment, a.lastPaymentDate, a.extraWeeks, a.discount).weeksLate : a.strikes||0;
-                let vB = sortCol==='name' ? b.name.toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[b.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(b.payment, b.lastPaymentDate, b.extraWeeks, b.discount).weeksLate : b.strikes||0;
+                // FIX: (a.name||'') / (b.name||'') evita un TypeError si algún registro no tiene "name"
+                // (antes rompía este .sort() y, con él, TODOS los renders posteriores del mismo ciclo)
+                let vA = sortCol==='name' ? (a.name||'').toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[a.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(a.payment, a.lastPaymentDate, a.extraWeeks, a.discount).weeksLate : a.strikes||0;
+                let vB = sortCol==='name' ? (b.name||'').toLowerCase() : sortCol==='rank' ? RANK_HIERARCHY[b.rank]||99 : sortCol==='quota' ? calculateQuotaStatus(b.payment, b.lastPaymentDate, b.extraWeeks, b.discount).weeksLate : b.strikes||0;
                 return vA < vB ? (sortAsc ? -1 : 1) : vA > vB ? (sortAsc ? 1 : -1) : 0;
+            });
+
+            // FIX: los íconos de las columnas ordenables ahora reflejan sortCol/sortAsc (antes los datos
+            // se ordenaban correctamente pero el ícono se quedaba siempre en la flecha neutra fa-sort).
+            ['name','rank','illegal','quota'].forEach(col => {
+                const icon = document.getElementById(`sort-icon-${col}`);
+                if (!icon) return;
+                icon.classList.remove('fa-sort', 'fa-sort-up', 'fa-sort-down');
+                icon.classList.add(sortCol === col ? (sortAsc ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort');
             });
 
             const activos = members.filter(m => (m.status || 'Activo') === 'Activo');
@@ -1134,7 +1302,7 @@
                 const illegalBadge = getIllegalBadge(illStatus);
 
                 const md = (m.discord || '').toLowerCase().replace('@', '').trim();
-                const isMe = md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName || '').toLowerCase();
+                const isMe = md === currentUser.username.toLowerCase() || (m.name||'').toLowerCase() === (currentUser.icName || '').toLowerCase();
                 const canViewData = !currentUser.isGuest && (isL || isMe);
 
                 const warningBadge = (canViewData && m.strikes >= 54 && m.strikes < 108) ? `<span class="ml-2 py-0.5 px-1.5 rounded text-[9px] font-black uppercase bg-amber-950 text-amber-400 border border-amber-800 animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.3)]" title="A un paso del límite de expulsión (108 pts)">⚠️ En Riesgo</span>` : '';
@@ -1240,36 +1408,80 @@
             document.getElementById('paymentModal').classList.add('hidden');
             paymentTargetId = null;
         }
+
+        // FIX: Trampa temporal de pagos atrasados reparada + Zonas Horarias 
         async function confirmRegisterPayment() {
-            if(!paymentTargetId) return;
+            if (!paymentTargetId || isSaving) return;
+            if (!checkPermission('edit')) return; // FIX Bug #13: revalidar permisos también al confirmar, no solo al abrir el modal
             const m = members.find(x => x.id === paymentTargetId);
+            if (!m) return;
+            
             const chosenMethod = document.getElementById('modal-payment-method').value;
             const pI = getPaymentInfo(chosenMethod, m.discount);
+            const qStatus = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
+
+            // FIX Bug #2: snapshot para poder revertir si el guardado falla (antes, el toast de éxito y
+            // el render ya mostraban el pago como registrado ANTES de intentar guardar; si saveToCloud
+            // fallaba, la cuota volvía a aparecer pendiente al recargar sin que nadie lo notara).
+            const prevPayHistory = m.payHistory ? [...m.payHistory] : undefined;
+            const prevPayment = m.payment;
+            const prevLastPaymentDate = m.lastPaymentDate;
 
             if(!m.payHistory) m.payHistory = [];
-            m.payHistory.unshift({ date: formatDateTime(), detail: `${chosenMethod}: ${pI.label}` });
+            // Siempre guardar UTC en la DB, convertir localmente en vista
+            m.payHistory.unshift({ date: new Date().toISOString(), detail: `${chosenMethod}: ${pI.label}` });
+            if(m.payHistory.length > 5) m.payHistory.pop();
             
             m.payment = chosenMethod;
-            if(m.lastPaymentDate) {
-                let d = new Date(m.lastPaymentDate + 'T00:00:00'); 
-                d.setDate(d.getDate() + 7); 
-                m.lastPaymentDate = d.toISOString().split('T')[0];
+
+            // Si debe más de una semana, descontamos de a 7 días. Si no, lo marcamos "al día" para hoy.
+            if (qStatus.weeksLate > 1) {
+                let d = new Date(m.lastPaymentDate + 'T00:00:00');
+                d.setDate(d.getDate() + 7);
+                m.lastPaymentDate = localISODate(d);
             } else {
-                m.lastPaymentDate = new Date().toISOString().split('T')[0];
+                // FIX Bug #5: localISODate() en vez de new Date().toISOString().split('T')[0], que podía
+                // guardar la fecha de MAÑANA en zonas horarias detrás de UTC durante la noche.
+                m.lastPaymentDate = localISODate();
             }
 
             logAction(`Registró pago con [${chosenMethod}] (${pI.label}) para ${m.name}`);
             closePaymentModal();
-            showToast("Pago registrado exitosamente");
-            await saveToCloud();
+
+            try {
+                await saveToCloud(['members', 'logs']);
+                showToast("Pago registrado exitosamente");
+                renderDashboard();
+                renderFinanzas();
+            } catch (err) {
+                // FIX Bug #2: revertimos el pago en memoria si el guardado falló
+                m.payHistory = prevPayHistory;
+                m.payment = prevPayment;
+                m.lastPaymentDate = prevLastPaymentDate;
+                renderDashboard();
+                renderFinanzas();
+                showToast("No se pudo guardar el pago, se revirtió el cambio. Intenta de nuevo.", "error");
+            }
         }
 
+        // FIX: Mostrar horas locales para los pagos guardados en UTC
         function viewHistory(id) {
             const m = members.find(x => x.id === id);
             document.getElementById('history-name').innerText = m.name;
             const hl = document.getElementById('history-list'); hl.innerHTML = '';
-            if(!m.payHistory || m.payHistory.length === 0) hl.innerHTML = '<p class="text-brand-500 text-sm italic">No hay pagos registrados.</p>';
-            else m.payHistory.forEach(h => hl.innerHTML += `<div class="bg-black/50 p-3 rounded border theme-border text-sm flex justify-between items-center mb-2"><span class="font-bold text-brand-400 drop-shadow-sm">${h.detail}</span><span class="text-zinc-500 text-xs">${h.date}</span></div>`);
+            
+            if(!m.payHistory || m.payHistory.length === 0) {
+                hl.innerHTML = '<p class="text-brand-500 text-sm italic">No hay pagos registrados.</p>';
+            } else {
+                m.payHistory.forEach(h => {
+                    let displayDate = h.date;
+                    try {
+                        const dObj = new Date(h.date);
+                        if (!isNaN(dObj)) displayDate = dObj.toLocaleString('es-ES');
+                    } catch(e) {}
+                    hl.innerHTML += `<div class="bg-black/50 p-3 rounded border theme-border text-sm flex justify-between items-center mb-2"><span class="font-bold text-brand-400 drop-shadow-sm">${h.detail}</span><span class="text-zinc-500 text-xs">${displayDate}</span></div>`;
+                });
+            }
             document.getElementById('historyModal').classList.remove('hidden');
         }
         function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
@@ -1282,21 +1494,43 @@
             document.getElementById('statusModal').classList.remove('hidden');
         }
         function closeStatusModal() { document.getElementById('statusModal').classList.add('hidden'); targetStatusId = null; }
-        function confirmStatusChange(newStatus) {
-            if(!targetStatusId) return; const m = members.find(x => x.id === targetStatusId);
+        
+        async function confirmStatusChange(newStatus) {
+            if(!targetStatusId) return;
+            if(!checkPermission('delete')) return; // FIX Bug #13: revalidar permisos también al confirmar
+            const m = members.find(x => x.id === targetStatusId);
+            if (!m) return;
             if(confirm(`¿Confirmar que ${m.name} pasará a estado: ${newStatus}?`)) {
-                m.status = newStatus; logAction(`Cambió estado a [${newStatus}] para ${m.name}`);
-                saveToCloud(); closeStatusModal(); showToast(`Estado actualizado a ${newStatus}`);
+                const prevStatus = m.status; // FIX Bug #2 (mismo patrón): permite revertir si el guardado falla
+                m.status = newStatus;
+                logAction(`Cambió estado a [${newStatus}] para ${m.name}`);
+                closeStatusModal(); 
+                try {
+                    await saveToCloud(['members', 'logs']);
+                    showToast(`Estado actualizado a ${newStatus}`);
+                    renderDashboard();
+                } catch (err) {
+                    m.status = prevStatus;
+                    renderDashboard();
+                    showToast("No se pudo actualizar el estado, se revirtió el cambio. Intenta de nuevo.", "error");
+                }
             }
         }
 
+        // FIX: Función de escape de strings para CSV
+        const escapeCSV = (str) => {
+            if (str === null || str === undefined) return '""';
+            return `"${str.toString().replace(/"/g, '""')}"`;
+        };
+
+        // FIX: Evita inyecciones de código que rompan el archivo CSV
         function exportToCSV() {
             if(currentUser.isGuest || currentUser.role === 'Miembro') return showToast("Sin permisos para exportar.", "error");
             let csv = "data:text/csv;charset=utf-8,\uFEFFNombre IC,Discord,Rango,Ilegales,Estado,Metodo de Pago,Descuento,Estado Cuota,Faltas,Notas\n";
             members.forEach(m => {
                 const i = calculateQuotaStatus(m.payment, m.lastPaymentDate, m.extraWeeks, m.discount);
                 const illStatus = m.illegalStatus || (m.illegalRole ? 'Tiene Rol' : 'Por Entrar');
-                csv += `"${m.name}","${m.discord}","${m.rank || 'Recolector'}","${illStatus}","${m.status||'Activo'}","${m.payment}","${m.discount}","${i.status}","${m.strikes||0}","${(m.notes||'').replace(/"/g, '""')}"\n`;
+                csv += `${escapeCSV(m.name)},${escapeCSV(m.discord)},${escapeCSV(m.rank || 'Recolector')},${escapeCSV(illStatus)},${escapeCSV(m.status||'Activo')},${escapeCSV(m.payment)},${escapeCSV(m.discount)},${escapeCSV(i.status)},${escapeCSV(m.strikes||0)},${escapeCSV(m.notes)}\n`;
             });
             const l = document.createElement("a"); l.href = encodeURI(csv); l.download = `GHOST_Reporte.csv`;
             document.body.appendChild(l); l.click(); document.body.removeChild(l);
@@ -1304,6 +1538,7 @@
             showToast("Reporte CSV descargado");
         }
 
+        // FIX: Repara el despliegue del simulador de cuotas
         function updateSimulator() {
             const simCont = document.getElementById('portal-simulator-container');
             const simOpts = document.getElementById('simulator-options');
@@ -1356,7 +1591,7 @@
             const select = document.getElementById('sim-discount-select');
 
             if(!pn) return; pd.innerText = "@" + currentUser.username;
-            const f = members.find(m => { const md = (m.discord||'').toLowerCase().replace('@','').trim(); return md === currentUser.username.toLowerCase() || m.name.toLowerCase() === (currentUser.icName||'').toLowerCase(); });
+            const f = members.find(m => { const md = (m.discord||'').toLowerCase().replace('@','').trim(); return md === currentUser.username.toLowerCase() || (m.name||'').toLowerCase() === (currentUser.icName||'').toLowerCase(); });
             
             if(!f) { 
                 pn.innerText = currentUser.icName || currentUser.username; 
@@ -1448,22 +1683,48 @@
             if([...s.options].some(o=>o.value===v)) s.value = v;
         }
 
+        // FIX: Evita que el horario de verano falsifique atrasos de cuota midiendo los milisegundos exactos sin DST
         function calculateQuotaStatus(pay, last, ex=0, disc='0') {
             if(disc==='Exonerado') return {status:'Al día',color:'bg-amber-950 text-amber-300 border-amber-500',text:'Exonerado',weeksLate:0};
             if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ CUOTA PENDIENTE (1 sem.)',weeksLate:1};
             if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400 border-yellow-800',text:'Sin Fecha Base',weeksLate:0};
+            
             const l=new Date(last+'T00:00:00'), n=new Date();
+            
             if(pay==='Nuevo') { 
                 const f=new Date(l); 
                 f.setDate(f.getDate()+7); 
                 f.setHours(23,59,59); 
-                return n<=f ? {status:'Gracia',color:'bg-teal-950 text-teal-300 border-teal-500',text:'✨ 1 semana de gracia (Nuevo)',weeksLate:0} : {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ GRACIA EXPIRADA (1 sem.)',weeksLate:1}; 
+                if (n<=f) return {status:'Gracia',color:'bg-teal-950 text-teal-300 border-teal-500',text:'✨ 1 semana de gracia (Nuevo)',weeksLate:0};
+                // FIX (posible bug verificado en la auditoría): antes esta rama devolvía siempre
+                // weeksLate:1 sin importar cuántas semanas llevara vencida la gracia de un miembro que
+                // nunca pagó. Ahora escala igual que la rama "Atrasado" de abajo, usando la misma
+                // técnica de diferencia de días en UTC (segura ante cambios de horario de verano).
+                const utcF = Date.UTC(f.getFullYear(), f.getMonth(), f.getDate());
+                const utcN = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+                const diffDaysNuevo = Math.floor((utcN - utcF) / (1000 * 60 * 60 * 24));
+                const wNuevo = 1 + Math.floor(diffDaysNuevo / 7);
+                return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:`⚠️ GRACIA EXPIRADA (${wNuevo} sem.)`,weeksLate:wNuevo};
             }
-            const sun=new Date(l); sun.setDate(sun.getDate()+(l.getDay()===0?0:7-l.getDay())+(ex*7)); sun.setHours(23,59,59);
-            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400 border-emerald-800',text:`Al día (Dom ${formatDate(sun.toISOString())})`,weeksLate:0};
-            const w = 1+Math.floor((n-sun)/(86400000*7)); 
+            
+            // FIX: cuando la fecha base cae en domingo, antes se sumaban 0 días y el vencimiento
+            // quedaba el MISMO domingo (casi sin cobertura, atrasando al miembro desde el lunes
+            // siguiente). Ahora se suma 7, igual que para cualquier otro día, para llegar al domingo
+            // SIGUIENTE — el mismo ciclo semanal completo que reciben los demás días.
+            const sun=new Date(l); sun.setDate(sun.getDate()+(l.getDay()===0?7:7-l.getDay())+(ex*7)); sun.setHours(23,59,59);
+            // FIX: localISODate(sun) en vez de sun.toISOString() — toISOString() da la fecha en UTC y
+            // podía mostrar un día de más en zonas horarias detrás de UTC (esto es solo el TEXTO
+            // mostrado; no afectaba el cálculo real de atraso, que ya usa Date.UTC() más abajo).
+            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400 border-emerald-800',text:`Al día (Dom ${formatDate(localISODate(sun))})`,weeksLate:0};
+            
+            const utcSun = Date.UTC(sun.getFullYear(), sun.getMonth(), sun.getDate());
+            const utcN = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+            const diffDays = Math.floor((utcN - utcSun) / (1000 * 60 * 60 * 24));
+            const w = 1 + Math.floor(diffDays / 7);
+            
             return {status:'Atrasado',color:'bg-red-950 text-red-400 border-red-800',text:`❌ ATRASADO: ${w} sem. pendiente(s)`,weeksLate:w};
         }
+
         function getPaymentInfo(k, d) {
             const dv = getDiscountValues(d);
             const snsCount = Math.round(5 * dv.ratio);
@@ -1493,6 +1754,7 @@
             };
             return map[k]||map["Pendiente"];
         }
+
         function formatStrikes(p) {
             if(p>=108) return '<span class="text-red-500 font-black">EXPULSIÓN</span>';
             if(!p) return '<span class="text-brand-300/50">0</span>';
@@ -1515,7 +1777,6 @@
             const editOnlySection = document.getElementById('edit-only-section');
 
             if(id) {
-                // MODO EDICIÓN: Muestra todos los campos (excepto rango, gestionado por el bot)
                 editOnlySection.classList.remove('hidden');
                 const m = members.find(x=>x.id===id); 
                 document.getElementById('f-name').value = m.name; 
@@ -1531,10 +1792,9 @@
                 const illStatus = m.illegalStatus || (m.illegalRole ? 'Tiene Rol' : 'Por Entrar');
                 document.getElementById('f-illegal').value = illStatus;
             } else { 
-                // MODO AÑADIR: Solo pide Nombre IC y Discord. Oculta el resto de opciones avanzadas.
                 editOnlySection.classList.add('hidden');
                 document.getElementById('member-form').reset(); 
-                document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; 
+                document.getElementById('f-date').value = localISODate(); // FIX Bug #5: fecha local segura en vez de toISOString().split('T')[0]
                 clearStrikes(); 
                 document.getElementById('f-notes').value = '';
                 document.getElementById('f-illegal').value = 'Por Entrar';
@@ -1542,12 +1802,20 @@
             document.getElementById('strike-preview').innerHTML = formatStrikes(parseInt(document.getElementById('f-strikes').value)); 
             document.getElementById('memberModal').classList.remove('hidden');
         }
-        function closeModal() { document.getElementById('memberModal').classList.add('hidden'); }
+        function closeModal() { document.getElementById('memberModal').classList.add('hidden'); editId = null; }
         
         document.getElementById('member-form').addEventListener('submit', async e => {
             e.preventDefault();
-            if(editId) { 
-                const i = members.findIndex(x=>x.id===editId); 
+            if (!checkPermission('add_edit')) return; // FIX Bug #13: revalidar permisos también al guardar, no solo al abrir el modal
+            const targetEditId = editId; // capturado ANTES de cerrar el modal (closeModal ahora resetea editId)
+
+            // FIX Bug #2 (mismo patrón que pagos/estado): guardamos cómo revertir el cambio en memoria
+            // si saveToCloud() termina fallando, y postergamos el toast de éxito/el render hasta que el
+            // guardado se confirme.
+            let rollback, successMsg;
+            if(targetEditId) { 
+                const i = members.findIndex(x=>x.id===targetEditId); 
+                if (i === -1) { closeModal(); return showToast("Ese miembro ya no existe.", "error"); }
                 const mData = { 
                     name: document.getElementById('f-name').value, 
                     discord: document.getElementById('f-discord').value, 
@@ -1559,14 +1827,19 @@
                     notes: document.getElementById('f-notes').value.trim(),
                     illegalStatus: document.getElementById('f-illegal').value
                 };
+                const prevMember = {...members[i]};
                 members[i] = {...members[i], ...mData}; 
                 logAction(`Editó a ${mData.name}`); 
-                showToast(`Perfil de ${mData.name} actualizado`); 
+                rollback = () => { members[i] = prevMember; };
+                successMsg = `Perfil de ${mData.name} actualizado`;
             } else { 
-                // Al añadir solo se requiere Nombre IC y Discord. Asignamos valores por defecto (Rango inicial Recolector).
                 const nameVal = document.getElementById('f-name').value;
                 const discordVal = document.getElementById('f-discord').value;
-                const newId = members.length ? Math.max(...members.map(x=>x.id))+1 : 1;
+                // FIX Bug #3: Date.now() en vez de Math.max(...)+1 (igual que vehículos/imágenes) — dos
+                // sesiones dando de alta un miembro casi al mismo tiempo podían calcular el mismo
+                // "próximo ID" y terminar con dos miembros distintos compartiendo id, rompiendo
+                // cualquier búsqueda/edición/pago futura sobre ese id.
+                const newId = Date.now();
                 
                 const mData = {
                     id: newId,
@@ -1574,7 +1847,7 @@
                     discord: discordVal,
                     rank: 'Recolector',
                     payment: 'Nuevo',
-                    lastPaymentDate: new Date().toISOString().split('T')[0],
+                    lastPaymentDate: localISODate(), // FIX Bug #5: fecha local segura en vez de toISOString().split('T')[0]
                     extraWeeks: 0,
                     discount: '200',
                     strikes: 0,
@@ -1585,15 +1858,37 @@
                 };
                 members.push(mData); 
                 logAction(`Añadió a ${nameVal}`); 
-                showToast(`Nuevo miembro añadido: ${nameVal}`); 
+                rollback = () => { const idx = members.findIndex(x => x.id === newId); if (idx > -1) members.splice(idx, 1); };
+                successMsg = `Nuevo miembro añadido: ${nameVal}`;
             }
             closeModal(); 
-            await saveToCloud();
+
+            try {
+                await saveToCloud(['members', 'logs']);
+                showToast(successMsg);
+                renderDashboard();
+            } catch (err) {
+                rollback(); // FIX Bug #2: revertimos el cambio en memoria si el guardado falló
+                renderDashboard();
+                showToast("No se pudo guardar el miembro, se revirtió el cambio. Intenta de nuevo.", "error");
+            }
         });
 
-        function logAction(act) { if(currentUser.isGuest || currentUser.role==='Miembro') return; logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.icName || currentUser.role, action: act }); }
-        function formatDateTime() { const d=new Date(); return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
-        function formatDate(dt) { if(!dt) return 'N/A'; const p=dt.split('T')[0].split('-'); return `${p[2]}/${p[1]}/${p[0].slice(-2)}`; }
+        // FIX: Evita problemas de zona horaria usando ISO para todo el guardado
+        function logAction(act) { 
+            if(currentUser.isGuest || currentUser.role==='Miembro') return; 
+            logs.unshift({ date: formatDateTime(), role: currentUser.specialTitle || currentUser.icName || currentUser.role, action: act }); 
+        }
+        
+        function formatDateTime() { 
+            return new Date().toISOString(); 
+        } 
+        
+        function formatDate(dt) { 
+            if(!dt) return 'N/A'; 
+            const p=dt.split('T')[0].split('-'); 
+            return `${p[2]}/${p[1]}/${p[0].slice(-2)}`; 
+        }
 
         function renderFinanzas() {
             let cash = 0, coca = 0, sns = 0, vintage = 0, mm9 = 0, minismg = 0, tec9 = 0, microsmg = 0, chalecos = 0;
@@ -1621,7 +1916,7 @@
             document.getElementById('fin-efectivo').innerText = "$" + Math.round(cash).toLocaleString('es-ES'); document.getElementById('fin-coca').innerText = coca.toLocaleString('es-ES'); document.getElementById('fin-sns').innerText = sns; document.getElementById('fin-vintage').innerText = vintage; document.getElementById('fin-9mm').innerText = mm9; document.getElementById('fin-minismg').innerText = minismg; document.getElementById('fin-tec9').innerText = tec9; document.getElementById('fin-microsmg').innerText = microsmg; document.getElementById('fin-chalecos').innerText = chalecos;
         }
 
-        // --- BUSCADOR DE LOGS MULTICRITERIO ---
+        // FIX: Formateo de fecha de ISO a local para el buscador visual y la tabla
         function renderRegistro() { 
             const tb = document.getElementById('logs-table-body');
             const term = (document.getElementById('log-search-input')?.value || '').toLowerCase().trim();
@@ -1631,8 +1926,8 @@
                 if(!term) return true;
                 const actionMatch = (l.action || '').toLowerCase().includes(term);
                 const roleMatch = (l.role || '').toLowerCase().includes(term);
-                const dateMatch = (l.date || '').toLowerCase().includes(term);
-                return actionMatch || roleMatch || dateMatch;
+                const localDate = new Date(l.date).toLocaleString('es-ES').toLowerCase();
+                return actionMatch || roleMatch || localDate.includes(term);
             });
 
             if(filteredLogs.length === 0) {
@@ -1641,7 +1936,15 @@
             }
 
             filteredLogs.forEach(l => { 
-                tb.innerHTML += `<tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors"><td class="px-6 py-4 text-xs text-brand-300/70 whitespace-nowrap">${l.date}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-brand-300 min-w-[250px]">${l.action}</td></tr>`; 
+                let displayDate = l.date;
+                try {
+                    const dObj = new Date(l.date);
+                    if (!isNaN(dObj)) {
+                        displayDate = `${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}/${dObj.getFullYear()} ${dObj.getHours().toString().padStart(2,'0')}:${dObj.getMinutes().toString().padStart(2,'0')}`;
+                    }
+                } catch(e) {}
+                
+                tb.innerHTML += `<tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors"><td class="px-6 py-4 text-xs text-brand-300/70 whitespace-nowrap">${displayDate}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-brand-300 min-w-[250px]">${l.action}</td></tr>`; 
             }); 
         }
 
