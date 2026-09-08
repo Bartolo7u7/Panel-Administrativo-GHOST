@@ -880,7 +880,11 @@
 
             if(!currentUser.isGuest) document.getElementById('btn-upload-photo').classList.remove('hidden');
             if(['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) {
-                document.getElementById('btn-add-vehicle').classList.replace('hidden', 'flex');
+    document.getElementById('btn-add-vehicle').classList.replace('hidden', 'flex');
+    
+            // ESTO HACE VISIBLE EL BOTÓN DE EXTRACCIÓN FINANCIERA
+            const extBtn = document.getElementById('btn-extract-finances');
+            if(extBtn) extBtn.classList.replace('hidden', 'flex');
             }
             if(canEditAuthorities()) {
                 document.getElementById('btn-add-authority').classList.replace('hidden', 'flex');
