@@ -364,13 +364,34 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Efectivo Líquido Total -->
                     <div class="bg-emerald-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-emerald-500 shadow-lg flex items-center justify-between interactive-card" style="border-color: #10b981 !important;">
-                        <div><div class="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">Efectivo Líquido Total</div><div id="fin-efectivo-total" class="text-4xl md:text-5xl font-black text-white">$0</div></div>
+                        <div>
+                            <div class="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">Efectivo Líquido Total</div>
+                            <div id="fin-efectivo-total" class="text-4xl md:text-5xl font-black text-white">$0</div>
+                        </div>
                         <i class="fa-solid fa-sack-dollar text-5xl md:text-6xl text-emerald-500/60"></i>
                     </div>
+                    <!-- Caja Actual -->
+                    <div class="bg-amber-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-amber-500 shadow-lg flex flex-col justify-between interactive-card relative overflow-hidden" style="border-color: #f59e0b !important;">
+                        <div class="flex items-center justify-between w-full mb-4">
+                            <div>
+                                <div class="text-amber-300 text-xs font-bold uppercase tracking-wider mb-2">Caja Actual</div>
+                                <div id="fin-caja-actual" class="text-4xl md:text-5xl font-black text-white">$0</div>
+                            </div>
+                            <i class="fa-solid fa-cash-register text-5xl md:text-6xl text-amber-500/60"></i>
+                        </div>
+                        <button onclick="openCajaModal()" class="w-full bg-black/50 hover:bg-black/80 text-amber-300 font-bold py-2.5 px-4 rounded-lg border border-amber-700 text-xs uppercase tracking-wider interactive-btn z-10 transition-colors hover:text-white hover:border-amber-500 shadow-inner">
+                            Gestionar Caja
+                        </button>
+                    </div>
+                    <!-- Hojas de Coca -->
                     <div class="bg-lime-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-lime-500 shadow-lg flex items-center justify-between interactive-card" style="border-color: #84cc16 !important;">
-                        <div><div class="text-lime-300 text-xs font-bold uppercase tracking-wider mb-2">Hojas de Coca</div><div id="fin-coca-total" class="text-4xl md:text-5xl font-black text-white">0</div></div>
+                        <div>
+                            <div class="text-lime-300 text-xs font-bold uppercase tracking-wider mb-2">Hojas de Coca</div>
+                            <div id="fin-coca-total" class="text-4xl md:text-5xl font-black text-white">0</div>
+                        </div>
                         <i class="fa-solid fa-leaf text-5xl md:text-6xl text-lime-500/60"></i>
                     </div>
                 </div>
@@ -449,6 +470,38 @@
     </div>
 
     <!-- MODALES VARIOS -->
+
+    <!-- MODAL GESTIONAR CAJA -->
+    <div id="cajaModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
+        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
+            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md"><i class="fa-solid fa-cash-register mr-2"></i> Gestionar Caja</h3>
+            <p class="text-sm text-zinc-400 mb-4 pb-3 border-b theme-border">Administra el dinero físico independiente del sistema.</p>
+            
+            <div class="mb-4">
+                <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Acción a realizar</label>
+                <select id="caja-action" onchange="toggleCajaMode()" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                    <option value="add">Añadir Dinero a Caja (Venta/Ingreso)</option>
+                    <option value="set">Actualizar Caja (Ajuste Manual)</option>
+                </select>
+                <p id="caja-help-text" class="text-[10px] text-zinc-500 mt-1 leading-tight">Utiliza esta opción cuando ingrese dinero físico a la caja, por ejemplo, por una venta.</p>
+            </div>
+
+            <form id="caja-form" onsubmit="confirmCajaAction(event)" class="space-y-4 mb-2">
+                <div>
+                    <label id="caja-amount-label" class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cantidad a añadir ($)</label>
+                    <input type="number" id="caja-amount" min="0" required class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input font-black" placeholder="Ej: 500000">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Motivo / Concepto <span id="caja-reason-opt" class="hidden text-zinc-500 lowercase font-normal">(Opcional)</span></label>
+                    <input type="text" id="caja-reason" required class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input" placeholder="Ej: Venta de 3 SNS del almacén">
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t theme-border mt-6">
+                    <button type="button" onclick="closeCajaModal()" class="px-4 py-2 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)]">Confirmar Acción</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL AUTORIDADES -->
     <div id="authorityModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
@@ -660,7 +713,8 @@
                 <div>
                     <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Selecciona el Recurso:</label>
                     <select id="ex-resource" class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
-                        <option value="efectivo">Efectivo Líquido ($)</option>
+                        <option value="efectivo">Efectivo Líquido (Sistema) ($)</option>
+                        <option value="caja">Caja Física ($)</option>
                         <option value="coca">Hojas de Coca</option>
                         <option value="sns">Pistolas SNS</option>
                         <option value="vintage">Pistolas Vintage</option>
@@ -880,11 +934,9 @@
 
             if(!currentUser.isGuest) document.getElementById('btn-upload-photo').classList.remove('hidden');
             if(['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) {
-    document.getElementById('btn-add-vehicle').classList.replace('hidden', 'flex');
-    
-            // ESTO HACE VISIBLE EL BOTÓN DE EXTRACCIÓN FINANCIERA
-            const extBtn = document.getElementById('btn-extract-finances');
-            if(extBtn) extBtn.classList.replace('hidden', 'flex');
+                document.getElementById('btn-add-vehicle').classList.replace('hidden', 'flex');
+                const extBtn = document.getElementById('btn-extract-finances');
+                if(extBtn) extBtn.classList.replace('hidden', 'flex');
             }
             if(canEditAuthorities()) {
                 document.getElementById('btn-add-authority').classList.replace('hidden', 'flex');
@@ -944,6 +996,7 @@
                         // Migración Financiera Segura
                         if (data.finances) {
                             finances = data.finances;
+                            if (typeof finances.cashBox === 'undefined') finances.cashBox = 0; // Migración Cash Box
                             const currentWeek = getWeekId();
                             if (finances.weekly.weekId !== currentWeek) {
                                 finances.weekly = { weekId: currentWeek, efectivo: 0, coca: 0, sns: 0, vintage: 0, mm9: 0, minismg: 0, tec9: 0, microsmg: 0, chalecos: 0 };
@@ -955,7 +1008,8 @@
                             finances = {
                                 total: { ...legacy },
                                 weekly: { weekId: getWeekId(), ...legacy },
-                                history: []
+                                history: [],
+                                cashBox: 0
                             };
                             needsSilentSave = true;
                             if (!fieldsToSave.includes('finances')) fieldsToSave.push('finances');
@@ -965,7 +1019,8 @@
                         finances = {
                             total: { efectivo: 0, coca: 0, sns: 0, vintage: 0, mm9: 0, minismg: 0, tec9: 0, microsmg: 0, chalecos: 0 },
                             weekly: { weekId: getWeekId(), efectivo: 0, coca: 0, sns: 0, vintage: 0, mm9: 0, minismg: 0, tec9: 0, microsmg: 0, chalecos: 0 },
-                            history: []
+                            history: [],
+                            cashBox: 0
                         };
                         db.collection("ghost_data").doc("main_state").set({ members, logs, images, vehicles, authorities, finances }); 
                     }
@@ -1042,7 +1097,7 @@
                         logs: changedFields.includes('logs') ? logs : (serverData.logs || []),
                         images: changedFields.includes('images') ? images : (serverData.images || []),
                         vehicles: changedFields.includes('vehicles') ? vehicles : (serverData.vehicles || []),
-                        finances: changedFields.includes('finances') ? finances : (serverData.finances || initializeFinances(serverData.members)),
+                        finances: changedFields.includes('finances') ? finances : (serverData.finances || {total:{efectivo:0,coca:0,sns:0,vintage:0,mm9:0,minismg:0,tec9:0,microsmg:0,chalecos:0},weekly:{weekId:getWeekId(),efectivo:0,coca:0,sns:0,vintage:0,mm9:0,minismg:0,tec9:0,microsmg:0,chalecos:0},history:[],cashBox:0}),
                         authorities: changedFields.includes('authorities') ? authorities : (serverData.authorities || [])
                     };
                     if (!doc.exists) {
@@ -1859,6 +1914,94 @@
             }
         }
 
+        // --- SISTEMA DE GESTIÓN DE CAJA ---
+        function openCajaModal() {
+            if (!checkPermission('edit')) return; 
+            document.getElementById('cajaModal').classList.remove('hidden');
+            document.getElementById('caja-form').reset();
+            document.getElementById('caja-action').value = 'add';
+            toggleCajaMode();
+        }
+
+        function closeCajaModal() {
+            document.getElementById('cajaModal').classList.add('hidden');
+        }
+
+        function toggleCajaMode() {
+            const action = document.getElementById('caja-action').value;
+            const help = document.getElementById('caja-help-text');
+            const label = document.getElementById('caja-amount-label');
+            const reasonOpt = document.getElementById('caja-reason-opt');
+            const reasonInput = document.getElementById('caja-reason');
+
+            if (action === 'add') {
+                help.innerText = "Utiliza esta opción cuando ingrese dinero físico a la caja, por ejemplo, por una venta.";
+                label.innerText = "Cantidad a añadir ($)";
+                reasonOpt.classList.add('hidden');
+                reasonInput.setAttribute('required', 'true');
+                document.getElementById('caja-amount').value = '';
+            } else {
+                help.innerText = "Establece el valor absoluto de la caja. Reemplazará el valor anterior y no sumará.";
+                label.innerText = "Nuevo Total en Caja ($)";
+                reasonOpt.classList.remove('hidden');
+                reasonInput.removeAttribute('required');
+                document.getElementById('caja-amount').value = finances.cashBox || 0;
+            }
+        }
+
+        async function confirmCajaAction(e) {
+            e.preventDefault();
+            if (!checkPermission('edit')) return;
+
+            const action = document.getElementById('caja-action').value;
+            const amount = parseInt(document.getElementById('caja-amount').value);
+            const reason = document.getElementById('caja-reason').value.trim();
+
+            if (isNaN(amount) || amount < 0) return showToast("La cantidad ingresada no es válida.", "error");
+
+            const prevBox = finances.cashBox || 0;
+            const prevHistory = [...finances.history];
+            
+            let mov = {
+                id: Date.now(),
+                resource: 'caja',
+                user: currentUser.icName || currentUser.username,
+                date: new Date().toISOString(),
+                weekId: finances.weekly.weekId
+            };
+
+            if (action === 'add') {
+                if (!reason) return showToast("Debes ingresar un motivo/concepto obligatoriamente.", "error");
+                finances.cashBox = prevBox + amount;
+                mov.type = 'ingreso';
+                mov.amount = amount;
+                mov.reason = reason;
+                logAction(`Añadió $${amount.toLocaleString('es-ES')} a Caja. Motivo: ${reason}`);
+            } else {
+                finances.cashBox = amount;
+                mov.type = 'ajuste';
+                mov.amount = amount;
+                mov.reason = reason || `Actualización manual de caja. Anterior: $${prevBox.toLocaleString('es-ES')}`;
+                logAction(`Ajustó la Caja a un total de $${amount.toLocaleString('es-ES')}`);
+            }
+
+            finances.history.unshift(mov);
+            if(finances.history.length > 300) finances.history = finances.history.slice(0, 300);
+
+            closeCajaModal();
+            
+            try {
+                await saveToCloud(['finances', 'logs']);
+                showToast("Caja actualizada exitosamente");
+                renderFinanzas();
+            } catch(err) {
+                finances.cashBox = prevBox;
+                finances.history = prevHistory;
+                renderFinanzas();
+                showToast("Error al procesar la caja. Cambio revertido localmente.", "error");
+            }
+        }
+
         // --- SISTEMA DE EXTRACCIONES FINANCIERAS ---
         function openExtractModal() {
             if(!['JEFES', 'Cúpula Administrativa'].includes(currentUser.role)) return showToast("Sin permisos para extraer.", "error");
@@ -1877,11 +2020,17 @@
             const reason = document.getElementById('ex-reason').value.trim();
             
             if (isNaN(amount) || amount <= 0) return showToast("La cantidad debe ser válida y mayor a 0", "error");
-            if (amount > finances.total[resKey]) return showToast(`Fondos insuficientes. El stock actual de ese recurso es ${finances.total[resKey]}`, "error");
+            
+            let stockActual = resKey === 'caja' ? (finances.cashBox || 0) : finances.total[resKey];
+            if (amount > stockActual) return showToast(`Fondos insuficientes. El stock actual de ese recurso es ${stockActual}`, "error");
             if (!reason) return showToast("Debes ingresar un motivo detallado", "error");
             
-            const prevTotal = finances.total[resKey];
-            finances.total[resKey] -= amount;
+            const prevStock = stockActual;
+            if (resKey === 'caja') {
+                finances.cashBox -= amount;
+            } else {
+                finances.total[resKey] -= amount;
+            }
             
             const mov = {
                 id: Date.now(),
@@ -1905,7 +2054,8 @@
                 showToast("Extracción completada y registrada");
                 renderFinanzas();
             } catch(err) {
-                finances.total[resKey] = prevTotal;
+                if (resKey === 'caja') finances.cashBox = prevStock;
+                else finances.total[resKey] = prevStock;
                 finances.history.shift();
                 renderFinanzas();
                 showToast("Error al procesar la extracción. Cambio revertido.", "error");
@@ -2156,35 +2306,56 @@
             if([...s.options].some(o=>o.value===v)) s.value = v;
         }
 
+        // --- SISTEMA DE CUOTAS ACTUALIZADO Y CORREGIDO ---
         function calculateQuotaStatus(pay, last, ex=0, disc='0') {
-            if(disc==='Exonerado') return {status:'Al día',color:'bg-amber-950 text-amber-300 border-amber-500',text:'Exonerado',weeksLate:0};
-            if(!pay||pay==='Pendiente') return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:'⚠️ CUOTA PENDIENTE (1 sem.)',weeksLate:1};
-            if(!last) return {status:'Sin Fecha',color:'bg-yellow-950 text-yellow-400 border-yellow-800',text:'Sin Fecha Base',weeksLate:0};
+            if (disc === 'Exonerado') return {status:'Al día', color:'bg-amber-950 text-amber-300 border-amber-500', text:'Exonerado', weeksLate:0};
+            if (!pay || pay === 'Pendiente') return {status:'Pendiente', color:'bg-orange-950 text-orange-400 border-orange-800', text:'⚠️ PENDIENTE (Semana actual)', weeksLate:1};
+            if (!last) return {status:'Sin Fecha', color:'bg-yellow-950 text-yellow-400 border-yellow-800', text:'Sin Fecha Base', weeksLate:0};
             
-            const l=new Date(last+'T00:00:00'), n=new Date();
+            const l = new Date(last + 'T00:00:00');
+            const n = new Date();
             
-            if(pay==='Nuevo') { 
-                const f=new Date(l); 
-                f.setDate(f.getDate()+7); 
-                f.setHours(23,59,59); 
-                if (n<=f) return {status:'Gracia',color:'bg-teal-950 text-teal-300 border-teal-500',text:'✨ 1 semana de gracia (Nuevo)',weeksLate:0};
+            if (pay === 'Nuevo') { 
+                const f = new Date(l); 
+                f.setDate(f.getDate() + 7); 
+                f.setHours(23, 59, 59); 
+                
+                if (n <= f) return {status:'Gracia', color:'bg-teal-950 text-teal-300 border-teal-500', text:'✨ 1 semana de gracia (Nuevo)', weeksLate:0};
                 
                 const utcF = Date.UTC(f.getFullYear(), f.getMonth(), f.getDate());
                 const utcN = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
                 const diffDaysNuevo = Math.floor((utcN - utcF) / (1000 * 60 * 60 * 24));
                 const wNuevo = 1 + Math.floor(diffDaysNuevo / 7);
-                return {status:'Pendiente',color:'bg-red-950 text-red-400 border-red-800',text:`⚠️ GRACIA EXPIRADA (${wNuevo} sem.)`,weeksLate:wNuevo};
+                
+                if (wNuevo === 1) {
+                    return {status:'Pendiente', color:'bg-orange-950 text-orange-400 border-orange-800', text:'⚠️ PENDIENTE (Gracia finalizada)', weeksLate:1};
+                } else {
+                    return {status:'Atrasado', color:'bg-red-950 text-red-500 border-red-900', text:`❌ ATRASADO: ${wNuevo - 1} sem. anterior(es)`, weeksLate:wNuevo};
+                }
             }
             
-            const sun=new Date(l); sun.setDate(sun.getDate()+(l.getDay()===0?7:7-l.getDay())+(ex*7)); sun.setHours(23,59,59);
-            if(n<=sun) return {status:'Al día',color:'bg-emerald-950 text-emerald-400 border-emerald-800',text:`Al día (Dom ${formatDate(localISODate(sun))})`,weeksLate:0};
+            // Calculamos el Domingo de vencimiento (Medianoche)
+            const sun = new Date(l); 
+            sun.setDate(sun.getDate() + (l.getDay() === 0 ? 0 : 7 - l.getDay()) + (ex * 7)); 
+            sun.setHours(23, 59, 59);
             
+            // Si no ha pasado la fecha, está al día
+            if(n <= sun) return {status:'Al día', color:'bg-emerald-950 text-emerald-400 border-emerald-800', text:`Al día (Dom ${formatDate(sun.toISOString())})`, weeksLate:0};
+            
+            // Diferencia Matemática UTC para contar semanas pasadas exactas (Solución DST)
             const utcSun = Date.UTC(sun.getFullYear(), sun.getMonth(), sun.getDate());
             const utcN = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
             const diffDays = Math.floor((utcN - utcSun) / (1000 * 60 * 60 * 24));
+            
+            // w = 1 (Estamos cursando la semana donde acaba de vencer la anterior, es decir debe sólo la cuota "actual")
+            // w > 1 (Ya adeuda cuotas de ciclos cerrados anteriores, por ende está Atrasado)
             const w = 1 + Math.floor(diffDays / 7);
             
-            return {status:'Atrasado',color:'bg-red-950 text-red-400 border-red-800',text:`❌ ATRASADO: ${w} sem. pendiente(s)`,weeksLate:w};
+            if (w === 1) {
+                return {status:'Pendiente', color:'bg-orange-950 text-orange-400 border-orange-800', text:'⚠️ PENDIENTE (Semana actual)', weeksLate:1};
+            } else {
+                return {status:'Atrasado', color:'bg-red-950 text-red-500 border-red-900', text:`❌ ATRASADO: ${w - 1} sem. anterior(es)`, weeksLate:w};
+            }
         }
 
         function getPaymentInfo(k, d) {
@@ -2340,12 +2511,18 @@
             return `${p[2]}/${p[1]}/${p[0].slice(-2)}`; 
         }
 
-        // Renderizar Finanzas usando el sistema dual: Totales (Ledger) y Semanales
+        // Renderizar Finanzas usando el sistema dual: Totales (Ledger + CashBox) y Semanales
         function renderFinanzas() {
             if (!finances) return;
             
             // RENDERING TOTALES
-            document.getElementById('fin-efectivo-total').innerText = "$" + Math.round(finances.total.efectivo).toLocaleString('es-ES');
+            const efectivoTotal = finances.total.efectivo + (finances.cashBox || 0);
+            
+            document.getElementById('fin-efectivo-total').innerText = "$" + Math.round(efectivoTotal).toLocaleString('es-ES');
+            
+            const cajaEl = document.getElementById('fin-caja-actual');
+            if (cajaEl) cajaEl.innerText = "$" + Math.round(finances.cashBox || 0).toLocaleString('es-ES');
+
             document.getElementById('fin-coca-total').innerText = finances.total.coca.toLocaleString('es-ES');
             document.getElementById('fin-sns-total').innerText = finances.total.sns.toLocaleString('es-ES');
             document.getElementById('fin-vintage-total').innerText = finances.total.vintage.toLocaleString('es-ES');
@@ -2375,11 +2552,16 @@
             } else {
                 finances.history.slice(0, 50).forEach(h => {
                     const isIngreso = h.type === 'ingreso';
-                    const color = isIngreso ? 'text-emerald-400' : 'text-red-400';
-                    const sign = isIngreso ? '+' : '-';
-                    const isCash = h.resource === 'efectivo';
+                    const isAjuste = h.type === 'ajuste';
+                    const color = isIngreso ? 'text-emerald-400' : (isAjuste ? 'text-amber-400' : 'text-red-400');
+                    const sign = isIngreso ? '+' : (isAjuste ? '≈' : '-');
+                    const isCash = h.resource === 'efectivo' || h.resource === 'caja';
                     const valStr = isCash ? `$${h.amount.toLocaleString('es-ES')}` : `${h.amount.toLocaleString('es-ES')} uds`;
                     
+                    let typeText = 'Extracción';
+                    if (isIngreso) typeText = 'Ingreso';
+                    if (isAjuste) typeText = 'Ajuste';
+
                     let displayDate = h.date;
                     try {
                         const dObj = new Date(h.date);
@@ -2391,7 +2573,7 @@
                     hBody.innerHTML += `
                         <tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors">
                             <td class="px-4 py-3 whitespace-nowrap text-xs text-brand-300/70">${displayDate}</td>
-                            <td class="px-4 py-3 whitespace-nowrap font-bold ${color}">${isIngreso ? 'Ingreso' : 'Extracción'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap font-bold ${color}">${typeText}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-brand-300 capitalize">${h.resource}</td>
                             <td class="px-4 py-3 whitespace-nowrap font-black ${color}">${sign}${valStr}</td>
                             <td class="px-4 py-3 min-w-[200px] text-white text-sm">${h.reason}</td>
