@@ -2309,7 +2309,7 @@
         // --- SISTEMA DE CUOTAS ACTUALIZADO Y CORREGIDO ---
         function calculateQuotaStatus(pay, last, ex=0, disc='0') {
             if (disc === 'Exonerado') return {status:'Al día', color:'bg-amber-950 text-amber-300 border-amber-500', text:'Exonerado', weeksLate:0};
-            if (!pay || pay === 'Pendiente') return {status:'Pendiente', color:'bg-orange-950 text-orange-400 border-orange-800', text:'⚠️ PENDIENTE (Semana actual)', weeksLate:1};
+            if (!pay) return {status:'Pendiente', color:'bg-orange-950 text-orange-400 border-orange-800', text:'⚠️ PENDIENTE (Semana actual)', weeksLate:1};
             if (!last) return {status:'Sin Fecha', color:'bg-yellow-950 text-yellow-400 border-yellow-800', text:'Sin Fecha Base', weeksLate:0};
             
             const l = new Date(last + 'T00:00:00');
