@@ -5,7 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GHOST | Panel Administrativo</title>
-    <link rel="icon" type="image/jpeg" href="icono web panel de ghost.jpg">
+    <link rel="icon" type="image/png" href="icono web panel de ghost.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -13,11 +18,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <!-- CONFIGURACIÓN TAILWIND PARA TEMAS DINÁMICOS -->
+    <!-- CONFIGURACIÓN TAILWIND PARA TEMAS DINÁMICOS Y TIPOGRAFÍA -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
                     colors: {
                         brand: {
                             300: 'var(--brand-300)', 400: 'var(--brand-400)', 500: 'var(--brand-500)',
@@ -31,9 +40,10 @@
     </script>
 
     <style>
-        /* VARIABLES DE TEMAS (COLORES + GLOW + BORDES) */
+        /* VARIABLES DE TEMAS (COLORES + GLOW + BORDES + SUPERFICIES) */
         :root,
         [data-theme="esmeralda"] {
+            color-scheme: dark;
             --brand-300: #6ee7b7;
             --brand-400: #34d399;
             --brand-500: #10b981;
@@ -42,11 +52,18 @@
             --brand-800: #065f46;
             --brand-900: #064e3b;
             --brand-950: #022c22;
-            --theme-glow: rgba(16, 185, 129, 0.25);
-            --theme-border: rgba(6, 78, 59, 0.6);
+            --theme-glow: rgba(16, 185, 129, 0.22);
+            --theme-border: rgba(16, 185, 129, 0.28);
+            --surface-canvas: #090a0d;
+            --surface-sidebar: rgba(10, 11, 16, 0.88);
+            --surface-card: rgba(15, 17, 23, 0.78);
+            --surface-card-hover: rgba(20, 24, 33, 0.88);
+            --surface-input: rgba(8, 9, 13, 0.85);
+            --surface-modal: rgba(12, 14, 20, 0.94);
         }
 
         [data-theme="rojo"] {
+            color-scheme: dark;
             --brand-300: #fca5a5;
             --brand-400: #f87171;
             --brand-500: #ef4444;
@@ -55,11 +72,18 @@
             --brand-800: #991b1b;
             --brand-900: #7f1d1d;
             --brand-950: #450a0a;
-            --theme-glow: rgba(239, 68, 68, 0.25);
-            --theme-border: rgba(127, 29, 29, 0.6);
+            --theme-glow: rgba(239, 68, 68, 0.22);
+            --theme-border: rgba(239, 68, 68, 0.28);
+            --surface-canvas: #0d0909;
+            --surface-sidebar: rgba(16, 10, 10, 0.88);
+            --surface-card: rgba(23, 15, 15, 0.78);
+            --surface-card-hover: rgba(33, 20, 20, 0.88);
+            --surface-input: rgba(13, 8, 8, 0.85);
+            --surface-modal: rgba(20, 12, 12, 0.94);
         }
 
         [data-theme="azul"] {
+            color-scheme: dark;
             --brand-300: #93c5fd;
             --brand-400: #60a5fa;
             --brand-500: #3b82f6;
@@ -68,11 +92,18 @@
             --brand-800: #1e40af;
             --brand-900: #1e3a8a;
             --brand-950: #172554;
-            --theme-glow: rgba(59, 130, 246, 0.25);
-            --theme-border: rgba(30, 58, 138, 0.6);
+            --theme-glow: rgba(59, 130, 246, 0.22);
+            --theme-border: rgba(59, 130, 246, 0.28);
+            --surface-canvas: #090a0f;
+            --surface-sidebar: rgba(10, 12, 18, 0.88);
+            --surface-card: rgba(15, 18, 26, 0.78);
+            --surface-card-hover: rgba(20, 25, 38, 0.88);
+            --surface-input: rgba(8, 10, 15, 0.85);
+            --surface-modal: rgba(12, 15, 23, 0.94);
         }
 
         [data-theme="morado"] {
+            color-scheme: dark;
             --brand-300: #d8b4fe;
             --brand-400: #c084fc;
             --brand-500: #a855f7;
@@ -81,22 +112,35 @@
             --brand-800: #6b21a8;
             --brand-900: #581c87;
             --brand-950: #3b0764;
-            --theme-glow: rgba(168, 85, 247, 0.25);
-            --theme-border: rgba(88, 28, 135, 0.6);
+            --theme-glow: rgba(168, 85, 247, 0.22);
+            --theme-border: rgba(168, 85, 247, 0.28);
+            --surface-canvas: #0b090f;
+            --surface-sidebar: rgba(13, 10, 18, 0.88);
+            --surface-card: rgba(19, 15, 26, 0.78);
+            --surface-card-hover: rgba(27, 20, 38, 0.88);
+            --surface-input: rgba(10, 8, 15, 0.85);
+            --surface-modal: rgba(16, 12, 23, 0.94);
+        }
+
+        /* SCROLLBAR MODERNO CON FALLBACK */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--brand-800) rgba(9, 10, 14, 0.75);
         }
 
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
         }
 
         ::-webkit-scrollbar-track {
-            background: rgba(9, 9, 11, 0.8);
+            background: rgba(9, 10, 14, 0.75);
         }
 
         ::-webkit-scrollbar-thumb {
             background: var(--brand-900);
-            border-radius: 4px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -104,17 +148,18 @@
         }
 
         body {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), url('fondo panel de ghost.jpg');
+            background-image: linear-gradient(rgba(5, 6, 9, 0.78), rgba(5, 6, 9, 0.88)), url('fondo panel de ghost.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-repeat: no-repeat;
+            letter-spacing: -0.01em;
         }
 
         @keyframes fadeInScale {
             from {
                 opacity: 0;
-                transform: scale(0.95) translateY(10px);
+                transform: scale(0.97) translateY(6px);
             }
 
             to {
@@ -124,13 +169,13 @@
         }
 
         .animate-modal {
-            animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInScale 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes viewFadeIn {
             from {
                 opacity: 0;
-                transform: translateY(8px);
+                transform: translateY(6px);
             }
 
             to {
@@ -140,12 +185,12 @@
         }
 
         .animate-view {
-            animation: viewFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: viewFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         .theme-panel {
-            border-color: var(--theme-border) !important;
-            box-shadow: inset 0 0 30px var(--theme-glow), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--theme-border) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px -10px rgba(0, 0, 0, 0.6);
         }
 
         .theme-border {
@@ -153,41 +198,108 @@
         }
 
         .interactive-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background-color: rgba(24, 24, 27, 0.85);
-            backdrop-filter: blur(8px);
+            transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, box-shadow 0.18s ease;
+            background-color: var(--surface-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--theme-border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px -2px rgba(0, 0, 0, 0.4);
         }
 
         .interactive-card:hover {
-            transform: translateY(-3px) scale(1.01);
+            transform: translateY(-2px);
+            background-color: var(--surface-card-hover);
             border-color: var(--brand-500) !important;
-            box-shadow: 0 10px 30px -10px var(--theme-glow) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 28px -6px var(--theme-glow), 0 0 0 1px var(--brand-500);
         }
 
         .interactive-btn {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
         .interactive-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 0 15px var(--theme-glow);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 14px -2px var(--theme-glow);
         }
 
         .interactive-btn:active {
-            transform: scale(0.95) translateY(0);
+            transform: scale(0.98);
         }
 
         .interactive-input {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            background-color: rgba(0, 0, 0, 0.7);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+            background-color: var(--surface-input);
+            border: 1px solid var(--theme-border);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .interactive-input:focus {
-            transform: scale(1.005);
             border-color: var(--brand-500) !important;
-            box-shadow: 0 0 15px var(--theme-glow) !important;
+            box-shadow: 0 0 0 3px var(--theme-glow), inset 0 1px 2px rgba(0, 0, 0, 0.5) !important;
             outline: none;
+        }
+
+        /* COMPONENTES DE DISEÑO UNIFICADOS GHOST */
+        .ghost-stat-card {
+            background-color: var(--surface-card);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--theme-border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 20px -4px rgba(0, 0, 0, 0.45);
+        }
+
+        /* MICROINTERACCIONES Y FOCUS VISIBLE (FASE 2.8) */
+        html {
+            -webkit-tap-highlight-color: transparent;
+            scroll-behavior: smooth;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--brand-400) !important;
+            outline-offset: 2px !important;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--brand-400) !important;
+            outline-offset: 1px !important;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: var(--brand-900);
+            border-radius: 9999px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: var(--brand-700);
+        }
+
+        .interactive-card:active {
+            transform: scale(0.99);
+        }
+
+        /* ACCESIBILIDAD: REDUCED MOTION TOTAL */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
 </head>
@@ -208,30 +320,45 @@
 
     <!-- MODAL DE INICIO DE SESIÓN -->
     <div id="loginModal"
-        class="hidden fixed inset-0 bg-black bg-opacity-95 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300">
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-50 p-4 transition-all duration-300">
         <div
-            class="bg-zinc-950/90 backdrop-blur-xl p-8 rounded-2xl w-full max-w-md text-center animate-modal theme-panel">
-            <div onclick="openImageModal('icono web panel de ghost.jpg', 'GHOST Cloud')"
-                class="w-20 h-20 rounded-full border-2 border-brand-500 overflow-hidden mx-auto mb-4 bg-black flex items-center justify-center shadow-[0_0_20px_var(--theme-glow)] cursor-pointer transform transition-transform duration-300 hover:scale-110 hover:rotate-6">
-                <img src="icono web panel de ghost.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
+            class="bg-zinc-950/95 border theme-border p-7 sm:p-8 rounded-2xl w-full max-w-md text-center shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_35px_var(--theme-glow)] animate-modal theme-panel relative overflow-hidden">
+            <!-- Glow decorativo superior -->
+            <div
+                class="absolute -top-12 left-1/2 -translate-x-1/2 w-40 h-40 bg-[var(--theme-glow)] opacity-20 rounded-full blur-3xl pointer-events-none">
             </div>
-            <h2 class="text-2xl font-black text-brand-400 tracking-widest uppercase mb-1 drop-shadow-md">Nube de GHOST
-            </h2>
-            <p class="text-xs text-zinc-400 mb-6 font-semibold">Panel Administrativo y de Control</p>
 
-            <div class="space-y-4">
+            <div
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-950/80 border border-brand-500/30 text-brand-300 text-[10px] font-bold tracking-widest uppercase mb-4 shadow-sm">
+                <i class="fa-solid fa-shield-halved text-[10px]"></i> Acceso Clasificado
+            </div>
+
+            <div onclick="openImageModal('icono web panel de ghost.png', 'GHOST Cloud')"
+                class="w-20 h-20 rounded-2xl border-2 border-brand-500/50 overflow-hidden mx-auto mb-4 bg-black/80 flex items-center justify-center shadow-[0_0_25px_var(--theme-glow)] cursor-pointer transform transition-all duration-300 hover:scale-105 hover:border-brand-400 p-1">
+                <img src="icono web panel de ghost.png" alt="GHOST Logo" class="w-full h-full object-cover rounded-xl">
+            </div>
+
+            <h2
+                class="text-2xl sm:text-3xl font-black text-white tracking-widest uppercase mb-1 drop-shadow-[0_0_12px_var(--theme-glow)]">
+                Nube de GHOST
+            </h2>
+            <p class="text-xs text-brand-300/70 mb-6 font-medium">Terminal Operativa y Mando Estratégico</p>
+
+            <div class="space-y-3.5">
                 <button onclick="loginWithDiscord()"
-                    class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3.5 px-4 rounded-lg interactive-btn flex items-center justify-center gap-3 shadow-lg uppercase tracking-wider text-xs">
+                    class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-black py-3.5 px-4 rounded-xl interactive-btn flex items-center justify-center gap-3 shadow-[0_0_25px_rgba(88,101,242,0.35)] uppercase tracking-wider text-xs transition-all duration-200 hover:shadow-[0_0_30px_rgba(88,101,242,0.5)]">
                     <i class="fa-brands fa-discord text-lg"></i> Iniciar Sesión con Discord
                 </button>
                 <div class="relative flex py-2 items-center">
-                    <div class="flex-grow border-t theme-border"></div><span
-                        class="flex-shrink mx-4 text-brand-500 text-xs uppercase font-bold">O</span>
+                    <div class="flex-grow border-t theme-border"></div>
+                    <span
+                        class="flex-shrink mx-4 text-zinc-500 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/60 border border-white/5">O
+                        bien</span>
                     <div class="flex-grow border-t theme-border"></div>
                 </div>
                 <button onclick="loginAsGuest()"
-                    class="w-full bg-black hover:bg-zinc-900 text-brand-300 font-semibold py-3 rounded-lg interactive-btn text-xs uppercase tracking-wider border theme-border">
-                    Continuar como Invitado (Modo Lectura)
+                    class="w-full bg-zinc-900/80 hover:bg-zinc-800 text-brand-300 hover:text-white font-bold py-3 rounded-xl interactive-btn text-xs uppercase tracking-wider border theme-border transition-all shadow-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-eye text-xs text-brand-400"></i> Continuar como Invitado (Modo Lectura)
                 </button>
             </div>
         </div>
@@ -243,9 +370,9 @@
         <aside
             class="w-full md:w-72 bg-zinc-950/95 backdrop-blur-md border-b md:border-b-0 md:border-r theme-border flex flex-col z-10 relative shadow-[5px_0_30px_rgba(0,0,0,0.5)]">
             <div class="p-4 md:p-6 text-center border-b theme-border flex flex-col items-center">
-                <div onclick="openImageModal('icono web panel de ghost.jpg', 'GHOST')"
+                <div onclick="openImageModal('icono web panel de ghost.png', 'GHOST')"
                     class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-brand-500/50 overflow-hidden shadow-[0_0_15px_var(--theme-glow)] mb-3 bg-black flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-6 cursor-pointer hover:border-brand-400">
-                    <img src="icono web panel de ghost.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
+                    <img src="icono web panel de ghost.png" alt="GHOST Logo" class="w-full h-full object-cover">
                 </div>
                 <h1
                     class="text-xl font-black text-white tracking-widest uppercase drop-shadow-[0_0_10px_var(--theme-glow)]">
@@ -320,34 +447,49 @@
 
             <!-- VISTA: MI ESTADO (PORTAL PERSONAL) -->
             <div id="view-mi-estado"
-                class="hidden h-full flex flex-col p-6 md:p-12 items-center justify-center overflow-y-auto">
+                class="hidden h-full flex flex-col p-4 sm:p-6 md:p-10 items-center justify-start md:justify-center overflow-y-auto">
                 <div
-                    class="max-w-2xl w-full bg-zinc-950/90 backdrop-blur-xl rounded-2xl p-6 md:p-8 animate-modal text-center my-auto theme-panel">
-                    <div
-                        class="w-20 h-20 bg-black border-2 border-brand-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_var(--theme-glow)] text-brand-400 text-3xl font-black">
-                        <i class="fa-solid fa-user-shield drop-shadow-md"></i>
+                    class="max-w-2xl w-full bg-zinc-950/90 backdrop-blur-2xl rounded-2xl p-5 sm:p-7 md:p-8 animate-modal text-center my-auto theme-panel relative overflow-hidden">
+
+                    <!-- Header del Portal: Avatar e Identidad Táctica -->
+                    <div class="relative w-20 h-20 mx-auto mb-4">
+                        <div class="absolute inset-0 rounded-full bg-brand-500/20 blur-md"></div>
+                        <div
+                            class="relative w-20 h-20 bg-black/90 border-2 border-brand-500 rounded-full flex items-center justify-center text-brand-400 text-3xl font-black shadow-[0_0_25px_var(--theme-glow)]">
+                            <i class="fa-solid fa-user-shield drop-shadow-md"></i>
+                        </div>
                     </div>
-                    <h2 class="text-2xl font-black text-white uppercase tracking-wider mb-1" id="portal-name">
+
+                    <h2 class="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider mb-1.5 drop-shadow-sm"
+                        id="portal-name">
                         Cargando...</h2>
-                    <p class="text-xs text-brand-400/80 mb-6 font-semibold"><i
-                            class="fa-brands fa-discord mr-1 text-[#5865F2]"></i> <span
-                            id="portal-discord">@usuario</span></p>
+                    <div
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-900/80 border theme-border text-xs text-brand-400/90 font-medium mb-6 shadow-sm">
+                        <i class="fa-brands fa-discord text-[#5865F2]"></i>
+                        <span id="portal-discord" class="font-mono text-zinc-300">@usuario</span>
+                    </div>
+
                     <div id="portal-data-container"
-                        class="space-y-4 text-left bg-black/60 p-5 rounded-xl border theme-border shadow-inner"></div>
+                        class="space-y-2.5 text-left bg-black/60 p-4 sm:p-5 rounded-xl border theme-border shadow-inner">
+                    </div>
 
                     <!-- SIMULADOR DE CUOTAS DINÁMICO -->
                     <div id="portal-simulator-container"
-                        class="mt-6 text-left bg-black/60 p-5 rounded-xl border theme-border shadow-inner hidden">
+                        class="mt-6 text-left bg-black/60 p-4 sm:p-5 rounded-xl border theme-border shadow-inner hidden">
                         <div
-                            class="flex flex-col sm:flex-row justify-between items-center mb-4 bg-brand-950/30 border theme-border p-3.5 rounded-xl gap-3 shadow-sm">
+                            class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 bg-brand-950/30 border theme-border p-3.5 rounded-xl gap-3 shadow-sm">
                             <div class="flex items-center gap-2.5">
                                 <div
-                                    class="w-8 h-8 rounded-lg bg-brand-900/40 border border-brand-500/40 flex items-center justify-center text-brand-400">
+                                    class="w-9 h-9 rounded-lg bg-brand-900/40 border border-brand-500/40 flex items-center justify-center text-brand-400 shadow-[0_0_10px_var(--theme-glow)]">
                                     <i class="fa-solid fa-calculator text-xs"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xs font-black text-white uppercase tracking-wider">Simulador de
-                                        Cuota</h3>
+                                    <h3
+                                        class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                                        <span>Simulador de Cuota</span>
+                                        <span
+                                            class="text-[9px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-300 font-bold border border-brand-500/30">ACTIVO</span>
+                                    </h3>
                                     <p class="text-[10px] text-zinc-400">Prueba distintos descuentos en tiempo real</p>
                                 </div>
                             </div>
@@ -367,10 +509,17 @@
                                 </select>
                             </div>
                         </div>
-                        <p class="text-[11px] text-zinc-400 mb-4 leading-relaxed px-1">Las siguientes opciones muestran
-                            lo que debes entregar para saldar tu cuota semanal aplicando el descuento seleccionado. Solo
-                            debes elegir <span class="text-brand-400 font-black underline">UNA</span> opción:</p>
-                        <div id="simulator-options" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div
+                            class="flex items-start gap-2 bg-brand-950/20 border border-brand-500/20 rounded-lg p-2.5 mb-4">
+                            <i class="fa-solid fa-circle-info text-brand-400 text-xs mt-0.5"></i>
+                            <p class="text-[11px] text-zinc-300 leading-relaxed">
+                                Las siguientes opciones muestran lo que debes entregar para saldar tu cuota semanal
+                                aplicando el descuento seleccionado. Solo debes elegir <span
+                                    class="text-brand-300 font-black underline decoration-brand-500 decoration-2">UNA</span>
+                                opción:
+                            </p>
+                        </div>
+                        <div id="simulator-options" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                             <!-- Opciones inyectadas por JS -->
                         </div>
                     </div>
@@ -379,62 +528,94 @@
 
             <!-- VISTA: MIEMBROS -->
             <div id="view-miembros" class="hidden h-full flex flex-col">
-                <header class="p-4 md:p-8 pb-4">
-                    <h2 class="text-2xl font-black tracking-wide mb-6 text-white flex items-center gap-3">
-                        <span
-                            class="inline-block w-2 h-6 bg-brand-500 shadow-[0_0_10px_var(--brand-500)] transition-all duration-300 hover:scale-y-125"></span>
-                        Dashboard de Gestión
-                    </h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-                        <div
-                            class="bg-black/40 backdrop-blur-md p-5 md:p-6 rounded-xl relative overflow-hidden interactive-card theme-panel">
-                            <div class="text-brand-300 text-xs font-bold uppercase tracking-wider mb-1 drop-shadow-md">
-                                Activos</div>
-                            <div id="stat-total" class="text-3xl md:text-4xl font-black text-white">0</div>
-                            <div class="absolute right-4 bottom-4 text-brand-900/40 text-3xl md:text-5xl"><i
-                                    class="fa-solid fa-users"></i></div>
+                <header class="p-4 md:p-6 pb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span
+                                    class="w-2 h-5 rounded-full bg-brand-500 shadow-[0_0_10px_var(--brand-500)]"></span>
+                                <h2 class="text-xl md:text-2xl font-black tracking-wider uppercase text-white">Dashboard
+                                    Operativo</h2>
+                            </div>
+                            <p class="text-xs text-zinc-400 font-medium">Control táctico de dotación, mora de cuotas y
+                                recaudación</p>
                         </div>
-                        <div
-                            class="bg-black/40 backdrop-blur-md p-5 md:p-6 rounded-xl relative overflow-hidden interactive-card theme-panel">
-                            <div class="text-red-400 text-xs font-bold uppercase tracking-wider mb-1 drop-shadow-md">
-                                Cuotas Atrasadas</div>
-                            <div id="stat-pending" class="text-3xl md:text-4xl font-black text-red-500">0</div>
-                            <div class="absolute right-4 bottom-4 text-red-900/30 text-3xl md:text-5xl"><i
-                                    class="fa-solid fa-clock"></i></div>
+                        <div class="flex items-center gap-2 self-start sm:self-auto">
+                            <span
+                                class="text-[10px] font-mono px-2.5 py-1 rounded-md bg-black/60 border theme-border text-zinc-300 shadow-inner flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema
+                                Operativo
+                            </span>
                         </div>
-                        <div
-                            class="bg-black/40 backdrop-blur-md p-5 md:p-6 rounded-xl relative overflow-hidden interactive-card theme-panel">
-                            <div
-                                class="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1 drop-shadow-md">
-                                Recaudación (Activos)</div>
-                            <div id="stat-money" class="text-3xl md:text-4xl font-black text-emerald-400">$0</div>
-                            <div class="absolute right-4 bottom-4 text-emerald-900/30 text-3xl md:text-5xl"><i
-                                    class="fa-solid fa-vault"></i></div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-5">
+                        <div class="p-4 md:p-5 rounded-xl relative overflow-hidden interactive-card theme-panel">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-brand-300 text-[10px] font-bold uppercase tracking-widest">Dotación
+                                    Activa</span>
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-brand-900/30 border border-brand-500/30 flex items-center justify-center text-brand-300 text-sm shadow-sm">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                            </div>
+                            <div id="stat-total"
+                                class="text-3xl md:text-4xl font-black text-white tabular-nums tracking-tight mb-1">0
+                            </div>
+                            <p class="text-[11px] text-zinc-400">Efectivos en nómina activa</p>
+                        </div>
+                        <div class="p-4 md:p-5 rounded-xl relative overflow-hidden interactive-card theme-panel">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-red-400 text-[10px] font-bold uppercase tracking-widest">Cuotas en
+                                    Mora</span>
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-red-950/40 border border-red-500/30 flex items-center justify-center text-red-400 text-sm shadow-sm">
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                            </div>
+                            <div id="stat-pending"
+                                class="text-3xl md:text-4xl font-black text-red-500 tabular-nums tracking-tight mb-1">0
+                            </div>
+                            <p class="text-[11px] text-zinc-400">Casos pendientes de cobro</p>
+                        </div>
+                        <div class="p-4 md:p-5 rounded-xl relative overflow-hidden interactive-card theme-panel">
+                            <div class="flex items-center justify-between mb-2">
+                                <span
+                                    class="text-emerald-400 text-[10px] font-bold uppercase tracking-widest">Recaudación
+                                    Estimada</span>
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-sm shadow-sm">
+                                    <i class="fa-solid fa-vault"></i>
+                                </div>
+                            </div>
+                            <div id="stat-money"
+                                class="text-3xl md:text-4xl font-black text-emerald-400 tabular-nums tracking-tight mb-1">
+                                $0</div>
+                            <p class="text-[11px] text-zinc-400">Estimación por dotación activa</p>
                         </div>
                     </div>
                 </header>
 
-                <section class="px-4 md:px-8 pb-8 flex-1 flex flex-col">
+                <section class="px-4 md:px-6 pb-6 flex-1 flex flex-col min-h-0">
                     <div
-                        class="bg-black/60 backdrop-blur-xl rounded-xl flex-1 flex flex-col overflow-hidden theme-panel">
-                        <!-- Filtros -->
+                        class="bg-black/60 backdrop-blur-xl rounded-xl flex-1 flex flex-col overflow-hidden theme-panel shadow-2xl border theme-border">
+                        <!-- Barra Táctica de Filtros -->
                         <div
-                            class="p-4 border-b theme-border flex flex-wrap gap-3 justify-between items-center bg-zinc-950/50">
-                            <div class="flex flex-wrap gap-3 items-center w-full lg:w-auto">
-                                <div class="relative w-full sm:w-auto">
-                                    <i class="fa-solid fa-search absolute left-3 top-3.5 text-zinc-500 text-sm"></i>
-                                    <input type="text" id="search-input" placeholder="Buscar nombre..."
-                                        class="bg-black/80 border theme-border text-white text-sm rounded-lg pl-10 p-2.5 w-full sm:w-48 interactive-input">
+                            class="p-3.5 md:p-4 border-b theme-border flex flex-wrap gap-2.5 justify-between items-center bg-zinc-950/70">
+                            <div class="flex flex-wrap gap-2.5 items-center w-full lg:w-auto">
+                                <div class="relative w-full sm:w-56">
+                                    <i class="fa-solid fa-search absolute left-3.5 top-3 text-zinc-500 text-xs"></i>
+                                    <input type="text" id="search-input" placeholder="Buscar por nombre o ID..."
+                                        class="bg-black/80 border theme-border text-white text-xs rounded-lg pl-9 p-2.5 w-full interactive-input placeholder:text-zinc-500">
                                 </div>
                                 <select id="status-filter" onchange="renderDashboard()"
-                                    class="bg-black/80 border theme-border text-brand-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold">
+                                    class="bg-black/80 border theme-border text-brand-300 text-xs rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold cursor-pointer">
                                     <option value="Activo">Estado: Activos</option>
                                     <option value="Expulsado" class="text-orange-400">Estado: Expulsados</option>
                                     <option value="CK" class="text-red-500">Estado: Abatidos (CK)</option>
                                     <option value="" class="text-white">Todos (Histórico)</option>
                                 </select>
                                 <select id="rank-filter" onchange="renderDashboard()"
-                                    class="bg-black/80 border theme-border text-zinc-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input">
+                                    class="bg-black/80 border theme-border text-zinc-300 text-xs rounded-lg p-2.5 flex-1 sm:flex-none interactive-input cursor-pointer font-medium">
                                     <option value="">Rango (Todos)</option>
                                     <option>JEFES</option>
                                     <option>Mano Derecha</option>
@@ -453,62 +634,65 @@
                                     <option>Recolector</option>
                                 </select>
                                 <select id="illegal-filter" onchange="renderDashboard()"
-                                    class="bg-black/80 border theme-border text-red-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold">
+                                    class="bg-black/80 border theme-border text-red-300 text-xs rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold cursor-pointer">
                                     <option value="">Ilegales (Todos)</option>
                                     <option value="Tiene Rol">Tiene Rol</option>
                                     <option value="Sin Rol">Sin Rol</option>
                                     <option value="Por Entrar">Por Entrar</option>
                                 </select>
                                 <select id="strike-filter" onchange="renderDashboard()"
-                                    class="bg-black/80 border theme-border text-yellow-300 text-sm rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold">
+                                    class="bg-black/80 border theme-border text-yellow-300 text-xs rounded-lg p-2.5 flex-1 sm:flex-none interactive-input font-bold cursor-pointer">
                                     <option value="">Faltas (Todos)</option>
                                     <option value="clean">Sin faltas</option>
                                     <option value="has_strikes">Con faltas</option>
                                 </select>
                             </div>
-                            <div class="flex gap-2 w-full lg:w-auto mt-2 lg:mt-0">
+                            <div class="flex items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0">
                                 <button onclick="exportToCSV()"
-                                    class="flex-1 sm:flex-none bg-black/80 hover:bg-zinc-900 text-brand-300 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 border theme-border font-semibold text-sm interactive-btn shadow-[0_0_10px_var(--theme-glow)]"><i
-                                        class="fa-solid fa-file-csv"></i> Exportar</button>
+                                    class="flex-1 sm:flex-none bg-black/80 hover:bg-zinc-900 text-brand-300 py-2 px-3.5 rounded-lg flex items-center justify-center gap-2 border theme-border font-semibold text-xs interactive-btn shadow-sm">
+                                    <i class="fa-solid fa-file-csv text-sm"></i> <span>Exportar</span>
+                                </button>
                                 <button onclick="openModal()"
-                                    class="flex-1 sm:flex-none bg-brand-600 hover:bg-brand-500 text-white font-black py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400"><i
-                                        class="fa-solid fa-user-plus"></i> Añadir</button>
+                                    class="flex-1 sm:flex-none bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 px-3.5 rounded-lg flex items-center justify-center gap-2 text-xs interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400">
+                                    <i class="fa-solid fa-user-plus text-sm"></i> <span>Añadir</span>
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Vista Desktop: Tabla -->
-                        <div class="hidden md:block overflow-x-auto flex-1 w-full bg-black/20">
-                            <table class="w-full min-w-[950px] text-sm text-left text-zinc-400">
+                        <!-- Vista Desktop: Tabla Administrativa -->
+                        <div class="hidden md:block overflow-x-auto flex-1 w-full bg-black/30">
+                            <table class="w-full min-w-[950px] text-xs text-left text-zinc-400 border-collapse">
                                 <thead
-                                    class="text-xs text-brand-300 uppercase bg-black/80 border-b theme-border sticky top-0 z-10 shadow-md">
+                                    class="text-[11px] text-brand-300 uppercase bg-zinc-950/90 border-b theme-border sticky top-0 z-10 shadow-md">
                                     <tr>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors"
+                                        <th class="px-5 py-3.5 cursor-pointer hover:text-white transition-colors"
                                             onclick="changeSort('name')">Nombre IC <i
                                                 class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-name"></i>
                                         </th>
-                                        <th class="px-6 py-4">Discord</th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors"
+                                        <th class="px-5 py-3.5">Discord</th>
+                                        <th class="px-5 py-3.5 cursor-pointer hover:text-white transition-colors"
                                             onclick="changeSort('rank')">Rango <i
                                                 class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-rank"></i>
                                         </th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors"
+                                        <th class="px-5 py-3.5 cursor-pointer hover:text-white transition-colors"
                                             onclick="changeSort('illegal')">Ilegales <i
                                                 class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-illegal"></i>
                                         </th>
-                                        <th class="px-6 py-4 cursor-pointer hover:text-white transition-colors"
+                                        <th class="px-5 py-3.5 cursor-pointer hover:text-white transition-colors"
                                             onclick="changeSort('quota')">Estado Cuota <i
                                                 class="fa-solid fa-sort text-brand-700 ml-1" id="sort-icon-quota"></i>
                                         </th>
-                                        <th class="px-6 py-4">Faltas</th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                        <th class="px-5 py-3.5">Faltas</th>
+                                        <th class="px-5 py-3.5 text-right">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-body"></tbody>
+                                <tbody id="table-body" class="divide-y divide-zinc-900/60"></tbody>
                             </table>
                         </div>
 
                         <!-- Vista Mobile: Tarjetas Colapsables -->
-                        <div id="mobile-cards" class="md:hidden flex-1 overflow-y-auto bg-black/20 p-4 space-y-4"></div>
+                        <div id="mobile-cards" class="md:hidden flex-1 overflow-y-auto bg-black/30 p-3.5 space-y-3">
+                        </div>
                     </div>
                 </section>
             </div>
@@ -517,18 +701,24 @@
             <div id="view-autoridades" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Autoridades
-                        </h2>
-                        <p class="text-brand-300/70 text-sm mt-1">Identifica a los altos mandos y figuras clave de la
-                            organización.</p>
+                        <div
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-950/60 border border-brand-500/30 text-brand-300 text-[10px] font-bold tracking-wider uppercase mb-1.5 shadow-sm">
+                            <i class="fa-solid fa-shield-halved text-[10px]"></i> Cadena de Mando
+                        </div>
+                        <h2
+                            class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)] tracking-tight">
+                            Autoridades</h2>
+                        <p class="text-brand-300/70 text-xs sm:text-sm mt-0.5">Identifica a los altos mandos y figuras
+                            clave de la organización.</p>
                     </div>
                     <button id="btn-add-authority" onclick="openAuthorityModal()"
-                        class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400 text-white font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_var(--theme-glow)] w-full md:w-auto">
-                        <i class="fa-solid fa-user-tie"></i> Añadir Autoridad
+                        class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400/80 text-white font-black py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 text-xs uppercase tracking-wider interactive-btn shadow-[0_0_20px_var(--theme-glow)] w-full md:w-auto">
+                        <i class="fa-solid fa-user-tie text-sm"></i> Añadir Autoridad
                     </button>
                 </div>
 
-                <div id="authorities-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div id="authorities-grid"
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
                 </div>
             </div>
 
@@ -536,36 +726,48 @@
             <div id="view-garaje" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Garaje
-                            Organizativo</h2>
-                        <p class="text-brand-300/70 text-sm mt-1">Catálogo de vehículos, estado y asignación operativa.
-                        </p>
+                        <div
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-950/60 border border-brand-500/30 text-brand-300 text-[10px] font-bold tracking-wider uppercase mb-1.5 shadow-sm">
+                            <i class="fa-solid fa-warehouse text-[10px]"></i> Parque Móvil Táctico
+                        </div>
+                        <h2
+                            class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)] tracking-tight">
+                            Garaje Organizativo</h2>
+                        <p class="text-brand-300/70 text-xs sm:text-sm mt-0.5">Catálogo de vehículos, estado y
+                            asignación operativa.</p>
                     </div>
                     <button id="btn-add-vehicle" onclick="openVehicleModal()"
-                        class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400 text-white font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_var(--theme-glow)] w-full md:w-auto">
-                        <i class="fa-solid fa-car-side"></i> Añadir Vehículo
+                        class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400/80 text-white font-black py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 text-xs uppercase tracking-wider interactive-btn shadow-[0_0_20px_var(--theme-glow)] w-full md:w-auto">
+                        <i class="fa-solid fa-car-side text-sm"></i> Añadir Vehículo
                     </button>
                 </div>
 
-                <div id="garage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+                <div id="garage-grid"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6"></div>
             </div>
 
             <!-- VISTA: GALERÍA -->
             <div id="view-galeria" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Galería
-                            Fotográfica</h2>
-                        <p class="text-brand-300/70 text-sm mt-1">Comparte y visualiza los mejores momentos de la
-                            organización.</p>
+                        <div
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-950/60 border border-brand-500/30 text-brand-300 text-[10px] font-bold tracking-wider uppercase mb-1.5 shadow-sm">
+                            <i class="fa-solid fa-camera-retro text-[10px]"></i> Archivo Visual Operativo
+                        </div>
+                        <h2
+                            class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)] tracking-tight">
+                            Galería Fotográfica</h2>
+                        <p class="text-brand-300/70 text-xs sm:text-sm mt-0.5">Comparte y visualiza los mejores momentos
+                            de la organización.</p>
                     </div>
                     <button id="btn-upload-photo" onclick="openUploadModal()"
-                        class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400 text-white font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_var(--theme-glow)] w-full md:w-auto">
-                        <i class="fa-solid fa-camera"></i> Subir Foto
+                        class="hidden bg-brand-600 hover:bg-brand-500 border border-brand-400/80 text-white font-black py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 text-xs uppercase tracking-wider interactive-btn shadow-[0_0_20px_var(--theme-glow)] w-full md:w-auto">
+                        <i class="fa-solid fa-camera text-sm"></i> Subir Foto
                     </button>
                 </div>
 
-                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div id="gallery-grid"
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
                 </div>
             </div>
 
@@ -573,161 +775,245 @@
             <div id="view-finanzas" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
                 <!-- CABECERA Y FINANZAS TOTALES -->
                 <div
-                    class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4 border-b theme-border pb-4">
+                    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b theme-border pb-4">
                     <div>
-                        <h2 class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Finanzas
-                            Totales</h2>
-                        <p class="text-brand-300/70 text-sm mt-1">Stock actual y capital total disponible de la
-                            organización.</p>
+                        <div
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-950/60 border border-brand-500/30 text-brand-300 text-[10px] font-bold tracking-wider uppercase mb-1.5 shadow-sm">
+                            <i class="fa-solid fa-vault text-[10px]"></i> Bóveda Central y Ledger
+                        </div>
+                        <h2
+                            class="text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)] tracking-tight">
+                            Finanzas Totales</h2>
+                        <p class="text-brand-300/70 text-xs sm:text-sm mt-0.5">Stock acumulado, capital disponible y
+                            balances operativos.</p>
                     </div>
                     <button id="btn-extract-finances" onclick="openExtractModal()"
-                        class="hidden bg-red-600 hover:bg-red-500 border border-red-400 text-white font-black py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 text-sm interactive-btn shadow-[0_0_15px_rgba(239,68,68,0.3)] w-full md:w-auto">
-                        <i class="fa-solid fa-money-bill-transfer"></i> Extraer Recursos
+                        class="hidden bg-red-950/80 hover:bg-red-900/90 border border-red-500/60 text-red-300 font-bold py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 text-xs uppercase tracking-wider interactive-btn shadow-[0_0_20px_rgba(239,68,68,0.25)] w-full md:w-auto">
+                        <i class="fa-solid fa-money-bill-transfer text-sm"></i> Extraer Recursos
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-6 mb-8">
+                <!-- 3 TARJETAS KPI PRINCIPALES -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-5 sm:gap-6 mb-8">
                     <!-- Efectivo Líquido Total -->
-                    <div class="bg-emerald-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-emerald-500 shadow-lg flex items-center justify-between interactive-card"
-                        style="border-color: #10b981 !important;">
-                        <div>
-                            <div class="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">Efectivo
-                                Líquido Total</div>
-                            <div id="fin-efectivo-total" class="text-4xl md:text-5xl font-black text-white">$0</div>
+                    <div
+                        class="bg-zinc-950/85 backdrop-blur-xl p-5 sm:p-6 rounded-2xl border border-emerald-500/50 shadow-[0_15px_35px_-10px_rgba(16,185,129,0.2)] flex items-center justify-between interactive-card relative overflow-hidden group">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none">
                         </div>
-                        <i class="fa-solid fa-sack-dollar text-5xl md:text-6xl text-emerald-500/60"></i>
-                    </div>
-                    <!-- Caja Actual -->
-                    <div class="bg-amber-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-amber-500 shadow-lg flex flex-col justify-between interactive-card relative overflow-hidden"
-                        style="border-color: #f59e0b !important;">
-                        <div class="flex items-center justify-between w-full mb-4">
-                            <div>
-                                <div class="text-amber-300 text-xs font-bold uppercase tracking-wider mb-2">Caja Actual
-                                </div>
-                                <div id="fin-caja-actual" class="text-4xl md:text-5xl font-black text-white">$0</div>
+                        <div class="z-10">
+                            <div
+                                class="text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span>Efectivo Líquido Total</span>
                             </div>
-                            <i class="fa-solid fa-cash-register text-5xl md:text-6xl text-amber-500/60"></i>
+                            <div id="fin-efectivo-total"
+                                class="text-3xl sm:text-4xl md:text-5xl font-black text-white tabular-nums tracking-tight">
+                                $0</div>
+                            <p class="text-[10px] text-zinc-400 mt-1.5">Capital neto en bóveda faccionaria</p>
+                        </div>
+                        <div
+                            class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl sm:text-3xl shadow-sm z-10">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                    </div>
+
+                    <!-- Caja Actual -->
+                    <div
+                        class="bg-zinc-950/85 backdrop-blur-xl p-5 sm:p-6 rounded-2xl border border-amber-500/50 shadow-[0_15px_35px_-10px_rgba(245,158,11,0.2)] flex flex-col justify-between interactive-card relative overflow-hidden group">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none">
+                        </div>
+                        <div class="flex items-center justify-between w-full mb-4 z-10">
+                            <div>
+                                <div
+                                    class="text-amber-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                    <span>Caja Física Actual</span>
+                                </div>
+                                <div id="fin-caja-actual"
+                                    class="text-3xl sm:text-4xl md:text-5xl font-black text-white tabular-nums tracking-tight">
+                                    $0</div>
+                                <p class="text-[10px] text-zinc-400 mt-1.5">Dinero físico en caja manual</p>
+                            </div>
+                            <div
+                                class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-amber-400 text-2xl sm:text-3xl shadow-sm">
+                                <i class="fa-solid fa-cash-register"></i>
+                            </div>
                         </div>
                         <button onclick="openCajaModal()"
-                            class="w-full bg-black/50 hover:bg-black/80 text-amber-300 font-bold py-2.5 px-4 rounded-lg border border-amber-700 text-xs uppercase tracking-wider interactive-btn z-10 transition-colors hover:text-white hover:border-amber-500 shadow-inner">
-                            Gestionar Caja
+                            class="w-full bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-bold py-2.5 px-4 rounded-xl border border-amber-600/50 text-xs uppercase tracking-wider interactive-btn z-10 transition-all shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-pen-to-square text-xs"></i> Gestionar Caja
                         </button>
                     </div>
+
                     <!-- Hojas de Coca -->
-                    <div class="bg-lime-950/85 backdrop-blur-md p-6 md:p-8 rounded-xl border border-lime-500 shadow-lg flex items-center justify-between interactive-card"
-                        style="border-color: #84cc16 !important;">
-                        <div>
-                            <div class="text-lime-300 text-xs font-bold uppercase tracking-wider mb-2">Hojas de Coca
-                            </div>
-                            <div id="fin-coca-total" class="text-4xl md:text-5xl font-black text-white">0</div>
+                    <div
+                        class="bg-zinc-950/85 backdrop-blur-xl p-5 sm:p-6 rounded-2xl border border-lime-500/50 shadow-[0_15px_35px_-10px_rgba(132,204,22,0.2)] flex items-center justify-between interactive-card relative overflow-hidden group">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-lime-500/10 rounded-full blur-2xl pointer-events-none">
                         </div>
-                        <i class="fa-solid fa-leaf text-5xl md:text-6xl text-lime-500/60"></i>
+                        <div class="z-10">
+                            <div
+                                class="text-lime-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse"></span>
+                                <span>Hojas de Coca</span>
+                            </div>
+                            <div id="fin-coca-total"
+                                class="text-3xl sm:text-4xl md:text-5xl font-black text-white tabular-nums tracking-tight">
+                                0</div>
+                            <p class="text-[10px] text-zinc-400 mt-1.5">Total de unidades almacenadas</p>
+                        </div>
+                        <div
+                            class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-lime-950/60 border border-lime-500/30 flex items-center justify-center text-lime-400 text-2xl sm:text-3xl shadow-sm z-10">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
                     </div>
                 </div>
-                <h3 class="text-lg font-bold text-brand-300 mb-4 border-b theme-border pb-2 flex items-center gap-2"><i
-                        class="fa-solid fa-gun text-white"></i> Arsenal Total (Stock)</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+
+                <!-- ARSENAL TOTAL (STOCK) -->
+                <div class="mb-4 flex items-center justify-between border-b theme-border pb-3">
+                    <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2 tracking-tight">
+                        <i class="fa-solid fa-gun text-brand-400"></i>
+                        <span>Arsenal Total (Stock Operativo)</span>
+                    </h3>
+                    <span class="text-[10px] font-mono text-zinc-400 uppercase">7 Armamentos</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
                     <div
-                        class="bg-cyan-950/85 backdrop-blur-md p-4 rounded-lg border border-cyan-500 text-center interactive-card">
-                        <div class="text-cyan-300 text-xs font-bold uppercase">Pistolas SNS</div>
-                        <div id="fin-sns-total" class="text-2xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-cyan-500/40 text-center interactive-card">
+                        <div class="text-cyan-400 text-[10px] font-bold uppercase tracking-wider">Pistolas SNS</div>
+                        <div id="fin-sns-total" class="text-xl sm:text-2xl font-black text-white mt-1 tabular-nums">0
+                        </div>
                     </div>
                     <div
-                        class="bg-blue-950/85 backdrop-blur-md p-4 rounded-lg border border-blue-500 text-center interactive-card">
-                        <div class="text-blue-300 text-xs font-bold uppercase">Vintage</div>
-                        <div id="fin-vintage-total" class="text-2xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-blue-500/40 text-center interactive-card">
+                        <div class="text-blue-400 text-[10px] font-bold uppercase tracking-wider">Vintage</div>
+                        <div id="fin-vintage-total" class="text-xl sm:text-2xl font-black text-white mt-1 tabular-nums">
+                            0</div>
                     </div>
                     <div
-                        class="bg-indigo-950/85 backdrop-blur-md p-4 rounded-lg border border-indigo-500 text-center interactive-card">
-                        <div class="text-indigo-300 text-xs font-bold uppercase">Pistolas 9mm</div>
-                        <div id="fin-9mm-total" class="text-2xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-indigo-500/40 text-center interactive-card">
+                        <div class="text-indigo-400 text-[10px] font-bold uppercase tracking-wider">Pistolas 9mm</div>
+                        <div id="fin-9mm-total" class="text-xl sm:text-2xl font-black text-white mt-1 tabular-nums">0
+                        </div>
                     </div>
                     <div
-                        class="bg-purple-950/85 backdrop-blur-md p-4 rounded-lg border border-purple-500 text-center interactive-card">
-                        <div class="text-purple-300 text-xs font-bold uppercase">Mini SMG</div>
-                        <div id="fin-minismg-total" class="text-2xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-purple-500/40 text-center interactive-card">
+                        <div class="text-purple-400 text-[10px] font-bold uppercase tracking-wider">Mini SMG</div>
+                        <div id="fin-minismg-total" class="text-xl sm:text-2xl font-black text-white mt-1 tabular-nums">
+                            0</div>
                     </div>
                     <div
-                        class="bg-fuchsia-950/85 backdrop-blur-md p-4 rounded-lg border border-fuchsia-500 text-center interactive-card">
-                        <div class="text-fuchsia-300 text-xs font-bold uppercase">TEC-9</div>
-                        <div id="fin-tec9-total" class="text-2xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-fuchsia-500/40 text-center interactive-card">
+                        <div class="text-fuchsia-400 text-[10px] font-bold uppercase tracking-wider">TEC-9</div>
+                        <div id="fin-tec9-total" class="text-xl sm:text-2xl font-black text-white mt-1 tabular-nums">0
+                        </div>
                     </div>
                     <div
-                        class="bg-rose-950/85 backdrop-blur-md p-4 rounded-lg border border-rose-500 text-center interactive-card">
-                        <div class="text-rose-300 text-xs font-bold uppercase">Micro SMG</div>
-                        <div id="fin-microsmg-total" class="text-2xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-rose-500/40 text-center interactive-card">
+                        <div class="text-rose-400 text-[10px] font-bold uppercase tracking-wider">Micro SMG</div>
+                        <div id="fin-microsmg-total"
+                            class="text-xl sm:text-2xl font-black text-white mt-1 tabular-nums">0</div>
                     </div>
                     <div
-                        class="bg-amber-950/85 backdrop-blur-md p-4 rounded-lg border border-amber-500 text-center col-span-2 interactive-card">
-                        <div class="text-amber-300 text-xs font-bold uppercase">Chalecos</div>
-                        <div id="fin-chalecos-total" class="text-2xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 sm:p-4 rounded-xl border border-amber-500/40 text-center col-span-2 interactive-card">
+                        <div
+                            class="text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved text-[10px]"></i> Chalecos Tácticos
+                        </div>
+                        <div id="fin-chalecos-total"
+                            class="text-xl sm:text-2xl font-black text-white mt-1 tabular-nums">0</div>
                     </div>
                 </div>
 
                 <!-- FINANZAS DE ESTA SEMANA -->
-                <div class="mb-6 border-b theme-border pb-4">
-                    <h2 class="text-2xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Recaudación de
-                        esta Semana</h2>
-                    <p class="text-brand-300/70 text-sm mt-1">Historial exclusivo de ingresos generados durante el ciclo
-                        actual.</p>
+                <div class="mb-4 flex items-center justify-between border-b theme-border pb-3">
+                    <div>
+                        <h2
+                            class="text-xl sm:text-2xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)] tracking-tight">
+                            Recaudación Semanal</h2>
+                        <p class="text-brand-300/70 text-xs mt-0.5">Ingresos contabilizados exclusivamente en el ciclo
+                            en curso.</p>
+                    </div>
+                    <span
+                        class="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-950/60 border border-brand-500/30 text-brand-300 font-bold uppercase">Ciclo
+                        Activo</span>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
                     <div
-                        class="bg-black/60 backdrop-blur-md p-4 rounded-lg border border-zinc-700 text-center interactive-card">
-                        <div class="text-emerald-400 text-xs font-bold uppercase">Efectivo Semanal</div>
-                        <div id="fin-efectivo-weekly" class="text-xl font-bold text-white mt-1">$0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 rounded-xl border theme-border text-center interactive-card">
+                        <div class="text-emerald-400 text-[10px] font-bold uppercase tracking-wider">Efectivo Semanal
+                        </div>
+                        <div id="fin-efectivo-weekly"
+                            class="text-lg sm:text-xl font-black text-white mt-1 tabular-nums">$0</div>
                     </div>
                     <div
-                        class="bg-black/60 backdrop-blur-md p-4 rounded-lg border border-zinc-700 text-center interactive-card">
-                        <div class="text-lime-400 text-xs font-bold uppercase">Coca Semanal</div>
-                        <div id="fin-coca-weekly" class="text-xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 rounded-xl border theme-border text-center interactive-card">
+                        <div class="text-lime-400 text-[10px] font-bold uppercase tracking-wider">Coca Semanal</div>
+                        <div id="fin-coca-weekly" class="text-lg sm:text-xl font-black text-white mt-1 tabular-nums">0
+                        </div>
                     </div>
                     <div
-                        class="bg-black/60 backdrop-blur-md p-4 rounded-lg border border-zinc-700 text-center interactive-card">
-                        <div class="text-brand-400 text-xs font-bold uppercase">Pistolas SNS</div>
-                        <div id="fin-sns-weekly" class="text-xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 rounded-xl border theme-border text-center interactive-card">
+                        <div class="text-brand-300 text-[10px] font-bold uppercase tracking-wider">Pistolas SNS</div>
+                        <div id="fin-sns-weekly" class="text-lg sm:text-xl font-black text-white mt-1 tabular-nums">0
+                        </div>
                     </div>
                     <div
-                        class="bg-black/60 backdrop-blur-md p-4 rounded-lg border border-zinc-700 text-center interactive-card">
-                        <div class="text-brand-400 text-xs font-bold uppercase">Vintage</div>
-                        <div id="fin-vintage-weekly" class="text-xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 rounded-xl border theme-border text-center interactive-card">
+                        <div class="text-brand-300 text-[10px] font-bold uppercase tracking-wider">Vintage</div>
+                        <div id="fin-vintage-weekly" class="text-lg sm:text-xl font-black text-white mt-1 tabular-nums">
+                            0</div>
                     </div>
                     <div
-                        class="bg-black/60 backdrop-blur-md p-4 rounded-lg border border-zinc-700 text-center interactive-card">
-                        <div class="text-brand-400 text-xs font-bold uppercase">9mm</div>
-                        <div id="fin-9mm-weekly" class="text-xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 rounded-xl border theme-border text-center interactive-card">
+                        <div class="text-brand-300 text-[10px] font-bold uppercase tracking-wider">9mm</div>
+                        <div id="fin-9mm-weekly" class="text-lg sm:text-xl font-black text-white mt-1 tabular-nums">0
+                        </div>
                     </div>
                     <div
-                        class="bg-black/60 backdrop-blur-md p-4 rounded-lg border border-zinc-700 text-center interactive-card">
-                        <div class="text-brand-400 text-xs font-bold uppercase">Subfusiles (Mini/Tec/Micro)</div>
-                        <div id="fin-smg-weekly" class="text-xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 rounded-xl border theme-border text-center interactive-card">
+                        <div class="text-brand-300 text-[10px] font-bold uppercase tracking-wider truncate"
+                            title="Subfusiles (Mini/Tec/Micro)">Subfusiles (SMG)</div>
+                        <div id="fin-smg-weekly" class="text-lg sm:text-xl font-black text-white mt-1 tabular-nums">0
+                        </div>
                     </div>
                     <div
-                        class="bg-black/60 backdrop-blur-md p-4 rounded-lg border border-zinc-700 text-center col-span-2 interactive-card">
-                        <div class="text-amber-400 text-xs font-bold uppercase">Chalecos</div>
-                        <div id="fin-chalecos-weekly" class="text-xl font-bold text-white mt-1">0</div>
+                        class="bg-zinc-950/80 backdrop-blur-md p-3.5 rounded-xl border theme-border text-center col-span-2 interactive-card">
+                        <div
+                            class="text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved text-[10px]"></i> Chalecos Semanales
+                        </div>
+                        <div id="fin-chalecos-weekly"
+                            class="text-lg sm:text-xl font-black text-white mt-1 tabular-nums">0</div>
                     </div>
                 </div>
 
                 <!-- HISTORIAL FINANCIERO -->
-                <div class="mb-4">
-                    <h2 class="text-xl font-black text-white">Historial de Movimientos</h2>
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-brand-400 text-sm"></i>
+                        <span>Historial de Movimientos</span>
+                    </h2>
+                    <span class="text-[10px] text-zinc-400 font-mono">Últimos 50 asientos</span>
                 </div>
-                <div class="bg-black/60 backdrop-blur-xl rounded-xl theme-panel flex flex-col overflow-hidden">
-                    <div class="overflow-x-auto w-full bg-black/20 max-h-80">
-                        <table class="w-full min-w-[700px] text-sm text-left text-zinc-400">
+                <div
+                    class="bg-zinc-950/80 backdrop-blur-xl rounded-2xl theme-panel flex flex-col overflow-hidden border theme-border shadow-md">
+                    <div class="overflow-x-auto w-full max-h-80">
+                        <table class="w-full min-w-[700px] text-xs text-left text-zinc-300">
                             <thead
-                                class="text-xs text-brand-300 uppercase bg-black/80 border-b theme-border sticky top-0 shadow-md z-10">
+                                class="text-[10px] text-brand-300 uppercase bg-black/90 border-b theme-border sticky top-0 shadow-md z-10 tracking-wider">
                                 <tr>
-                                    <th class="px-4 py-3">Fecha</th>
-                                    <th class="px-4 py-3">Tipo</th>
-                                    <th class="px-4 py-3">Recurso</th>
-                                    <th class="px-4 py-3">Cantidad</th>
-                                    <th class="px-4 py-3">Detalle / Motivo</th>
-                                    <th class="px-4 py-3">Responsable</th>
+                                    <th class="px-4 py-3 font-black">Fecha</th>
+                                    <th class="px-4 py-3 font-black">Tipo</th>
+                                    <th class="px-4 py-3 font-black">Recurso</th>
+                                    <th class="px-4 py-3 font-black">Cantidad</th>
+                                    <th class="px-4 py-3 font-black">Detalle / Motivo</th>
+                                    <th class="px-4 py-3 font-black">Responsable</th>
                                 </tr>
                             </thead>
-                            <tbody id="finances-history-body"></tbody>
+                            <tbody id="finances-history-body" class="divide-y divide-white/5"></tbody>
                         </table>
                     </div>
                 </div>
@@ -735,101 +1021,148 @@
 
             <!-- VISTA: REGISTRO -->
             <div id="view-registro" class="hidden h-full flex flex-col p-4 md:p-8 overflow-y-auto">
-                <h2 class="text-3xl font-black mb-1 text-white drop-shadow-[0_0_10px_var(--theme-glow)]">Registro de
-                    Actividad</h2>
-                <div class="flex flex-col sm:flex-row gap-3 mb-6 items-center">
-                    <p class="text-brand-300/70 text-sm flex-1">Auditoría completa (Filtrable por acción, responsable o
-                        fecha).</p>
-                    <input type="text" id="log-search-input" placeholder="🔍 Buscar por acción, responsable o fecha..."
-                        oninput="renderRegistro()"
-                        class="bg-black border theme-border text-white text-sm rounded-lg p-2.5 w-full sm:w-96 interactive-input">
+                <div class="flex flex-col lg:flex-row gap-4 mb-6 items-start lg:items-center justify-between">
+                    <div>
+                        <div
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-950/60 border border-brand-500/30 text-brand-300 text-[10px] font-bold tracking-wider uppercase mb-1.5 shadow-sm">
+                            <i class="fa-solid fa-clipboard-list text-[10px]"></i> Log de Auditoría Operativa
+                        </div>
+                        <h2
+                            class="text-2xl sm:text-3xl font-black text-white drop-shadow-[0_0_10px_var(--theme-glow)] tracking-tight">
+                            Registro de Actividad</h2>
+                        <p class="text-brand-300/70 text-xs sm:text-sm mt-0.5">Auditoría completa filtrable por acción,
+                            responsable o fecha.</p>
+                    </div>
+                    <div class="w-full lg:w-auto">
+                        <input type="text" id="log-search-input"
+                            placeholder="🔍 Filtrar logs por acción, responsable..." oninput="renderRegistro()"
+                            class="bg-black/80 border theme-border text-white text-xs rounded-xl p-3 w-full lg:w-80 interactive-input shadow-inner">
+                    </div>
                 </div>
-                <div class="bg-black/60 backdrop-blur-xl rounded-xl theme-panel flex-1 flex flex-col overflow-hidden">
-                    <div class="overflow-x-auto flex-1 w-full bg-black/20">
-                        <table class="w-full min-w-[600px] text-sm text-left text-zinc-400">
+                <div
+                    class="bg-zinc-950/80 backdrop-blur-xl rounded-2xl theme-panel flex-1 flex flex-col overflow-hidden border theme-border shadow-md">
+                    <div class="overflow-x-auto flex-1 w-full max-h-[70vh]">
+                        <table class="w-full min-w-[600px] text-xs text-left text-zinc-300">
                             <thead
-                                class="text-xs text-brand-300 uppercase bg-black/80 border-b theme-border sticky top-0 shadow-md">
+                                class="text-[10px] text-brand-300 uppercase bg-black/90 border-b theme-border sticky top-0 shadow-md tracking-wider z-10">
                                 <tr>
-                                    <th class="px-6 py-4">Fecha y Hora</th>
-                                    <th class="px-6 py-4">Responsable</th>
-                                    <th class="px-6 py-4">Acción Realizada</th>
+                                    <th class="px-5 py-3.5 font-black">Fecha y Hora</th>
+                                    <th class="px-5 py-3.5 font-black">Responsable</th>
+                                    <th class="px-5 py-3.5 font-black">Acción Realizada</th>
                                 </tr>
                             </thead>
-                            <tbody id="logs-table-body"></tbody>
+                            <tbody id="logs-table-body" class="divide-y divide-white/5"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 
     <!-- MODALES VARIOS -->
 
-    <!-- MODAL GESTIONAR CAJA -->
+    <!-- 1. MODAL GESTIONAR CAJA -->
     <div id="cajaModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
-            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md"><i
-                    class="fa-solid fa-cash-register mr-2"></i> Gestionar Caja</h3>
-            <p class="text-sm text-zinc-400 mb-4 pb-3 border-b theme-border">Administra el dinero físico independiente
-                del sistema.</p>
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[70] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 border border-amber-500/40 rounded-2xl p-6 sm:p-7 w-full max-w-md shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_rgba(245,158,11,0.15)] animate-modal theme-panel relative overflow-hidden">
+            <!-- CABECERA MODAL -->
+            <div class="flex items-center justify-between pb-3 mb-4 border-b theme-border">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-base shadow-sm">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-white tracking-tight">Gestionar Caja</h3>
+                        <p class="text-[11px] text-brand-300/70">Flujo de efectivo físico manual</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCajaModal()"
+                    class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-zinc-400 mb-4 pb-3 border-b theme-border leading-relaxed">
+                Administra el dinero físico independiente del sistema y de la bóveda digital.
+            </p>
 
             <div class="mb-4">
-                <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Acción a realizar</label>
+                <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Acción a realizar</label>
                 <select id="caja-action" onchange="toggleCajaMode()"
-                    class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                    class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs font-semibold interactive-input focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/40">
                     <option value="add">Añadir Dinero a Caja (Venta/Ingreso)</option>
                     <option value="set">Actualizar Caja (Ajuste Manual)</option>
                 </select>
-                <p id="caja-help-text" class="text-[10px] text-zinc-500 mt-1 leading-tight">Utiliza esta opción cuando
-                    ingrese dinero físico a la caja, por ejemplo, por una venta.</p>
+                <p id="caja-help-text"
+                    class="text-[11px] text-zinc-400 mt-2 leading-relaxed bg-amber-950/20 border border-amber-500/20 rounded-xl p-2.5">
+                    Utiliza esta opción cuando ingrese dinero físico a la caja, por ejemplo, por una venta.
+                </p>
             </div>
 
             <form id="caja-form" onsubmit="confirmCajaAction(event)" class="space-y-4 mb-2">
                 <div>
                     <label id="caja-amount-label"
-                        class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cantidad a añadir ($)</label>
+                        class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Cantidad a añadir ($)</label>
                     <input type="number" id="caja-amount" min="0" required
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input font-black"
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-sm font-black tabular-nums interactive-input focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/40"
                         placeholder="Ej: 500000">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Motivo / Concepto <span
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Motivo / Concepto <span
                             id="caja-reason-opt"
                             class="hidden text-zinc-500 lowercase font-normal">(Opcional)</span></label>
                     <input type="text" id="caja-reason" required
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/40"
                         placeholder="Ej: Venta de 3 SNS del almacén">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t theme-border mt-6">
                     <button type="button" onclick="closeCajaModal()"
-                        class="px-4 py-2 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                        class="px-4 py-2.5 bg-black/80 border theme-border text-zinc-300 hover:bg-zinc-900 rounded-xl font-semibold text-xs interactive-btn">Cancelar</button>
                     <button type="submit"
-                        class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)]">Confirmar
+                        class="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-zinc-950 font-black rounded-xl text-xs uppercase tracking-wider interactive-btn shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all">Confirmar
                         Acción</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL AUTORIDADES -->
+
+    <!-- 2. MODAL AUTORIDADES -->
     <div id="authorityModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
-            <h3 id="auth-modal-title" class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md"><i
-                    class="fa-solid fa-user-tie mr-2"></i> Añadir Autoridad</h3>
-            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b theme-border">Registra a un alto mando en el muro de
-                autoridades.</p>
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[70] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 p-6 md:p-7 rounded-2xl w-full max-w-md animate-modal theme-panel border theme-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_var(--theme-glow)] relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b theme-border">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-base shadow-sm">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <h3 id="auth-modal-title" class="text-lg font-black text-white tracking-tight">Añadir Autoridad
+                        </h3>
+                        <p class="text-[11px] text-brand-300/70">Alto mando en el muro directivo</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeAuthorityModal()"
+                    class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
             <form id="authority-form" onsubmit="saveAuthority(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Nombre IC</label>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Nombre IC</label>
                     <input type="text" id="a-name" required placeholder="Ej: Bartolo Bartolini"
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cargo / Rango</label>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Cargo / Rango</label>
                     <select id="a-rank" required
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input font-semibold">
                         <option value="JEFES">JEFES</option>
                         <option value="Cúpula Administrativa">Cúpula Administrativa</option>
                         <option value="Mano Derecha">Mano Derecha</option>
@@ -841,49 +1174,65 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Descripción /
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Descripción /
                         Función</label>
                     <textarea id="a-desc" rows="2" placeholder="Breve descripción del rol que cumple..."
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input text-xs"></textarea>
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white interactive-input text-xs leading-relaxed"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1 mt-2">Fotografía <span
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Fotografía <span
                             id="a-file-optional" class="text-zinc-500 font-normal lowercase hidden">(Opcional al
                             editar)</span></label>
                     <input type="file" id="a-file" accept="image/png, image/jpeg, image/webp"
-                        class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-brand-900/30 file:text-brand-300 hover:file:bg-brand-900/50 interactive-btn cursor-pointer bg-black rounded-lg border theme-border">
+                        class="block w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-900/40 file:text-brand-300 hover:file:bg-brand-900/60 interactive-btn cursor-pointer bg-black/80 rounded-xl border theme-border">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t theme-border mt-6">
                     <button type="button" onclick="closeAuthorityModal()"
-                        class="px-4 py-2 bg-black text-zinc-300 border theme-border hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                        class="px-4 py-2.5 bg-black/80 text-zinc-300 border theme-border hover:bg-zinc-900 rounded-xl text-xs font-bold interactive-btn">Cancelar</button>
                     <button type="submit"
-                        class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400">Guardar
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-black interactive-btn shadow-[0_0_20px_var(--theme-glow)] border border-brand-400 uppercase tracking-wider">Guardar
                         Autoridad</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL VEHÍCULOS (GARAJE) -->
+
+    <!-- 3. MODAL VEHÍCULOS (GARAJE) -->
     <div id="vehicleModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
-            <h3 id="vehicle-modal-title" class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md"><i
-                    class="fa-solid fa-car mr-2"></i> Añadir Vehículo</h3>
-            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b theme-border">Registra un nuevo coche en el garaje de la
-                organización.</p>
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[70] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 p-6 md:p-7 rounded-2xl w-full max-w-md animate-modal theme-panel border theme-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_var(--theme-glow)] relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b theme-border">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-base shadow-sm">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <div>
+                        <h3 id="vehicle-modal-title" class="text-lg font-black text-white tracking-tight">Añadir
+                            Vehículo</h3>
+                        <p class="text-[11px] text-brand-300/70">Flota vehicular de la organización</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeVehicleModal()"
+                    class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
             <form id="vehicle-form" onsubmit="saveVehicle(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Modelo / Nombre del
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Modelo / Nombre del
                         Vehículo</label>
                     <input type="text" id="v-model" required placeholder="Ej: Kuruma Blindado"
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Asignación / Uso
-                        Permtido</label>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Asignación / Uso
+                        Permitido</label>
                     <select id="v-usage" required
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input font-semibold">
                         <option value="Uso Público">Uso Público (Cualquier miembro)</option>
                         <option value="Grupo Sigilo">Exclusivo: Grupo Sigilo</option>
                         <option value="Operativa Antrax">Exclusivo: Operativa Antrax</option>
@@ -892,114 +1241,160 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1 mt-2">Foto del Vehículo <span
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Foto del Vehículo <span
                             id="v-file-optional" class="text-zinc-500 font-normal lowercase hidden">(Opcional al
                             editar)</span></label>
                     <input type="file" id="v-file" accept="image/png, image/jpeg, image/webp"
-                        class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-brand-900/30 file:text-brand-300 hover:file:bg-brand-900/50 interactive-btn cursor-pointer bg-black rounded-lg border theme-border">
+                        class="block w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-900/40 file:text-brand-300 hover:file:bg-brand-900/60 interactive-btn cursor-pointer bg-black/80 rounded-xl border theme-border">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t theme-border mt-6">
                     <button type="button" onclick="closeVehicleModal()"
-                        class="px-4 py-2 bg-black text-zinc-300 border theme-border hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                        class="px-4 py-2.5 bg-black/80 text-zinc-300 border theme-border hover:bg-zinc-900 rounded-xl text-xs font-bold interactive-btn">Cancelar</button>
                     <button type="submit"
-                        class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400">Guardar
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-black interactive-btn shadow-[0_0_20px_var(--theme-glow)] border border-brand-400 uppercase tracking-wider">Guardar
                         Vehículo</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE IMAGEN FULLSCREEN -->
+
+    <!-- 4. MODAL DE IMAGEN FULLSCREEN -->
     <div id="imageModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center z-[100] transition-opacity duration-300 p-4"
+        class="hidden fixed inset-0 bg-black/95 backdrop-blur-2xl flex items-center justify-center z-[100] transition-opacity duration-300 p-4"
         onclick="closeImageModal()">
         <button
-            class="absolute top-4 right-6 text-brand-400 text-3xl hover:text-red-500 transition-colors cursor-pointer drop-shadow-md"
-            onclick="closeImageModal()"><i class="fa-solid fa-xmark"></i></button>
+            class="absolute top-4 right-6 w-10 h-10 rounded-full bg-zinc-900/80 border theme-border text-brand-300 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center shadow-lg transition-all cursor-pointer drop-shadow-md z-30"
+            onclick="closeImageModal()" title="Cerrar"><i class="fa-solid fa-xmark text-lg"></i></button>
         <img id="fullscreen-image" src="" alt="Fullscreen"
-            class="max-w-full max-h-[90vh] rounded-xl shadow-[0_0_30px_var(--theme-glow)] border-2 theme-border object-contain"
+            class="max-w-full max-h-[85vh] rounded-2xl shadow-[0_0_40px_var(--theme-glow)] border-2 theme-border object-contain"
             onclick="event.stopPropagation()">
         <div id="fullscreen-caption"
-            class="absolute bottom-6 bg-black/80 px-6 py-2.5 rounded-xl border theme-border text-brand-300 text-sm font-semibold pointer-events-none hidden max-w-2xl text-center shadow-2xl backdrop-blur-md">
+            class="absolute bottom-6 bg-zinc-950/90 backdrop-blur-md px-6 py-3 rounded-xl border theme-border text-zinc-200 text-sm font-semibold pointer-events-none hidden max-w-2xl text-center shadow-2xl">
         </div>
     </div>
 
-    <!-- MODAL PARA SUBIR FOTO A GALERÍA -->
+
+    <!-- 5. MODAL PARA SUBIR FOTO A GALERÍA -->
     <div id="uploadModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
-            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md"><i
-                    class="fa-solid fa-cloud-arrow-up mr-2"></i> Subir a la Galería</h3>
-            <p class="text-sm text-zinc-400 mb-6 pb-3 border-b theme-border">Selecciona una imagen de tu dispositivo.
-                Todos los miembros podrán verla.</p>
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[70] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 p-6 md:p-7 rounded-2xl w-full max-w-md animate-modal theme-panel border theme-border shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_var(--theme-glow)] relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b theme-border">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-base shadow-sm">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-white tracking-tight">Subir a Galería</h3>
+                        <p class="text-[11px] text-brand-300/70">Archivo visual compartido</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUploadModal()"
+                    class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
             <form onsubmit="uploadImage(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Título / Descripción
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Título / Descripción
                         (Opcional)</label>
                     <input type="text" id="gallery-title" placeholder="Ej: Operativo en la zona norte..."
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1 mt-2">Archivo de
-                        Imagen</label>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Archivo de Imagen</label>
                     <input type="file" id="gallery-file" accept="image/png, image/jpeg, image/webp" required
-                        class="block w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-brand-900/30 file:text-brand-300 hover:file:bg-brand-900/50 interactive-btn cursor-pointer bg-black rounded-lg border theme-border">
+                        class="block w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-900/40 file:text-brand-300 hover:file:bg-brand-900/60 interactive-btn cursor-pointer bg-black/80 rounded-xl border theme-border">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t theme-border mt-6">
                     <button type="button" onclick="closeUploadModal()"
-                        class="px-4 py-2 bg-black text-zinc-300 border theme-border hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                        class="px-4 py-2.5 bg-black/80 text-zinc-300 border theme-border hover:bg-zinc-900 rounded-xl text-xs font-bold interactive-btn">Cancelar</button>
                     <button type="submit"
-                        class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)] border border-brand-400">Confirmar
+                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-black interactive-btn shadow-[0_0_20px_var(--theme-glow)] border border-brand-400 uppercase tracking-wider">Confirmar
                         Subida</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE MIEMBRO (Agregar/Editar) -->
+
+    <!-- 6. MODAL DE MIEMBRO (Agregar/Editar) -->
     <div id="memberModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 transition-opacity duration-300 p-4">
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-50 transition-all duration-300 p-4">
         <div
-            class="bg-zinc-950 p-6 md:p-8 rounded-xl w-full max-w-3xl animate-modal overflow-y-auto max-h-[90vh] theme-panel">
-            <h3 id="modal-title"
-                class="text-xl font-black text-brand-400 mb-6 border-b theme-border pb-2 drop-shadow-md">Añadir Miembro
-            </h3>
-            <form id="member-form" class="space-y-4 md:space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Nombre
-                            In-Character</label><input type="text" id="f-name" required
-                            class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+            class="bg-zinc-950/95 border theme-border p-6 md:p-8 rounded-2xl w-full max-w-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_35px_var(--theme-glow)] animate-modal overflow-y-auto max-h-[90vh] custom-scrollbar theme-panel relative">
+
+            <!-- CABECERA MODAL -->
+            <div class="flex items-center justify-between pb-3 mb-6 border-b theme-border">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-lg shadow-sm">
+                        <i class="fa-solid fa-user-gear"></i>
                     </div>
-                    <div><label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Usuario
-                            Discord</label><input type="text" id="f-discord" required
-                            class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                    <div>
+                        <h3 id="modal-title" class="text-xl font-black text-white tracking-tight drop-shadow-md">Añadir
+                            Miembro</h3>
+                        <p class="text-xs text-brand-300/70">Ficha técnica y parámetros del integrante</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModal()"
+                    class="text-zinc-400 hover:text-white p-2 rounded-xl hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <form id="member-form" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-id-card text-[11px] text-brand-400"></i> Nombre In-Character
+                        </label>
+                        <input type="text" id="f-name" required placeholder="Ej: Vito Scaletta"
+                            class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5 flex items-center gap-1.5">
+                            <i class="fa-brands fa-discord text-[11px] text-brand-400"></i> Usuario Discord
+                        </label>
+                        <input type="text" id="f-discord" required placeholder="Ej: scaletta_01"
+                            class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input">
                     </div>
                 </div>
 
                 <!-- SECCIÓN EDITABLE (OCULTA AL AÑADIR NUEVO MIEMBRO) -->
-                <div id="edit-only-section" class="space-y-4 md:space-y-5">
+                <div id="edit-only-section" class="space-y-5 pt-2 border-t border-white/5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Método de Pago
-                                Base</label>
+                            <label
+                                class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wallet text-[11px] text-brand-400"></i> Método de Pago Base
+                            </label>
                             <select id="f-payment"
-                                class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"></select>
+                                class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs font-semibold interactive-input"></select>
                         </div>
                         <div>
-                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Fecha Base</label>
+                            <label
+                                class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-calendar-day text-[11px] text-brand-400"></i> Fecha Base de Cuota
+                            </label>
                             <input type="date" id="f-date"
-                                class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"
+                                class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input"
                                 style="color-scheme: dark;">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Descuento
+                            <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Descuento
                                 Fijo</label>
                             <select id="f-discount" onchange="updatePaymentOptions()"
-                                class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
-                                <option value="0">0 Hojas</option>
+                                class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs font-semibold interactive-input">
+                                <option value="0">0 Hojas (Sin Dcto)</option>
                                 <option value="200">200 Hojas</option>
                                 <option value="300">300 Hojas</option>
                                 <option value="400">400 Hojas (Sigilo/Antrax)</option>
@@ -1008,21 +1403,24 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cuotas Extra</label>
+                            <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Cuotas
+                                Adelantadas</label>
                             <div class="flex items-center gap-2">
                                 <button type="button" onclick="subExtraWeek()"
-                                    class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">-</button>
+                                    class="bg-brand-950/60 border theme-border text-brand-300 hover:text-white px-3.5 py-2.5 rounded-xl interactive-btn font-black text-sm hover:bg-brand-900/60">-</button>
                                 <input type="number" id="f-extra" min="0" value="0"
-                                    class="w-16 bg-black border theme-border rounded-lg p-2.5 text-white font-bold text-center">
+                                    class="w-full bg-black/80 border theme-border rounded-xl p-2.5 text-white font-black text-center tabular-nums text-sm">
                                 <button type="button" onclick="addExtraWeek()"
-                                    class="bg-brand-900/30 border theme-border text-brand-300 px-3 py-2.5 rounded-lg interactive-btn hover:bg-brand-900/60">+</button>
+                                    class="bg-brand-950/60 border theme-border text-brand-300 hover:text-white px-3.5 py-2.5 rounded-xl interactive-btn font-black text-sm hover:bg-brand-900/60">+</button>
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs uppercase font-bold text-red-400 mb-1"><i
-                                    class="fa-solid fa-mask"></i> Rol Ilegales</label>
+                            <label
+                                class="block text-xs uppercase font-bold text-red-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-mask"></i> Rol Ilegales
+                            </label>
                             <select id="f-illegal"
-                                class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input font-bold">
+                                class="w-full bg-black/80 border border-red-500/40 rounded-xl p-3 text-white text-xs font-black interactive-input focus:border-red-500/80">
                                 <option value="Por Entrar">Por Entrar</option>
                                 <option value="Sin Rol">Sin Rol</option>
                                 <option value="Tiene Rol">Tiene Rol</option>
@@ -1031,70 +1429,102 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Notas u Observaciones
+                        <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Notas u Observaciones
                             Internas</label>
                         <textarea id="f-notes" rows="2"
-                            class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input text-xs"
+                            class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white interactive-input text-xs leading-relaxed"
                             placeholder="Ej: Aviso de vacaciones hasta el viernes, motivo de faltas..."></textarea>
                     </div>
-                    <div class="bg-black/50 p-4 rounded-lg border theme-border">
-                        <label class="block text-xs uppercase font-bold text-brand-300/70 mb-2">Faltas (Puntos)</label>
+
+                    <!-- PANEL DE FALTAS TÁCTICO -->
+                    <div class="bg-black/60 p-4 rounded-xl border theme-border shadow-inner">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-xs uppercase font-bold text-brand-300 flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-xs"></i> Registro de
+                                Faltas (Puntos)
+                            </label>
+                            <button type="button" onclick="clearStrikes()"
+                                class="bg-black/80 hover:bg-zinc-900 border theme-border text-[11px] px-3 py-1 rounded-lg text-zinc-400 hover:text-white interactive-btn transition-colors">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> Limpiar
+                            </button>
+                        </div>
                         <div class="flex flex-wrap gap-2 mb-3">
                             <button type="button" onclick="addStrike(1)"
-                                class="bg-zinc-900 border border-zinc-700 text-xs px-2.5 py-1.5 rounded text-zinc-300 font-semibold interactive-btn">+1
-                                Llamado</button>
+                                class="bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700 text-xs px-3 py-2 rounded-xl text-zinc-300 font-bold interactive-btn transition-all">
+                                +1 Llamado
+                            </button>
                             <button type="button" onclick="addStrike(3)"
-                                class="bg-yellow-950/40 border border-yellow-900/50 text-xs px-2.5 py-1.5 rounded text-yellow-300 font-semibold interactive-btn">+1
-                                Leve</button>
+                                class="bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/30 text-xs px-3 py-2 rounded-xl text-amber-300 font-bold interactive-btn transition-all">
+                                +1 Leve (3 pts)
+                            </button>
                             <button type="button" onclick="addStrike(18)"
-                                class="bg-orange-950/40 border border-orange-900/50 text-xs px-2.5 py-1.5 rounded text-orange-300 font-semibold interactive-btn">+1
-                                Intermedia</button>
+                                class="bg-orange-950/40 hover:bg-orange-900/60 border border-orange-500/30 text-xs px-3 py-2 rounded-xl text-orange-300 font-bold interactive-btn transition-all">
+                                +1 Intermedia (18 pts)
+                            </button>
                             <button type="button" onclick="addStrike(54)"
-                                class="bg-red-950/40 border border-red-900/50 text-xs px-2.5 py-1.5 rounded text-red-300 font-semibold interactive-btn">+1
-                                Grave</button>
-                            <button type="button" onclick="clearStrikes()"
-                                class="bg-black border theme-border text-xs px-2.5 py-1.5 rounded ml-auto text-brand-300 interactive-btn">Limpiar</button>
+                                class="bg-red-950/50 hover:bg-red-900/70 border border-red-500/40 text-xs px-3 py-2 rounded-xl text-red-300 font-bold interactive-btn transition-all shadow-[0_0_12px_rgba(239,68,68,0.2)]">
+                                +1 Grave (54 pts)
+                            </button>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-3 pt-2 border-t border-white/5">
                             <input type="number" id="f-strikes" min="0" value="0"
-                                class="w-16 bg-black border theme-border rounded-lg p-2 text-white font-bold text-center"
+                                class="w-16 bg-black/90 border theme-border rounded-xl p-2 text-white font-black text-center tabular-nums text-sm"
                                 readonly>
-                            <div id="strike-preview" class="text-sm font-bold text-amber-400">0 Faltas</div>
+                            <div id="strike-preview" class="text-xs font-black text-amber-400">0 Faltas</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-3 mt-6 pt-4 border-t theme-border">
                     <button type="button" onclick="closeModal()"
-                        class="px-5 py-2.5 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                        class="px-5 py-2.5 bg-black/80 border theme-border text-zinc-300 hover:bg-zinc-900 rounded-xl font-bold text-xs interactive-btn">Cancelar</button>
                     <button type="submit"
-                        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-lg font-black shadow-[0_0_15px_var(--theme-glow)] interactive-btn">Guardar
+                        class="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-xl font-black text-xs uppercase tracking-wider shadow-[0_0_20px_var(--theme-glow)] interactive-btn transition-all">Guardar
                         Perfil</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL SELECCIÓN DE PAGO -->
+
+    <!-- 7. MODAL SELECCIÓN DE PAGO -->
     <div id="paymentModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
-            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md">Registrar Pago de Cuota</h3>
-            <p id="payment-member-name" class="text-sm text-zinc-400 mb-4 pb-3 border-b theme-border">Cargando...</p>
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[70] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 border theme-border rounded-2xl p-6 sm:p-7 w-full max-w-md shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_var(--theme-glow)] animate-modal theme-panel relative overflow-hidden">
+            <!-- CABECERA MODAL -->
+            <div class="flex items-center justify-between pb-3 mb-4 border-b theme-border">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-base shadow-sm">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-white tracking-tight">Registrar Pago de Cuota</h3>
+                        <p id="payment-member-name"
+                            class="text-xs text-brand-300/80 font-semibold truncate max-w-[240px]">Cargando...</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePaymentModal()"
+                    class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
             <div class="space-y-4 mb-6">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Selecciona el Método con el
-                        que Pagó:</label>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Selecciona el Método con
+                        el que Pagó:</label>
                     <select id="modal-payment-method" onchange="updatePaymentTotal()"
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs font-semibold interactive-input">
                         <!-- Generado por JS -->
                     </select>
                 </div>
-                <div class="mt-4">
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Descuento aplicado al
+                <div>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Descuento aplicado al
                         pago:</label>
                     <select id="modal-payment-discount" onchange="updatePaymentTotal()"
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs font-semibold interactive-input">
                         <option value="0" selected>Sin descuento (0 Hojas)</option>
                         <option value="200">200 Hojas</option>
                         <option value="300">300 Hojas</option>
@@ -1103,40 +1533,72 @@
                         <option value="Exonerado">Exonerado (Cúpula/Líderes)</option>
                     </select>
                 </div>
-                <div class="bg-black/60 border theme-border p-3 rounded-lg flex flex-col gap-1 text-sm mt-4">
-                    <div class="flex justify-between text-zinc-400"><span>Monto original:</span> <span
-                            id="payment-original-amount">$0</span></div>
-                    <div class="flex justify-between text-brand-400"><span>Descuento:</span> <span
-                            id="payment-discount-amount">-$0</span></div>
-                    <div class="flex justify-between text-white font-black pt-1 border-t border-zinc-800 mt-1">
-                        <span>Total a pagar:</span> <span id="payment-final-amount">$0</span>
+                <!-- PANEL RESUMEN FINANCIERO -->
+                <div
+                    class="bg-black/70 border theme-border p-4 rounded-xl flex flex-col gap-2 text-xs shadow-inner mt-4">
+                    <div class="flex justify-between items-center text-zinc-400">
+                        <span>Monto original:</span>
+                        <span id="payment-original-amount" class="font-mono font-bold text-zinc-300">$0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-brand-400">
+                        <span>Descuento:</span>
+                        <span id="payment-discount-amount" class="font-mono font-bold">-$0</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center text-white font-black pt-2 border-t border-white/10 mt-1">
+                        <span class="uppercase tracking-wider text-[11px]">Total a pagar:</span>
+                        <span id="payment-final-amount"
+                            class="text-base text-emerald-400 font-black tabular-nums drop-shadow-sm">$0</span>
                     </div>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 pt-3 border-t theme-border">
+
+            <div class="flex justify-end gap-3 pt-4 border-t theme-border">
                 <button onclick="closePaymentModal()"
-                    class="px-4 py-2 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                    class="px-4 py-2.5 bg-black/80 border theme-border text-zinc-300 hover:bg-zinc-900 rounded-xl font-semibold text-xs interactive-btn">Cancelar</button>
                 <button onclick="confirmRegisterPayment()"
-                    class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-lg font-black interactive-btn shadow-[0_0_15px_var(--theme-glow)]">Confirmar
+                    class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white border border-brand-400 rounded-xl font-black text-xs uppercase tracking-wider interactive-btn shadow-[0_0_20px_var(--theme-glow)] transition-all">Confirmar
                     Pago</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL EXTRACCIÓN FINANCIERA -->
+
+    <!-- 8. MODAL EXTRACCIÓN FINANCIERA -->
     <div id="extractModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[70] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-md animate-modal theme-panel">
-            <h3 class="text-xl font-bold text-red-500 mb-2 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]"><i
-                    class="fa-solid fa-money-bill-transfer mr-2"></i> Extraer Recursos</h3>
-            <p class="text-sm text-zinc-400 mb-4 pb-3 border-b theme-border">Esto descontará del stock total, pero NO
-                afectará la estadística de recaudación semanal.</p>
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[70] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 border border-red-500/40 rounded-2xl p-6 sm:p-7 w-full max-w-md shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_rgba(239,68,68,0.2)] animate-modal theme-panel relative overflow-hidden">
+            <!-- CABECERA MODAL -->
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-red-500/20">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 text-base shadow-sm">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-red-400 tracking-tight">Extraer Recursos</h3>
+                        <p class="text-[11px] text-zinc-400">Salida directa de stock o fondos</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeExtractModal()"
+                    class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div
+                class="bg-red-950/30 border border-red-500/20 rounded-xl p-3 text-[11px] text-red-300/90 mb-4 leading-relaxed">
+                <i class="fa-solid fa-triangle-exclamation mr-1 text-red-400"></i> Esto descontará del stock total, pero
+                <strong>NO afectará</strong> la estadística de recaudación semanal.
+            </div>
+
             <form id="extract-form" onsubmit="confirmExtraction(event)" class="space-y-4 mb-6">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Selecciona el
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Selecciona el
                         Recurso:</label>
                     <select id="ex-resource"
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input">
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs font-semibold interactive-input focus:border-red-500/60 focus:ring-1 focus:ring-red-500/40">
                         <option value="efectivo">Efectivo Líquido (Sistema) ($)</option>
                         <option value="caja">Caja Física ($)</option>
                         <option value="coca">Hojas de Coca</option>
@@ -1150,72 +1612,112 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Cantidad a Extraer:</label>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Cantidad a
+                        Extraer:</label>
                     <input type="number" id="ex-amount" min="1" required
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input font-black"
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-sm font-black tabular-nums interactive-input focus:border-red-500/60 focus:ring-1 focus:ring-red-500/40"
                         placeholder="Ej: 500000">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-brand-300/70 mb-1">Motivo / Detalle:</label>
+                    <label class="block text-xs uppercase font-bold text-brand-300/80 mb-1.5">Motivo / Detalle:</label>
                     <input type="text" id="ex-reason" required
-                        class="w-full bg-black border theme-border rounded-lg p-2.5 text-white interactive-input"
+                        class="w-full bg-black/80 border theme-border rounded-xl p-3 text-white text-xs interactive-input focus:border-red-500/60 focus:ring-1 focus:ring-red-500/40"
                         placeholder="Ej: Compra de vehículos para la facción...">
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t theme-border">
                     <button type="button" onclick="closeExtractModal()"
-                        class="px-4 py-2 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cancelar</button>
+                        class="px-4 py-2.5 bg-black/80 border theme-border text-zinc-300 hover:bg-zinc-900 rounded-xl font-semibold text-xs interactive-btn">Cancelar</button>
                     <button type="submit"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white border border-red-400 rounded-lg font-black interactive-btn shadow-[0_0_15px_rgba(239,68,68,0.4)]">Confirmar
+                        class="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white border border-red-400 rounded-xl font-black text-xs uppercase tracking-wider interactive-btn shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all">Confirmar
                         Extracción</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL HISTORIAL DE PAGOS -->
+
+    <!-- 9. MODAL HISTORIAL DE PAGOS -->
     <div id="historyModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-lg animate-modal theme-panel">
-            <h3 class="text-xl font-bold text-brand-400 mb-2 drop-shadow-md">Historial de Pagos</h3>
-            <p id="history-name" class="text-sm text-zinc-400 mb-4 pb-4 border-b theme-border">Cargando...</p>
-            <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 mb-4"></div>
-            <div class="flex justify-end pt-2 border-t theme-border">
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[60] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 border theme-border rounded-2xl p-6 sm:p-7 w-full max-w-lg shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_var(--theme-glow)] animate-modal theme-panel relative overflow-hidden">
+            <!-- CABECERA MODAL -->
+            <div class="flex items-center justify-between pb-3 mb-4 border-b theme-border">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-base shadow-sm">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-white tracking-tight">Historial de Pagos</h3>
+                        <p id="history-name" class="text-xs text-brand-300/80 font-semibold truncate max-w-[280px]">
+                            Cargando...</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeHistoryModal()"
+                    class="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div id="history-list" class="space-y-2 max-h-64 overflow-y-auto pr-1 mb-4 custom-scrollbar"></div>
+
+            <div class="flex justify-end pt-3 border-t theme-border">
                 <button onclick="closeHistoryModal()"
-                    class="px-5 py-2.5 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold interactive-btn">Cerrar</button>
+                    class="px-5 py-2.5 bg-black/80 border theme-border text-zinc-300 hover:bg-zinc-900 rounded-xl font-semibold text-xs interactive-btn">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL CAMBIO ESTADO (BAJAS/CK/ELIMINAR) -->
+
+    <!-- 10. MODAL CAMBIO ESTADO (BAJAS/CK/ELIMINAR) -->
     <div id="statusModal"
-        class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[60] transition-opacity duration-300 p-4">
-        <div class="bg-zinc-950 p-6 rounded-xl w-full max-w-sm animate-modal text-center theme-panel">
-            <i class="fa-solid fa-triangle-exclamation text-4xl text-amber-500 mb-3 drop-shadow-md"></i>
-            <h3 class="text-lg font-bold text-white mb-1">Dar de Baja</h3>
-            <p id="status-name" class="text-sm text-zinc-400 mb-6 border-b theme-border pb-4">Cargando...</p>
-            <div class="space-y-3">
-                <button onclick="confirmStatusChange('Expulsado')"
-                    class="w-full py-3 bg-orange-950/50 text-orange-400 border border-orange-900 rounded-lg font-bold hover:bg-orange-900 transition-colors">Expulsar
-                    (Faltas/Inactividad)</button>
-                <button onclick="confirmStatusChange('CK')"
-                    class="w-full py-3 bg-red-950/50 text-red-500 border border-red-900 rounded-lg font-bold hover:bg-red-900 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.2)]">Ejecutar
-                    CK (Abatido)</button>
-                <button onclick="confirmStatusChange('Activo')"
-                    class="w-full py-3 bg-emerald-950/50 text-emerald-400 border border-emerald-900 rounded-lg font-bold hover:bg-emerald-900 transition-colors hidden"
-                    id="btn-reactivate">Reactivar Miembro</button>
-                <button onclick="closeStatusModal()"
-                    class="w-full py-3 bg-black border theme-border text-zinc-300 hover:bg-zinc-900 rounded-lg font-semibold transition-colors mt-4">Cancelar</button>
+        class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-[60] transition-all duration-300 p-4">
+        <div
+            class="bg-zinc-950/95 border border-red-500/40 rounded-2xl p-6 sm:p-7 w-full max-w-sm shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_35px_rgba(239,68,68,0.2)] animate-modal text-center theme-panel relative overflow-hidden">
+            <!-- Icono de Alerta -->
+            <div
+                class="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 text-2xl mx-auto mb-3 shadow-[0_0_20px_rgba(239,68,68,0.25)]">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
 
-            <div class="mt-6 pt-4 border-t theme-border border-red-900/30">
+            <h3 class="text-lg font-black text-white tracking-tight mb-1">Gestión de Bajas y Estado</h3>
+            <div class="inline-block px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-5">
+                <p id="status-name" class="text-xs text-brand-300 font-bold truncate max-w-[220px]">Cargando...</p>
+            </div>
+
+            <div class="space-y-2.5">
+                <button onclick="confirmStatusChange('Expulsado')"
+                    class="w-full py-3 px-4 rounded-xl bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 hover:text-white border border-amber-500/40 font-bold text-xs uppercase tracking-wider interactive-btn transition-all shadow-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-xmark text-xs"></i> Expulsar (Faltas/Inactividad)
+                </button>
+                <button onclick="confirmStatusChange('CK')"
+                    class="w-full py-3 px-4 rounded-xl bg-red-950/60 hover:bg-red-900/80 text-red-300 hover:text-white border border-red-500/60 font-black text-xs uppercase tracking-wider interactive-btn transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-skull-crossbones text-xs"></i> Ejecutar CK (Abatido)
+                </button>
+                <button onclick="confirmStatusChange('Activo')"
+                    class="w-full py-3 px-4 rounded-xl bg-emerald-950/50 hover:bg-emerald-900/70 text-emerald-300 hover:text-white border border-emerald-500/50 font-black text-xs uppercase tracking-wider interactive-btn transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hidden flex items-center justify-center gap-2"
+                    id="btn-reactivate">
+                    <i class="fa-solid fa-user-check text-xs"></i> Reactivar Miembro
+                </button>
+                <button onclick="closeStatusModal()"
+                    class="w-full py-2.5 px-4 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border theme-border font-bold text-xs uppercase tracking-wider interactive-btn transition-all mt-3">
+                    Cancelar
+                </button>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-red-900/30">
                 <button onclick="confirmDeleteProfile()"
-                    class="w-full py-3 bg-red-950/20 text-red-600 border border-red-900 rounded-lg font-bold hover:bg-red-900 hover:text-white transition-colors shadow-[0_0_15px_rgba(239,68,68,0.1)]"><i
-                        class="fa-solid fa-trash-can mr-2"></i> Eliminar Perfil Definitivamente</button>
-                <p class="text-[9px] text-zinc-500 mt-2 leading-tight">Acción irreversible para perfiles duplicados. No
-                    borra el historial de logs ni finanzas.</p>
+                    class="w-full py-2.5 px-4 rounded-xl bg-red-950/20 hover:bg-red-950/50 text-red-500 hover:text-red-400 border border-red-900/40 hover:border-red-600/60 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-trash-can text-xs"></i> Eliminar Perfil Definitivamente
+                </button>
+                <p class="text-[10px] text-zinc-500 mt-2 leading-tight">
+                    Acción irreversible para perfiles duplicados. No borra el historial ni finanzas.
+                </p>
             </div>
         </div>
     </div>
+
 
     <script>
         // API KEY INTEGADA DIRECTAMENTE
@@ -1676,7 +2178,7 @@
             if (!grid) return; grid.innerHTML = '';
 
             if (!authorities || authorities.length === 0) {
-                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-brand-500 py-16"><i class="fa-solid fa-star text-5xl mb-3 opacity-30 drop-shadow-md"></i><p class="text-sm font-bold uppercase tracking-wider text-brand-300">No hay autoridades registradas.</p></div>';
+                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-400 py-20 bg-zinc-950/50 border theme-border rounded-2xl p-8 text-center backdrop-blur-sm"><div class="w-16 h-16 rounded-full bg-brand-950/50 border border-brand-500/30 flex items-center justify-center mb-3 text-brand-400 text-2xl shadow-[0_0_20px_var(--theme-glow)]"><i class="fa-solid fa-user-shield"></i></div><p class="text-sm font-bold uppercase tracking-wider text-zinc-200">No hay autoridades registradas</p><p class="text-xs text-zinc-400 mt-1">Los altos mandos y figuras clave aparecerán en este muro una vez asignados.</p></div>';
                 return;
             }
 
@@ -1695,26 +2197,26 @@
                 let actionsHtml = '';
                 if (canEdit) {
                     actionsHtml = `
-                        <div class="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                            <button onclick="event.stopPropagation(); openAuthorityModal(${a.id})" class="bg-blue-950/90 hover:bg-blue-900 border border-blue-800 text-blue-400 w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] backdrop-blur-md" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="event.stopPropagation(); deleteAuthority(${a.id})" class="bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.5)] backdrop-blur-md" title="Eliminar"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <div class="absolute top-2.5 right-2.5 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                            <button onclick="event.stopPropagation(); openAuthorityModal(${a.id})" class="bg-zinc-900/90 hover:bg-blue-900/80 border border-blue-500/50 text-blue-400 w-8 h-8 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.35)] backdrop-blur-md interactive-btn" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="event.stopPropagation(); deleteAuthority(${a.id})" class="bg-zinc-900/90 hover:bg-red-900/80 border border-red-500/50 text-red-400 w-8 h-8 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.35)] backdrop-blur-md interactive-btn" title="Eliminar"><i class="fa-solid fa-trash-can text-xs"></i></button>
                         </div>
                     `;
                 }
 
                 grid.innerHTML += `
-                    <div class="relative group rounded-xl overflow-hidden interactive-card flex flex-col">
+                    <div class="relative group rounded-2xl overflow-hidden interactive-card bg-zinc-950/80 backdrop-blur-md border theme-border flex flex-col hover:border-brand-500/80 transition-all shadow-md">
                         <div class="relative aspect-[3/4] w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${a.photoUrl}', '<span class=\\'text-brand-400 font-bold\\'>${a.name}</span> - ${a.rank}')">
                             <img src="${a.photoUrl}" loading="lazy" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none"></div>
                             ${actionsHtml}
                         </div>
-                        <div class="p-4 flex flex-col justify-start flex-1 bg-black/60 border-t theme-border -mt-10 z-10 relative">
-                            <h3 class="text-white font-black text-xl truncate drop-shadow-md text-center mb-2" title="${a.name}">${a.name}</h3>
-                            <div class="flex justify-center mb-3">
-                                <span class="py-1 px-3 rounded text-[10px] font-bold uppercase border ${rS} shadow-sm">${a.rank}</span>
+                        <div class="p-4 sm:p-4.5 flex flex-col justify-start flex-1 bg-black/75 border-t theme-border -mt-8 z-10 relative backdrop-blur-md">
+                            <h3 class="text-white font-black text-lg truncate drop-shadow-sm text-center mb-1.5" title="${a.name}">${a.name}</h3>
+                            <div class="flex justify-center mb-2.5">
+                                <span class="py-1 px-3 rounded-md text-[10px] font-bold uppercase border ${rS} shadow-sm tracking-wider">${a.rank}</span>
                             </div>
-                            <p class="text-xs text-zinc-300 text-center italic line-clamp-3">${a.description || 'Sin descripción disponible.'}</p>
+                            <p class="text-xs text-zinc-300 text-center italic line-clamp-3 leading-relaxed bg-black/40 p-2.5 rounded-lg border border-white/5">${a.description || 'Sin descripción disponible.'}</p>
                         </div>
                     </div>
                 `;
@@ -1839,7 +2341,7 @@
             if (!grid) return; grid.innerHTML = '';
 
             if (!vehicles || vehicles.length === 0) {
-                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-brand-500 py-16"><i class="fa-solid fa-warehouse text-5xl mb-3 opacity-30 drop-shadow-md"></i><p class="text-sm font-bold uppercase tracking-wider text-brand-300">El garaje está vacío.</p></div>';
+                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-400 py-20 bg-zinc-950/50 border theme-border rounded-2xl p-8 text-center backdrop-blur-sm"><div class="w-16 h-16 rounded-full bg-brand-950/50 border border-brand-500/30 flex items-center justify-center mb-3 text-brand-400 text-2xl shadow-[0_0_20px_var(--theme-glow)]"><i class="fa-solid fa-warehouse"></i></div><p class="text-sm font-bold uppercase tracking-wider text-zinc-200">El garaje está vacío</p><p class="text-xs text-zinc-400 mt-1">Añade vehículos operativos para registrar su asignación táctica.</p></div>';
                 return;
             }
 
@@ -1851,25 +2353,31 @@
                 let actionsHtml = '';
                 if (canEdit) {
                     actionsHtml = `
-                        <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                            <button onclick="event.stopPropagation(); openVehicleModal(${v.id})" class="bg-blue-950/90 hover:bg-blue-900 border border-blue-800 text-blue-400 w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] backdrop-blur-md" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="event.stopPropagation(); deleteVehicle(${v.id})" class="bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.5)] backdrop-blur-md" title="Eliminar"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <div class="absolute top-2.5 right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                            <button onclick="event.stopPropagation(); openVehicleModal(${v.id})" class="bg-zinc-900/90 hover:bg-blue-900/80 border border-blue-500/50 text-blue-400 w-8 h-8 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.35)] backdrop-blur-md interactive-btn" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="event.stopPropagation(); deleteVehicle(${v.id})" class="bg-zinc-900/90 hover:bg-red-900/80 border border-red-500/50 text-red-400 w-8 h-8 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.35)] backdrop-blur-md interactive-btn" title="Eliminar"><i class="fa-solid fa-trash-can text-xs"></i></button>
                         </div>
                     `;
                 }
 
                 grid.innerHTML += `
-                    <div class="relative group rounded-xl overflow-hidden interactive-card">
+                    <div class="relative group rounded-2xl overflow-hidden interactive-card bg-zinc-950/80 backdrop-blur-md border theme-border flex flex-col hover:border-brand-500/80 transition-all shadow-md">
                         <div class="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${v.image}', '<span class=\\'text-brand-400 font-bold\\'>${v.model}</span> - ${v.usage}')">
                             <img src="${v.image}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                            <div class="absolute inset-0 bg-gradient-to-t from-brand-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                             ${actionsHtml}
                         </div>
-                        <div class="p-4 flex flex-col justify-between flex-1 bg-black/40 border-t theme-border">
-                            <h3 class="text-white font-black text-lg mb-2 truncate drop-shadow-md" title="${v.model}">${v.model}</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="py-1 px-2.5 rounded text-[10px] font-bold uppercase border ${badgeStyle}">${v.usage}</span>
-                                <i class="fa-solid fa-key text-brand-600 drop-shadow-md" title="Añadido por ${v.addedBy}"></i>
+                        <div class="p-4 flex flex-col justify-between flex-1 bg-black/60 border-t theme-border backdrop-blur-sm">
+                            <h3 class="text-white font-black text-base mb-2.5 truncate drop-shadow-sm flex items-center gap-2" title="${v.model}">
+                                <i class="fa-solid fa-car-side text-xs text-brand-400 opacity-75"></i>
+                                <span>${v.model}</span>
+                            </h3>
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="py-1 px-2.5 rounded-md text-[10px] font-bold uppercase border ${badgeStyle} tracking-wider shadow-sm">${v.usage}</span>
+                                <div class="text-brand-400 text-xs bg-black/60 px-2 py-1 rounded-md border border-white/5 flex items-center gap-1.5" title="Añadido por ${v.addedBy}">
+                                    <i class="fa-solid fa-key text-[10px] text-brand-500"></i>
+                                    <span class="text-[10px] text-zinc-400 font-medium truncate max-w-[80px]">${v.addedBy}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2009,7 +2517,7 @@
             grid.innerHTML = '';
 
             if (!images || images.length === 0) {
-                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-brand-500 py-16"><i class="fa-regular fa-images text-5xl mb-3 opacity-30 drop-shadow-md"></i><p class="text-sm font-bold uppercase tracking-wider text-brand-300">Aún no hay fotos en la galería.</p></div>';
+                grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-400 py-20 bg-zinc-950/50 border theme-border rounded-2xl p-8 text-center backdrop-blur-sm"><div class="w-16 h-16 rounded-full bg-brand-950/50 border border-brand-500/30 flex items-center justify-center mb-3 text-brand-400 text-2xl shadow-[0_0_20px_var(--theme-glow)]"><i class="fa-regular fa-images"></i></div><p class="text-sm font-bold uppercase tracking-wider text-zinc-200">Aún no hay fotos en la galería</p><p class="text-xs text-zinc-400 mt-1">Sube las primeras capturas operativas para compartirlas con el equipo.</p></div>';
                 return;
             }
 
@@ -2018,9 +2526,9 @@
             const availableEmojis = ["❤️", "🔝", "🔥", "💦", "🍆", "👍", "😂", "💀", "👏"];
 
             sorted.forEach(img => {
-                const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2 right-2 bg-red-950/90 hover:bg-red-900 border border-red-800 text-red-500 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_15px_rgba(239,68,68,0.5)] backdrop-blur-md z-20" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
+                const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2.5 right-2.5 bg-zinc-900/90 hover:bg-red-900/80 border border-red-500/50 text-red-400 w-8 h-8 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_15px_rgba(239,68,68,0.35)] backdrop-blur-md z-20 interactive-btn" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
 
-                const titleHtml = img.title ? `<p class="text-brand-400 text-xs font-bold truncate mb-0.5 drop-shadow-sm" title="${img.title.replace(/"/g, '&quot;')}">${img.title}</p>` : '';
+                const titleHtml = img.title ? `<p class="text-white text-xs font-bold truncate mb-0.5 drop-shadow-sm flex items-center gap-1.5" title="${img.title.replace(/"/g, '&quot;')}"><i class="fa-regular fa-image text-[10px] text-brand-400"></i>${img.title}</p>` : '';
 
                 let displayDate = img.date;
                 try {
@@ -2029,10 +2537,10 @@
                 } catch (e) { }
 
                 const modalTitle = img.title ? `<span class="block text-brand-400 font-bold mb-1 text-base">${img.title}</span>` : '';
-                const modalCaption = `${modalTitle}Subido por <span class="text-white">${img.uploader}</span> el ${displayDate}`;
+                const modalCaption = `${modalTitle}Subido por <span class="text-white font-bold">${img.uploader}</span> el ${displayDate}`;
                 const safeCaption = modalCaption.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
-                let reactionsHtml = '<div class="flex flex-wrap gap-1.5 mt-2 pt-2 border-t theme-border" onclick="event.stopPropagation()">';
+                let reactionsHtml = '<div class="flex flex-wrap gap-1.5 mt-2.5 pt-2 border-t theme-border" onclick="event.stopPropagation()">';
 
                 availableEmojis.forEach(emoji => {
                     const usersStr = (img.reactions && img.reactions[emoji]) || "";
@@ -2042,30 +2550,33 @@
 
                     const btnClass = hasReacted
                         ? 'bg-brand-900/80 border-brand-500 text-brand-300 shadow-[0_0_10px_var(--theme-glow)]'
-                        : 'bg-black/40 border-transparent text-zinc-400 hover:border-brand-800 hover:text-brand-300 transition-colors';
+                        : 'bg-black/50 border-white/10 text-zinc-400 hover:border-brand-800 hover:text-brand-300 transition-colors';
 
                     reactionsHtml += `
-                        <button onclick="toggleReaction(${img.id}, '${emoji}')" class="px-2 py-1 rounded-lg border text-xs flex items-center gap-1 transition-all duration-200 ${btnClass}">
+                        <button onclick="toggleReaction(${img.id}, '${emoji}')" class="px-2 py-1 rounded-lg border text-xs flex items-center gap-1 transition-all duration-200 ${btnClass} interactive-btn">
                             <span>${emoji}</span>
-                            <span class="font-bold text-[10px]">${count > 0 ? count : ''}</span>
+                            <span class="font-bold text-[10px] tabular-nums">${count > 0 ? count : ''}</span>
                         </button>
                     `;
                 });
                 reactionsHtml += '</div>';
 
                 grid.innerHTML += `
-                    <div class="relative group rounded-xl overflow-hidden interactive-card">
+                    <div class="relative group rounded-2xl overflow-hidden interactive-card bg-zinc-950/80 backdrop-blur-md border theme-border flex flex-col hover:border-brand-500/80 transition-all shadow-md">
                         <div class="relative aspect-[4/3] w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${img.url}', '${safeCaption}')">
                             <img src="${img.url}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                            <div class="absolute inset-0 bg-gradient-to-t from-brand-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                             ${delBtn}
                         </div>
-                        <div class="p-3 flex flex-col justify-between flex-1 bg-black/60">
+                        <div class="p-3.5 flex flex-col justify-between flex-1 bg-black/60 backdrop-blur-sm">
                             <div>
                                 ${titleHtml}
                                 <div class="flex justify-between items-center text-[10px] text-zinc-400 mt-1">
-                                    <span class="truncate max-w-[120px]" title="${img.uploader}"><i class="fa-solid fa-user-tag text-brand-600 mr-1"></i>${img.uploader}</span>
-                                    <span>${displayDate}</span>
+                                    <span class="truncate max-w-[120px] flex items-center gap-1" title="${img.uploader}">
+                                        <i class="fa-solid fa-user-tag text-brand-500 text-[10px]"></i>
+                                        <span class="truncate text-zinc-300">${img.uploader}</span>
+                                    </span>
+                                    <span class="font-mono text-[10px] text-zinc-400">${displayDate}</span>
                                 </div>
                             </div>
                             ${reactionsHtml}
@@ -2174,54 +2685,64 @@
                     formatStrikes(m.strikes) :
                     '<span class="text-zinc-500 text-[11px] px-2.5 py-1 bg-black/80 rounded border border-zinc-800" title="Información privada"><i class="fa-solid fa-lock mr-1 text-zinc-600"></i> Privado</span>';
 
-                let actions = '<span class="text-zinc-600 text-xs">Lectura</span>';
+                let actions = '<span class="text-zinc-500 text-[11px] font-medium px-2.5 py-1 bg-black/60 rounded border border-zinc-800">Lectura</span>';
                 if (!currentUser.isGuest && isL) {
-                    actions = `<div class="flex items-center justify-end gap-3 text-lg">
-                        ${isActivo ? `<button onclick="openPaymentModal(${m.id})" title="Registrar Pago" class="text-brand-500 hover:text-brand-400 transition-transform hover:scale-125 drop-shadow-md"><i class="fa-solid fa-hand-holding-dollar"></i></button>` : ''}
-                        <button onclick="viewHistory(${m.id})" title="Ver Pagos" class="text-blue-400 hover:text-blue-300 transition-transform hover:scale-125 drop-shadow-md"><i class="fa-solid fa-clock-rotate-left"></i></button>
-                        <button onclick="openModal(${m.id})" title="Editar" class="text-zinc-400 hover:text-white transition-transform hover:scale-125"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="openStatusModal(${m.id})" title="Opciones (Bajas)" class="text-zinc-600 hover:text-red-500 transition-transform hover:scale-125"><i class="fa-solid fa-skull"></i></button>
+                    actions = `<div class="flex items-center justify-end gap-1.5 text-sm">
+                        ${isActivo ? `<button onclick="openPaymentModal(${m.id})" title="Registrar Pago" class="w-7 h-7 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 hover:text-white hover:bg-emerald-600 flex items-center justify-center transition-all interactive-btn shadow-sm"><i class="fa-solid fa-hand-holding-dollar text-xs"></i></button>` : ''}
+                        <button onclick="viewHistory(${m.id})" title="Ver Pagos" class="w-7 h-7 rounded-lg bg-blue-950/40 border border-blue-500/30 text-blue-400 hover:text-white hover:bg-blue-600 flex items-center justify-center transition-all interactive-btn shadow-sm"><i class="fa-solid fa-clock-rotate-left text-xs"></i></button>
+                        <button onclick="openModal(${m.id})" title="Editar" class="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center justify-center transition-all interactive-btn shadow-sm"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
+                        <button onclick="openStatusModal(${m.id})" title="Opciones (Bajas)" class="w-7 h-7 rounded-lg bg-red-950/40 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-600 flex items-center justify-center transition-all interactive-btn shadow-sm"><i class="fa-solid fa-skull text-xs"></i></button>
                     </div>`;
                 }
 
                 tbody.innerHTML += `
                     <tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors">
-                        <td class="px-6 py-4 font-bold text-white whitespace-nowrap">
-                            <div>${m.name}${statBadge}${warningBadge}</div>
+                        <td class="px-5 py-3.5 font-bold text-white whitespace-nowrap">
+                            <div class="flex items-center flex-wrap gap-1">${m.name}${statBadge}${warningBadge}</div>
                             ${notesHtml}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs"><i class="fa-brands fa-discord mr-1 text-[#5865F2]"></i>${m.discord}</td>
-                        <td class="px-6 py-4 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS} shadow-sm">${m.rank || 'Recolector'}</span></td>
-                        <td class="px-6 py-4 whitespace-nowrap">${illegalBadge}</td>
-                        <td class="px-6 py-4 min-w-[200px]">${qHtml}</td>
-                        <td class="px-6 py-4 text-xs min-w-[150px]">${sHtml}</td>
-                        <td class="px-6 py-4">${actions}</td>
+                        <td class="px-5 py-3.5 whitespace-nowrap text-xs text-zinc-300">
+                            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-black/40 border border-zinc-800/80 font-mono text-[11px]">
+                                <i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3.5 whitespace-nowrap"><span class="py-1 px-2.5 rounded text-[11px] border font-bold ${rS} shadow-sm">${m.rank || 'Recolector'}</span></td>
+                        <td class="px-5 py-3.5 whitespace-nowrap">${illegalBadge}</td>
+                        <td class="px-5 py-3.5 min-w-[200px]">${qHtml}</td>
+                        <td class="px-5 py-3.5 text-xs min-w-[140px]">${sHtml}</td>
+                        <td class="px-5 py-3.5 text-right whitespace-nowrap">${actions}</td>
                     </tr>`;
 
                 mContainer.innerHTML += `
-                    <div class="bg-black/40 border theme-border rounded-xl p-4 shadow-lg hover:shadow-[0_0_15px_var(--theme-glow)] transition-shadow">
-                        <div class="flex justify-between items-start mb-3 border-b theme-border pb-3">
+                    <div class="interactive-card rounded-xl p-3.5 shadow-lg border theme-border">
+                        <div class="flex justify-between items-start mb-3 border-b theme-border/60 pb-3 gap-2">
                             <div>
-                                <h4 class="font-black text-white text-lg flex items-center flex-wrap gap-1">${m.name}${statBadge}${warningBadge}</h4>
-                                <p class="text-xs text-brand-300/70 mt-1"><i class="fa-brands fa-discord text-[#5865F2]"></i> ${m.discord}</p>
+                                <h4 class="font-black text-white text-base flex items-center flex-wrap gap-1.5">${m.name}${statBadge}${warningBadge}</h4>
+                                <p class="text-xs text-brand-300/70 mt-1 flex items-center gap-1">
+                                    <i class="fa-brands fa-discord text-[#5865F2]"></i> <span>${m.discord}</span>
+                                </p>
                                 ${notesHtml}
                             </div>
-                            <div class="flex flex-col items-end gap-1">
-                                <span class="py-1 px-2 rounded text-[10px] border font-bold ${rS} shadow-sm">${m.rank || 'Recolector'}</span>
+                            <div class="flex flex-col items-end gap-1.5 shrink-0">
+                                <span class="py-0.5 px-2 rounded text-[10px] border font-bold ${rS} shadow-sm">${m.rank || 'Recolector'}</span>
                                 ${illegalBadge}
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-                            <div class="bg-black/60 p-2 rounded border theme-border">
-                                <p class="text-brand-500 font-bold uppercase mb-1 text-[9px]">Cuota</p>
+                            <div class="bg-black/60 p-2.5 rounded-lg border theme-border/60 shadow-inner">
+                                <p class="text-brand-400 font-bold uppercase mb-1 text-[9px] tracking-wider flex items-center gap-1">
+                                    <i class="fa-solid fa-receipt text-[10px]"></i> Cuota
+                                </p>
                                 ${qHtml}
                             </div>
-                            <div class="bg-black/60 p-2 rounded border theme-border">
-                                <p class="text-brand-500 font-bold uppercase mb-1 text-[9px]">Faltas</p>
+                            <div class="bg-black/60 p-2.5 rounded-lg border theme-border/60 shadow-inner">
+                                <p class="text-brand-400 font-bold uppercase mb-1 text-[9px] tracking-wider flex items-center gap-1">
+                                    <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Faltas
+                                </p>
                                 <div class="mt-1">${sHtml}</div>
                             </div>
                         </div>
-                        <div class="bg-black/80 p-2 rounded flex justify-around items-center border theme-border">${actions}</div>
+                        <div class="bg-zinc-950/80 p-2 rounded-lg flex justify-around items-center border theme-border shadow-sm">${actions}</div>
                     </div>`;
             });
             renderMemberPortal();
@@ -2581,7 +3102,7 @@
             const hl = document.getElementById('history-list'); hl.innerHTML = '';
 
             if (!m.payHistory || m.payHistory.length === 0) {
-                hl.innerHTML = '<p class="text-brand-500 text-sm italic">No hay pagos registrados.</p>';
+                hl.innerHTML = '<div class="p-6 text-center text-brand-400/60 text-xs italic bg-black/40 rounded-xl border border-white/5"><i class="fa-solid fa-folder-open block text-xl mb-2 opacity-50"></i>No hay pagos registrados para este miembro.</div>';
             } else {
                 m.payHistory.forEach(h => {
                     let displayDate = h.date;
@@ -2589,11 +3110,12 @@
                         const dObj = new Date(h.date);
                         if (!isNaN(dObj)) displayDate = dObj.toLocaleString('es-ES');
                     } catch (e) { }
-                    hl.innerHTML += `<div class="bg-black/50 p-3 rounded border theme-border text-sm flex justify-between items-center mb-2"><span class="font-bold text-brand-400 drop-shadow-sm">${h.detail}</span><span class="text-zinc-500 text-xs">${displayDate}</span></div>`;
+                    hl.innerHTML += `<div class="bg-black/60 p-3 rounded-xl border theme-border text-xs flex justify-between items-center gap-3 mb-2 interactive-card hover:border-brand-500/40 transition-colors"><div class="flex items-center gap-2.5 min-w-0"><div class="w-6 h-6 rounded-lg bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-[10px] shrink-0"><i class="fa-solid fa-check"></i></div><span class="font-bold text-white tracking-wide truncate">${h.detail}</span></div><span class="text-zinc-400 font-mono text-[10px] bg-white/5 px-2.5 py-1 rounded-lg border border-white/5 shrink-0">${displayDate}</span></div>`;
                 });
             }
             document.getElementById('historyModal').classList.remove('hidden');
         }
+
         function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
 
         function openStatusModal(id) {
@@ -2696,10 +3218,10 @@
             const cocaCount = Math.max(0, 1500 - dv.hojas);
 
             if (dv.remVal === 0) {
-                simOpts.innerHTML = `<div class="col-span-full bg-brand-950/40 border border-brand-500/50 p-4 rounded-lg text-center text-brand-300 font-bold text-sm tracking-wide shadow-[inset_0_0_20px_var(--theme-glow)]">¡Felicidades! Con este nivel de descuento estarías exonerado de cuotas.</div>`;
+                simOpts.innerHTML = `<div class="col-span-full bg-brand-950/40 border border-brand-500/50 p-4 rounded-xl text-center text-brand-300 font-bold text-xs sm:text-sm tracking-wide shadow-[0_0_20px_var(--theme-glow)] flex items-center justify-center gap-2"><i class="fa-solid fa-circle-check text-brand-400"></i><span>¡Felicidades! Con este nivel de descuento estarías exonerado de cuotas.</span></div>`;
             } else {
                 const options = [
-                    { label: 'Efectivo', val: `$${Math.round(dv.remVal).toLocaleString('es')}`, icon: 'fa-money-bill-wave', color: 'text-emerald-400' },
+                    { label: 'Efectivo', val: `${Math.round(dv.remVal).toLocaleString('es')}`, icon: 'fa-money-bill-wave', color: 'text-emerald-400' },
                     { label: 'Hojas de Coca', val: `${cocaCount} uds.`, icon: 'fa-leaf', color: 'text-lime-400' },
                     { label: 'Pistolas SNS', val: `${snsCount} uds.`, icon: 'fa-gun', color: 'text-cyan-400' },
                     { label: 'Vintage', val: `${vintageCount} uds.`, icon: 'fa-gun', color: 'text-blue-400' },
@@ -2707,15 +3229,17 @@
                     { label: 'Chalecos', val: `${chalecosCount} uds.`, icon: 'fa-shield-halved', color: 'text-amber-400' }
                 ];
 
-                if (miniSmgCount > 0) options.push({ label: 'Mini SMG', val: `1 ud. + $${miniSmgCash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-purple-400' });
-                if (tec9Count > 0) options.push({ label: 'TEC-9', val: `1 ud. + $${tec9Cash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-fuchsia-400' });
+                if (miniSmgCount > 0) options.push({ label: 'Mini SMG', val: `1 ud. + ${miniSmgCash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-purple-400' });
+                if (tec9Count > 0) options.push({ label: 'TEC-9', val: `1 ud. + ${tec9Cash.toLocaleString('es')}`, icon: 'fa-gun', color: 'text-fuchsia-400' });
                 if (microSmgCount > 0) options.push({ label: 'Micro SMG', val: `1 ud.`, icon: 'fa-gun', color: 'text-rose-400' });
 
                 simOpts.innerHTML = options.map(o => `
-                    <div class="bg-black/40 border theme-border p-3 rounded-lg flex flex-col items-center justify-center text-center interactive-card hover:border-brand-500 transition-colors">
-                        <i class="fa-solid ${o.icon} ${o.color} text-2xl mb-2 drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]"></i>
+                    <div class="bg-black/50 border theme-border p-3 rounded-xl flex flex-col items-center justify-center text-center interactive-card hover:border-brand-500 transition-all shadow-sm">
+                        <div class="w-9 h-9 rounded-lg bg-black/60 border border-white/5 flex items-center justify-center mb-1.5">
+                            <i class="fa-solid ${o.icon} ${o.color} text-lg drop-shadow-[0_0_6px_rgba(255,255,255,0.2)]"></i>
+                        </div>
                         <span class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">${o.label}</span>
-                        <span class="text-xs text-white font-black mt-1 drop-shadow-md">${o.val}</span>
+                        <span class="text-xs text-white font-black mt-1 drop-shadow-md tabular-nums">${o.val}</span>
                     </div>
                 `).join('');
             }
@@ -2731,7 +3255,14 @@
 
             if (!f) {
                 pn.innerText = currentUser.icName || currentUser.username;
-                pc.innerHTML = `<div class="text-center py-6"><i class="fa-solid fa-triangle-exclamation text-amber-400 text-3xl mb-3 drop-shadow-md"></i><p class="text-sm text-brand-300 font-bold">Perfil no vinculado</p></div>`;
+                pc.innerHTML = `
+                    <div class="text-center py-8 px-4">
+                        <div class="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-3 text-amber-400 text-xl shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-1">Perfil no vinculado</h3>
+                        <p class="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">Tu usuario actual no coincide con el registro de ningún miembro activo en el sistema.</p>
+                    </div>`;
                 simCont.classList.add('hidden');
                 return;
             }
@@ -2749,13 +3280,28 @@
             else illegalDisplay = '<span class="text-red-400 font-bold drop-shadow-md"><i class="fa-solid fa-user-clock"></i> Por Entrar</span>';
 
             pc.innerHTML = `
-                ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950/50 border border-red-900/80 p-2 text-center rounded text-red-500 font-black mb-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">MIEMBRO ${f.status.toUpperCase()}</div>` : ''}
-                <div class="flex justify-between items-center border-b theme-border pb-3"><span class="text-xs font-bold text-brand-500 uppercase">Rango</span><span class="py-1 px-3 rounded text-xs border font-bold ${rS} shadow-sm">${rankName}</span></div>
-                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Rol en Ilegales</span><span class="text-xs">${illegalDisplay}</span></div>
-                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Método de Pago Actual</span><span class="py-1 px-2.5 rounded text-[10px] border ${p.color} shadow-sm">${p.label}</span></div>
-                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Estado de Cuota</span><span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color} shadow-sm">${q.text}</span></div>
-                <div class="flex justify-between items-center border-b theme-border pb-3 mt-3"><span class="text-xs font-bold text-brand-500 uppercase">Faltas</span><span class="text-xs font-bold text-amber-400 drop-shadow-md">${formatStrikes(f.strikes || 0)}</span></div>
-                ${f.notes ? `<div class="bg-black/60 p-3 mt-3 rounded border theme-border"><span class="text-[10px] font-bold text-brand-500 uppercase block mb-1">Nota Interna:</span><p class="text-xs text-brand-300 italic">${f.notes}</p></div>` : ''}
+                ${f.status !== 'Activo' && f.status ? `<div class="bg-red-950/60 border border-red-800/80 p-2.5 text-center rounded-lg text-red-400 font-black mb-3 shadow-[0_0_15px_rgba(239,68,68,0.25)] flex items-center justify-center gap-2 text-xs tracking-wider uppercase"><i class="fa-solid fa-triangle-exclamation"></i><span>MIEMBRO ${f.status.toUpperCase()}</span></div>` : ''}
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-black/40 border theme-border hover:border-brand-500/40 transition-all gap-2">
+                    <span class="text-xs font-bold text-brand-400 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-shield-halved text-[11px] opacity-75"></i> Rango</span>
+                    <span class="py-1 px-3 rounded text-xs border font-bold ${rS} shadow-sm w-fit">${rankName}</span>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-black/40 border theme-border hover:border-brand-500/40 transition-all gap-2">
+                    <span class="text-xs font-bold text-brand-400 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-mask text-[11px] opacity-75"></i> Rol en Ilegales</span>
+                    <span class="text-xs w-fit">${illegalDisplay}</span>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-black/40 border theme-border hover:border-brand-500/40 transition-all gap-2">
+                    <span class="text-xs font-bold text-brand-400 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-wallet text-[11px] opacity-75"></i> Método de Pago Actual</span>
+                    <span class="py-1 px-2.5 rounded text-[10px] font-semibold border ${p.color} shadow-sm w-fit">${p.label}</span>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-black/40 border theme-border hover:border-brand-500/40 transition-all gap-2">
+                    <span class="text-xs font-bold text-brand-400 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-calendar-check text-[11px] opacity-75"></i> Estado de Cuota</span>
+                    <span class="py-1 px-2.5 rounded text-[10px] font-bold border ${q.color} shadow-sm tabular-nums w-fit">${q.text}</span>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-black/40 border theme-border hover:border-brand-500/40 transition-all gap-2">
+                    <span class="text-xs font-bold text-brand-400 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-[11px] opacity-75"></i> Faltas</span>
+                    <span class="text-xs font-bold text-amber-400 drop-shadow-md w-fit">${formatStrikes(f.strikes || 0)}</span>
+                </div>
+                ${f.notes ? `<div class="bg-black/50 p-3.5 rounded-lg border theme-border mt-2"><div class="flex items-center gap-1.5 text-[10px] font-bold text-brand-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-note-sticky text-[10px]"></i><span>Nota Interna</span></div><p class="text-xs text-brand-300 italic pl-2 border-l-2 border-brand-500/50 leading-relaxed">${f.notes}</p></div>` : ''}
             `;
 
             if (f.discount) {
@@ -3061,12 +3607,15 @@
             hBody.innerHTML = '';
 
             if (finances.history.length === 0) {
-                hBody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-brand-500 italic drop-shadow-md">No se han registrado movimientos.</td></tr>`;
+                hBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-brand-400/70 text-xs italic drop-shadow-md bg-black/20">No se han registrado movimientos en el historial financiero.</td></tr>`;
             } else {
                 finances.history.slice(0, 50).forEach(h => {
                     const isIngreso = h.type === 'ingreso';
                     const isAjuste = h.type === 'ajuste';
-                    const color = isIngreso ? 'text-emerald-400' : (isAjuste ? 'text-amber-400' : 'text-red-400');
+                    const color = isIngreso ? 'text-emerald-400' : (isAjuste ? 'text-amber-400' : 'text-rose-400');
+                    const badgeClass = isIngreso
+                        ? 'bg-emerald-950/60 border-emerald-500/30 text-emerald-400'
+                        : (isAjuste ? 'bg-amber-950/60 border-amber-500/30 text-amber-400' : 'bg-rose-950/60 border-rose-500/30 text-rose-400');
                     const sign = isIngreso ? '+' : (isAjuste ? '≈' : '-');
                     const isCash = h.resource === 'efectivo' || h.resource === 'caja';
                     const valStr = isCash ? `$${h.amount.toLocaleString('es-ES')}` : `${h.amount.toLocaleString('es-ES')} uds`;
@@ -3084,13 +3633,15 @@
                     } catch (e) { }
 
                     hBody.innerHTML += `
-                        <tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors">
-                            <td class="px-4 py-3 whitespace-nowrap text-xs text-brand-300/70">${displayDate}</td>
-                            <td class="px-4 py-3 whitespace-nowrap font-bold ${color}">${typeText}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-brand-300 capitalize">${h.resource}</td>
-                            <td class="px-4 py-3 whitespace-nowrap font-black ${color}">${sign}${valStr}</td>
-                            <td class="px-4 py-3 min-w-[200px] text-white text-sm">${h.reason}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-xs text-zinc-400"><i class="fa-solid fa-user-tag text-brand-600 mr-1"></i>${h.user}</td>
+                        <tr class="bg-black/30 border-b border-white/5 hover:bg-brand-950/30 transition-colors">
+                            <td class="px-4 py-3 whitespace-nowrap text-xs text-zinc-400 font-mono">${displayDate}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${badgeClass}">${typeText}</span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-xs text-brand-300 font-bold capitalize">${h.resource}</td>
+                            <td class="px-4 py-3 whitespace-nowrap font-black font-mono text-xs ${color}">${sign}${valStr}</td>
+                            <td class="px-4 py-3 min-w-[200px] text-zinc-200 text-xs">${h.reason}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-xs text-zinc-400"><i class="fa-solid fa-user-tag text-brand-500/70 mr-1.5"></i>${h.user}</td>
                         </tr>
                     `;
                 });
@@ -3111,7 +3662,7 @@
             });
 
             if (filteredLogs.length === 0) {
-                tb.innerHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-brand-500 italic drop-shadow-md">No se encontraron registros en los logs.</td></tr>`;
+                tb.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-brand-400/70 text-xs italic drop-shadow-md bg-black/20">No se encontraron registros en los logs.</td></tr>`;
                 return;
             }
 
@@ -3124,9 +3675,10 @@
                     }
                 } catch (e) { }
 
-                tb.innerHTML += `<tr class="bg-black/20 border-b theme-border hover:bg-brand-900/10 transition-colors"><td class="px-6 py-4 text-xs text-brand-300/70 whitespace-nowrap">${displayDate}</td><td class="px-6 py-4 font-bold text-white whitespace-nowrap">${l.role}</td><td class="px-6 py-4 text-brand-300 min-w-[250px]">${l.action}</td></tr>`;
+                tb.innerHTML += `<tr class="bg-black/30 border-b border-white/5 hover:bg-brand-950/30 transition-colors"><td class="px-5 py-3 text-xs text-zinc-400 font-mono whitespace-nowrap">${displayDate}</td><td class="px-5 py-3 font-bold text-white text-xs whitespace-nowrap"><span class="inline-block px-2.5 py-0.5 rounded-full bg-brand-950/60 border border-brand-500/30 text-brand-300 font-bold text-[10px] uppercase">${l.role}</span></td><td class="px-5 py-3 text-zinc-200 text-xs min-w-[250px] leading-relaxed">${l.action}</td></tr>`;
             });
         }
+
 
         document.getElementById('search-input')?.addEventListener('input', renderDashboard);
     </script>
