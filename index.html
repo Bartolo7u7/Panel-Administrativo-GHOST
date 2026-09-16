@@ -148,6 +148,7 @@
         }
 
         body {
+            background-color: #050609;
             background-image: linear-gradient(rgba(5, 6, 9, 0.78), rgba(5, 6, 9, 0.88)), url('fondo panel de ghost.jpg');
             background-size: cover;
             background-position: center;
@@ -335,7 +336,8 @@
 
             <div onclick="openImageModal('logo icono ghost sin fondo.jpg', 'GHOST Cloud')"
                 class="w-20 h-20 rounded-2xl border-2 border-brand-500/50 overflow-hidden mx-auto mb-4 bg-black/80 flex items-center justify-center shadow-[0_0_25px_var(--theme-glow)] cursor-pointer transform transition-all duration-300 hover:scale-105 hover:border-brand-400 p-1">
-                <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" class="w-full h-full object-cover rounded-xl">
+                <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" width="80" height="80" decoding="async"
+                    class="w-full h-full object-cover rounded-xl">
             </div>
 
             <h2
@@ -372,7 +374,7 @@
             <div class="p-4 md:p-6 text-center border-b theme-border flex flex-col items-center">
                 <div onclick="openImageModal('logo icono ghost sin fondo.jpg', 'GHOST')"
                     class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-brand-500/50 overflow-hidden shadow-[0_0_15px_var(--theme-glow)] mb-3 bg-black flex items-center justify-center transform transition-all duration-300 hover:scale-110 hover:rotate-6 cursor-pointer hover:border-brand-400">
-                    <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" class="w-full h-full object-cover">
+                    <img src="logo icono ghost sin fondo.jpg" alt="GHOST Logo" width="80" height="80" decoding="async" fetchpriority="high" class="w-full h-full object-cover">
                 </div>
                 <h1
                     class="text-xl font-black text-white tracking-widest uppercase drop-shadow-[0_0_10px_var(--theme-glow)]">
@@ -1266,7 +1268,7 @@
         <button
             class="absolute top-4 right-6 w-10 h-10 rounded-full bg-zinc-900/80 border theme-border text-brand-300 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center shadow-lg transition-all cursor-pointer drop-shadow-md z-30"
             onclick="closeImageModal()" title="Cerrar"><i class="fa-solid fa-xmark text-lg"></i></button>
-        <img id="fullscreen-image" src="" alt="Fullscreen"
+        <img id="fullscreen-image" src="" alt="Fullscreen" decoding="async"
             class="max-w-full max-h-[85vh] rounded-2xl shadow-[0_0_40px_var(--theme-glow)] border-2 theme-border object-contain"
             onclick="event.stopPropagation()">
         <div id="fullscreen-caption"
@@ -1743,6 +1745,12 @@
         let sortCol = 'name'; let sortAsc = true; let isFirstLoad = true;
         let targetStatusId = null; let paymentTargetId = null;
         let isSaving = false;
+        let galleryNeedsRender = true;
+        let garageNeedsRender = true;
+        let authoritiesNeedsRender = true;
+        const GALLERY_PAGE_SIZE = 24;
+        let galleryRenderedCount = GALLERY_PAGE_SIZE;
+        let galleryObserver = null;
         const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
         function localISODate(baseDate) {
@@ -2173,9 +2181,16 @@
             }
         }
 
-        function renderAuthorities() {
+        function renderAuthorities(force = false) {
+            const viewEl = document.getElementById('view-autoridades');
+            if (!force && viewEl && viewEl.classList.contains('hidden')) {
+                authoritiesNeedsRender = true;
+                return;
+            }
+            authoritiesNeedsRender = false;
+
             const grid = document.getElementById('authorities-grid');
-            if (!grid) return; grid.innerHTML = '';
+            if (!grid) return;
 
             if (!authorities || authorities.length === 0) {
                 grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-400 py-20 bg-zinc-950/50 border theme-border rounded-2xl p-8 text-center backdrop-blur-sm"><div class="w-16 h-16 rounded-full bg-brand-950/50 border border-brand-500/30 flex items-center justify-center mb-3 text-brand-400 text-2xl shadow-[0_0_20px_var(--theme-glow)]"><i class="fa-solid fa-user-shield"></i></div><p class="text-sm font-bold uppercase tracking-wider text-zinc-200">No hay autoridades registradas</p><p class="text-xs text-zinc-400 mt-1">Los altos mandos y figuras clave aparecerán en este muro una vez asignados.</p></div>';
@@ -2191,6 +2206,7 @@
                 return vA - vB;
             });
 
+            let cardsHtml = '';
             sorted.forEach(a => {
                 const rS = RANK_STYLES[a.rank] || "bg-slate-900 text-slate-300 border-slate-700";
 
@@ -2204,10 +2220,10 @@
                     `;
                 }
 
-                grid.innerHTML += `
+                cardsHtml += `
                     <div class="relative group rounded-2xl overflow-hidden interactive-card bg-zinc-950/80 backdrop-blur-md border theme-border flex flex-col hover:border-brand-500/80 transition-all shadow-md">
                         <div class="relative aspect-[3/4] w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${a.photoUrl}', '<span class=\\'text-brand-400 font-bold\\'>${a.name}</span> - ${a.rank}')">
-                            <img src="${a.photoUrl}" loading="lazy" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105">
+                            <img src="${a.photoUrl}" loading="lazy" width="300" height="400" decoding="async" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none"></div>
                             ${actionsHtml}
                         </div>
@@ -2221,6 +2237,7 @@
                     </div>
                 `;
             });
+            grid.innerHTML = cardsHtml;
         }
 
         // --- SISTEMA DE GARAJE ---
@@ -2336,9 +2353,16 @@
             }
         }
 
-        function renderGarage() {
+        function renderGarage(force = false) {
+            const viewEl = document.getElementById('view-garaje');
+            if (!force && viewEl && viewEl.classList.contains('hidden')) {
+                garageNeedsRender = true;
+                return;
+            }
+            garageNeedsRender = false;
+
             const grid = document.getElementById('garage-grid');
-            if (!grid) return; grid.innerHTML = '';
+            if (!grid) return;
 
             if (!vehicles || vehicles.length === 0) {
                 grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-400 py-20 bg-zinc-950/50 border theme-border rounded-2xl p-8 text-center backdrop-blur-sm"><div class="w-16 h-16 rounded-full bg-brand-950/50 border border-brand-500/30 flex items-center justify-center mb-3 text-brand-400 text-2xl shadow-[0_0_20px_var(--theme-glow)]"><i class="fa-solid fa-warehouse"></i></div><p class="text-sm font-bold uppercase tracking-wider text-zinc-200">El garaje está vacío</p><p class="text-xs text-zinc-400 mt-1">Añade vehículos operativos para registrar su asignación táctica.</p></div>';
@@ -2347,6 +2371,7 @@
 
             const canEdit = ['JEFES', 'Cúpula Administrativa'].includes(currentUser.role);
 
+            let cardsHtml = '';
             vehicles.forEach(v => {
                 const badgeStyle = USAGE_STYLES[v.usage] || "bg-zinc-800 text-white border-zinc-600";
 
@@ -2360,10 +2385,10 @@
                     `;
                 }
 
-                grid.innerHTML += `
+                cardsHtml += `
                     <div class="relative group rounded-2xl overflow-hidden interactive-card bg-zinc-950/80 backdrop-blur-md border theme-border flex flex-col hover:border-brand-500/80 transition-all shadow-md">
                         <div class="relative aspect-video w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${v.image}', '<span class=\\'text-brand-400 font-bold\\'>${v.model}</span> - ${v.usage}')">
-                            <img src="${v.image}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            <img src="${v.image}" loading="lazy" width="400" height="225" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                             ${actionsHtml}
                         </div>
@@ -2383,16 +2408,22 @@
                     </div>
                 `;
             });
+            grid.innerHTML = cardsHtml;
         }
 
         function openImageModal(src, caption) {
-            document.getElementById('fullscreen-image').src = src;
+            const fsImg = document.getElementById('fullscreen-image');
+            if (fsImg) fsImg.src = src;
             const captionEl = document.getElementById('fullscreen-caption');
             if (caption) { captionEl.innerHTML = caption; captionEl.classList.remove('hidden'); }
             else { captionEl.classList.add('hidden'); }
             document.getElementById('imageModal').classList.remove('hidden');
         }
-        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            const fsImg = document.getElementById('fullscreen-image');
+            if (fsImg) fsImg.src = '';
+        }
 
         function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
         function closeUploadModal() {
@@ -2511,10 +2542,27 @@
             }
         }
 
-        function renderGallery() {
+        function loadMoreGalleryImages() {
+            if (!images || galleryRenderedCount >= images.length) return;
+            galleryRenderedCount += GALLERY_PAGE_SIZE;
+            renderGallery(true);
+        }
+
+        function renderGallery(force = false) {
+            const viewEl = document.getElementById('view-galeria');
+            if (!force && viewEl && viewEl.classList.contains('hidden')) {
+                galleryNeedsRender = true;
+                return;
+            }
+            galleryNeedsRender = false;
+
             const grid = document.getElementById('gallery-grid');
             if (!grid) return;
-            grid.innerHTML = '';
+
+            if (galleryObserver) {
+                galleryObserver.disconnect();
+                galleryObserver = null;
+            }
 
             if (!images || images.length === 0) {
                 grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center text-zinc-400 py-20 bg-zinc-950/50 border theme-border rounded-2xl p-8 text-center backdrop-blur-sm"><div class="w-16 h-16 rounded-full bg-brand-950/50 border border-brand-500/30 flex items-center justify-center mb-3 text-brand-400 text-2xl shadow-[0_0_20px_var(--theme-glow)]"><i class="fa-regular fa-images"></i></div><p class="text-sm font-bold uppercase tracking-wider text-zinc-200">Aún no hay fotos en la galería</p><p class="text-xs text-zinc-400 mt-1">Sube las primeras capturas operativas para compartirlas con el equipo.</p></div>';
@@ -2525,7 +2573,11 @@
             const sorted = [...images].sort((a, b) => b.id - a.id);
             const availableEmojis = ["❤️", "🔝", "🔥", "💦", "🍆", "👍", "😂", "💀", "👏"];
 
-            sorted.forEach(img => {
+            const countToRender = Math.min(sorted.length, Math.max(GALLERY_PAGE_SIZE, galleryRenderedCount));
+            const visibleItems = sorted.slice(0, countToRender);
+
+            let cardsHtml = '';
+            visibleItems.forEach(img => {
                 const delBtn = canDelete ? `<button onclick="event.stopPropagation(); deleteImage(${img.id})" class="absolute top-2.5 right-2.5 bg-zinc-900/90 hover:bg-red-900/80 border border-red-500/50 text-red-400 w-8 h-8 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_15px_rgba(239,68,68,0.35)] backdrop-blur-md z-20 interactive-btn" title="Eliminar Foto"><i class="fa-solid fa-trash-can text-xs"></i></button>` : '';
 
                 const titleHtml = img.title ? `<p class="text-white text-xs font-bold truncate mb-0.5 drop-shadow-sm flex items-center gap-1.5" title="${img.title.replace(/"/g, '&quot;')}"><i class="fa-regular fa-image text-[10px] text-brand-400"></i>${img.title}</p>` : '';
@@ -2561,10 +2613,10 @@
                 });
                 reactionsHtml += '</div>';
 
-                grid.innerHTML += `
+                cardsHtml += `
                     <div class="relative group rounded-2xl overflow-hidden interactive-card bg-zinc-950/80 backdrop-blur-md border theme-border flex flex-col hover:border-brand-500/80 transition-all shadow-md">
                         <div class="relative aspect-[4/3] w-full overflow-hidden bg-black flex items-center justify-center cursor-pointer" onclick="openImageModal('${img.url}', '${safeCaption}')">
-                            <img src="${img.url}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            <img src="${img.url}" loading="lazy" width="400" height="300" decoding="async" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                             ${delBtn}
                         </div>
@@ -2584,6 +2636,30 @@
                     </div>
                 `;
             });
+
+            if (countToRender < sorted.length) {
+                cardsHtml += `
+                    <div id="gallery-sentinel" class="col-span-full py-8 flex flex-col items-center justify-center gap-2">
+                        <button onclick="loadMoreGalleryImages()" class="px-5 py-2.5 rounded-xl bg-zinc-900/90 border theme-border text-brand-400 text-xs font-bold hover:bg-brand-950/80 transition-all interactive-btn shadow-md">
+                            <i class="fa-solid fa-spinner fa-spin text-xs mr-2"></i>Cargar más fotos (${sorted.length - countToRender} restantes)
+                        </button>
+                    </div>
+                `;
+            }
+
+            grid.innerHTML = cardsHtml;
+
+            if (countToRender < sorted.length) {
+                const sentinel = document.getElementById('gallery-sentinel');
+                if (sentinel && 'IntersectionObserver' in window) {
+                    galleryObserver = new IntersectionObserver((entries) => {
+                        if (entries[0] && entries[0].isIntersecting) {
+                            loadMoreGalleryImages();
+                        }
+                    }, { rootMargin: '300px' });
+                    galleryObserver.observe(sentinel);
+                }
+            }
         }
 
         const RANK_STYLES = { "JEFES": "bg-red-950 text-red-500 border-red-900", "Cúpula Administrativa": "bg-red-950 text-red-400 border-red-900", "Mano Derecha": "bg-amber-950 text-orange-500 border-amber-900", "Subjefe": "bg-yellow-950 text-yellow-400 border-yellow-900", "Líder de La Mesa Blanca": "bg-zinc-800 text-white border-zinc-600", "Líder de Grupo Sigilo": "bg-zinc-900 text-zinc-300 border-zinc-700", "Líder de Operativa Antrax": "bg-green-950 text-green-400 border-green-900", "Líder de Dealers": "bg-purple-950 text-purple-400 border-purple-900", "La Mesa Blanca": "bg-zinc-900 text-white border-zinc-700", "Grupo Sigilo": "bg-zinc-950 text-zinc-400 border-zinc-800", "Operativa Antrax": "bg-green-950 text-green-500 border-green-900", "Dealers": "bg-purple-950 text-purple-500 border-purple-900", "GHOST": "bg-teal-950 text-teal-300 border-teal-900", "Soldado": "bg-slate-900 text-slate-300 border-slate-700", "Novato": "bg-cyan-950 text-cyan-400 border-cyan-900", "Recolector": "bg-emerald-950 text-emerald-500 border-emerald-900" };
@@ -3322,6 +3398,9 @@
             const t = document.getElementById(`view-${view}`);
             if (t) { t.classList.remove('hidden'); if (view === 'mi-estado' || view === 'miembros' || view === 'galeria' || view === 'garaje' || view === 'autoridades') t.classList.add('flex'); void t.offsetWidth; t.classList.add('animate-view'); }
             const tb = document.getElementById(`btn-nav-${view}`); if (tb) tb.classList.add('bg-brand-900/30', 'text-brand-300', 'border-brand-500/50', 'shadow-[0_0_15px_var(--theme-glow)]');
+            if (view === 'galeria' && galleryNeedsRender) renderGallery(true);
+            if (view === 'garaje' && garageNeedsRender) renderGarage(true);
+            if (view === 'autoridades' && authoritiesNeedsRender) renderAuthorities(true);
         }
 
         function getDiscountValues(d) {
